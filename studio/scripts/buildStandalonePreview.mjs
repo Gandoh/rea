@@ -459,13 +459,13 @@ async function handleEmbeddedApi(path, init = {}) {
 const _nativeFetch = window.fetch.bind(window);
 window.fetch = async (input, init) => {
   const isHttpHost = (window.location.protocol === "http:" || window.location.protocol === "https:") && Boolean(window.location.host);
-  const isGithubPages = window.location.hostname.endsWith("github.io");
+  const isStaticHost = STATIC_MODE || /github\.io$|githack\.com$|githubusercontent\.com$/.test(window.location.hostname);
   if (typeof input === "string" && input.startsWith("/api/")) {
-    if (isHttpHost && !isGithubPages) {
+    if (isHttpHost && !isStaticHost) {
       try {
         const liveResp = await _nativeFetch(input, init);
         const ct = liveResp.headers.get("content-type") || "";
-        if (liveResp.status < 500 && (ct.includes("application/json") || !input.startsWith("/api/"))) {
+        if (liveResp.status < 500 && ct.includes("application/json")) {
           return liveResp;
         }
       } catch {
@@ -482,7 +482,7 @@ window.fetch = async (input, init) => {
     .replace('<link rel="stylesheet" href="/styles.css" />', `<style>\n${css}\n</style>`)
     .replace(
       '<script type="module" src="/app.js"></script>',
-      `<script type="module">\n${offlineEngineShim}\n${js}\n</script>`,
+      `<script>\n(function () {\n"use strict";\n${offlineEngineShim}\n${js}\n})();\n</script>`,
     );
 
   writeFileSync("studio/index.html", outHtml);
