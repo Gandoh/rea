@@ -1,0 +1,14 @@
+# One-click Render.com Blueprint (place or reference from repo root)
+services:
+  - type: web
+    name: rea-cloud-studio
+    runtime: docker
+    dockerfilePath: ./studio/Dockerfile
+    dockerContext: .
+    plan: starter
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: "3080"
+      - key: REA_BOOTSTRAP_API_KEY
+        generateValue: true

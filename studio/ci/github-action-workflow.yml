@@ -1,0 +1,39 @@
+# Drop into .github/workflows/rea-shipgate.yml in any customer repository
+name: REA ShipGate Release Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  security-and-supply-chain-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Fetch REA ShipGate CLI
+        env:
+          REA_STUDIO_URL: ${{ secrets.REA_STUDIO_URL }}
+        run: curl -fsSL "$REA_STUDIO_URL/api/ci/shipgate-cli.mjs" -o /tmp/shipgate-cli.mjs
+
+      # 1. Gate an Electron app or .asar bundle (blocks PR merge if score < 75)
+      - name: Run REA AppScope Electron & JS Gate
+        env:
+          REA_STUDIO_URL: ${{ secrets.REA_STUDIO_URL }}
+          REA_API_KEY: ${{ secrets.REA_API_KEY }}
+        run: node /tmp/shipgate-cli.mjs xray ./dist/app.asar
+
+      # 2. Attest compiled binaries, AI models (.safetensors/.gguf), or EVM contracts
+      - name: Run REA ShipGate Binary & Model Attestation
+        env:
+          REA_STUDIO_URL: ${{ secrets.REA_STUDIO_URL }}
+          REA_API_KEY: ${{ secrets.REA_API_KEY }}
+        run: node /tmp/shipgate-cli.mjs shipgate ./build/libvault.so
