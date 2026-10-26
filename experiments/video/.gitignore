@@ -1,0 +1,5 @@
+# Local render output. The committed rea-demo.mp4 is regenerated with `npm run demo`.
+/output/
+/tmp/
+*.tmp.mp4
+*.tmp.webm

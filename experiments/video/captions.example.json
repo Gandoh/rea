@@ -1,0 +1,15 @@
+[
+  {
+    "title": "Open the target",
+    "subtitle": "REA attaches to the selected browser target without navigating"
+  },
+  "Click the control and capture the visible state",
+  {
+    "title": "Read the evidence",
+    "subtitle": "Screenshot artifacts are content-addressed PNGs with SHA-256 digests"
+  },
+  {
+    "title": "Build the video",
+    "subtitle": "Frames are rendered and encoded locally as MP4 or WebM"
+  }
+]
