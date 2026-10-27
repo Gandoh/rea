@@ -942,28 +942,27 @@
         <span class="badge badge-green">Instant On-Chain Checkout · 0% Middleman</span>
         <button class="btn btn-sm" onclick="closeModal('usdtCheckoutModal')">✕</button>
       </div>
-      <h2 id="usdtModalTitle" style="margin:4px 0 6px;font-size:18px;">Unlock AlphaShield Pro — $19 USDT / USDC</h2>
+      <h2 id="usdtModalTitle" style="margin:4px 0 6px;font-size:18px;">Unlock AlphaShield Pro — $19 USDT</h2>
       <p class="muted" style="font-size:12.5px;margin-top:0;line-height:1.45;">
-        Pay directly with <strong>USDT</strong> or <strong>USDC</strong> on <strong>BNB Smart Chain (BEP-20)</strong>, <strong>Base</strong>, <strong>Polygon</strong>, <strong>Arbitrum</strong>, or <strong>Ethereum</strong>. Verified automatically on-chain in 2 seconds!
+        Send exact <strong>USDT</strong> on <strong>BNB Smart Chain (BEP-20)</strong> (~$0.01 fee). Verified automatically on-chain in 2 seconds!
       </p>
 
       <div class="step-box">
-        <div style="font-size:11.5px;color:var(--muted);margin-bottom:5px;">1. Select Network &amp; Send Exact Amount to Merchant Wallet:</div>
+        <div style="font-size:11.5px;color:#fbbf24;font-weight:700;margin-bottom:6px;">
+          ⚠️ Network: BNB Smart Chain (BEP-20) — Send USDT Only
+        </div>
         <div class="input-row" style="margin-bottom:8px;">
           <select id="payChainSelect" class="input" onchange="updateUsdtModalUI()">
-            <option value="bsc">BNB Smart Chain (BEP-20) — USDT / USDC</option>
-            <option value="base">Base Network — USDC</option>
-            <option value="polygon">Polygon — USDT / USDC</option>
-            <option value="arbitrum">Arbitrum One — USDT / USDC</option>
-            <option value="ethereum">Ethereum (ERC-20) — USDT / USDC</option>
+            <option value="bsc">BNB Smart Chain (BEP-20) — USDT (Recommended · $0.01 fee)</option>
+            <option value="ethereum">Ethereum (ERC-20) — USDT</option>
           </select>
         </div>
-        <div style="background:#050811;border:1px solid var(--border);padding:9px 11px;border-radius:9px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span id="merchantAddressDisplay" class="mono" style="font-size:11.5px;word-break:break-all;color:#34d399;">Not configured yet</span>
-          <button class="btn btn-sm" onclick="copyMerchantAddress()">Copy</button>
+        <div style="background:#050811;border:1px solid rgba(16,185,129,0.45);padding:10px 12px;border-radius:9px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span id="merchantAddressDisplay" class="mono" style="font-size:12px;font-weight:700;word-break:break-all;color:#34d399;">0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394</span>
+          <button class="btn btn-primary btn-sm" onclick="copyMerchantAddress()">Copy Address</button>
         </div>
         <button class="btn btn-indigo" style="width:100%;margin-top:9px;" onclick="payWithWeb3Wallet()">
-          ⚡ 1-Tap Pay in Browser Wallet (MetaMask / Trust / Brave)
+          ⚡ 1-Tap Pay USDT in Browser Wallet (Trust / MetaMask / Brave)
         </button>
       </div>
 
@@ -1007,8 +1006,8 @@
       try { window.localStorage.setItem(key, JSON.stringify(val)); } catch {}
     }
 
-    // URL Parameter Overrides (supports ?wallet=0x... direct USDT/USDC checkout & ?pay_pro=https://...)
-    const DEFAULT_MERCHANT_WALLET = "";
+    // URL Parameter Overrides (Gandoh Bah Ai official Binance BEP-20 USDT wallet baked in by default!)
+    const DEFAULT_MERCHANT_WALLET = "0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394";
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("wallet") && /^0x[0-9a-fA-F]{40}$/.test(urlParams.get("wallet").trim())) {
       sSet("as_merchant_wallet", urlParams.get("wallet").trim());
@@ -1019,13 +1018,13 @@
     }
 
     function getMerchantWallet() {
-      return sGet("as_merchant_wallet", DEFAULT_MERCHANT_WALLET) || "";
+      return sGet("as_merchant_wallet", DEFAULT_MERCHANT_WALLET) || DEFAULT_MERCHANT_WALLET;
     }
     function getPublicStoreUrl() {
       const u = new URL(window.location.href.split("?")[0]);
       const w = getMerchantWallet();
       const p = sGet("as_pay_pro_url", "");
-      if (w) u.searchParams.set("wallet", w);
+      if (w && w.toLowerCase() !== DEFAULT_MERCHANT_WALLET.toLowerCase()) u.searchParams.set("wallet", w);
       if (p) u.searchParams.set("pay_pro", p);
       return u.toString();
     }
@@ -1149,33 +1148,11 @@
         chainHex: "0x38",
         tokens: [
           { symbol: "USDT", address: "0x55d398326f99059ff775485246999027b3197955", decimals: 18 },
-          { symbol: "USDC", address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", decimals: 18 },
-        ],
-      },
-      base: {
-        chainHex: "0x2105",
-        tokens: [
-          { symbol: "USDC", address: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", decimals: 6 },
-        ],
-      },
-      polygon: {
-        chainHex: "0x89",
-        tokens: [
-          { symbol: "USDC", address: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", decimals: 6 },
-          { symbol: "USDT", address: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", decimals: 6 },
-        ],
-      },
-      arbitrum: {
-        chainHex: "0xa4b1",
-        tokens: [
-          { symbol: "USDC", address: "0xaf88d065e77c8cc2239327c5edb3a432268e5831", decimals: 6 },
-          { symbol: "USDT", address: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9", decimals: 6 },
         ],
       },
       ethereum: {
         chainHex: "0x1",
         tokens: [
-          { symbol: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", decimals: 6 },
           { symbol: "USDT", address: "0xdac17f958d2ee523a2206206994597c13d831ec7", decimals: 6 },
         ],
       },
@@ -1198,8 +1175,8 @@
 
     function updateUsdtModalUI() {
       const planLabel = activeCheckoutPlan === "team" ? "Whale & Alpha Group" : "AlphaShield Pro";
-      document.getElementById("usdtModalTitle").textContent = `Unlock ${planLabel} — $${activeCheckoutUsd} USDT / USDC`;
-      document.getElementById("merchantAddressDisplay").textContent = getMerchantWallet() || "Configure 0x wallet in Founder Guide";
+      document.getElementById("usdtModalTitle").textContent = `Unlock ${planLabel} — $${activeCheckoutUsd} USDT`;
+      document.getElementById("merchantAddressDisplay").textContent = getMerchantWallet();
       document.getElementById("txVerifyFeedback").textContent = "";
     }
 
@@ -1209,7 +1186,7 @@
       navigator.clipboard?.writeText(w).catch(() => {});
       const fb = document.getElementById("txVerifyFeedback");
       fb.style.color = "#34d399";
-      fb.textContent = "✓ Copied payment address! Send $" + activeCheckoutUsd + " USDT or USDC and paste your TxHash below.";
+      fb.textContent = "✓ Copied address! Send $" + activeCheckoutUsd + " USDT (BEP-20) from Binance/Trust Wallet, then paste your 0x TxHash below.";
     }
 
     async function payWithWeb3Wallet() {
