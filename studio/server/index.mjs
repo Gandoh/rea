@@ -793,6 +793,17 @@ const server = createHttpServer(async (req, res) => {
       return;
     }
 
+    if (pathname === "/solidcraft" || pathname === "/solidcraft/") {
+      const scHtml = readFileSync(join(STUDIO_ROOT, "solidcraft", "index.html"));
+      res.writeHead(200, {
+        "content-type": "text/html; charset=utf-8",
+        "content-length": scHtml.length,
+        "cache-control": "no-cache",
+      });
+      res.end(scHtml);
+      return;
+    }
+
     let filePath = pathname === "/" ? join(PUBLIC_DIR, "index.html") : join(PUBLIC_DIR, normalize(pathname));
     if (!filePath.startsWith(PUBLIC_DIR) || !existsSync(filePath)) {
       filePath = join(PUBLIC_DIR, "index.html");

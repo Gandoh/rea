@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="theme-color" content="#07060d" />
+  <title>SolidCraft 3D Studio — Custom 3D Jewelry, Keepsakes &amp; Parametric STL CAD</title>
+  <style>
+    :root {
+      --bg: #07060d;
+      --panel: rgba(18, 16, 28, 0.88);
+      --panel-2: rgba(28, 24, 42, 0.92);
+      --border: rgba(244, 196, 178, 0.18);
+      --rose: #f4b6a6;
+      --rose-bright: #ffd3c4;
+      --gold: #f5c469;
+      --emerald: #10b981;
+      --indigo: #818cf8;
+      --text: #faf7f5;
+      --muted: #a8a2b8;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(244, 182, 166, 0.16), transparent 46%),
+        radial-gradient(circle at 85% 80%, rgba(129, 140, 248, 0.11), transparent 42%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    button, input, select, textarea { font-family: inherit; }
+
+    /* Top Bar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 16px;
+      background: rgba(7, 6, 13, 0.82);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #f4b6a6, #d97757);
+      color: #1c0c08;
+      font-weight: 900;
+      font-size: 14px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 16px rgba(244, 182, 166, 0.35);
+    }
+    .brand-name {
+      font-weight: 800;
+      font-size: 14.5px;
+      letter-spacing: -0.01em;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.12s ease, border-color 0.15s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-rose {
+      background: linear-gradient(135deg, #ffd3c4, #e79881);
+      color: #230f0a;
+      border-color: rgba(255, 211, 196, 0.7);
+      font-weight: 800;
+    }
+    .btn-emerald {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #022c22;
+      border-color: rgba(16, 185, 129, 0.6);
+      font-weight: 800;
+    }
+    .btn-sm { padding: 6px 11px; font-size: 11.5px; }
+
+    /* Layout */
+    .layout {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 14px 14px 56px;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 880px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* Gift Mode Overrides */
+    body.gift-mode .studio-only { display: none !important; }
+    body.gift-mode .layout {
+      max-width: 560px;
+      grid-template-columns: 1fr;
+      padding-top: 10px;
+    }
+    .gift-only { display: none; }
+    body.gift-mode .gift-only { display: block; }
+
+    /* 3D Stage Card */
+    .stage-card {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 35%, #1c162b 0%, #090710 78%);
+      border: 1px solid rgba(244, 182, 166, 0.30);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    #glCanvas {
+      display: block;
+      width: 100%;
+      height: 460px;
+      touch-action: none;
+      cursor: grab;
+    }
+    body.gift-mode #glCanvas {
+      height: 490px;
+    }
+    #glCanvas:active { cursor: grabbing; }
+
+    .stage-top-overlay {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+    .glass-pill {
+      pointer-events: auto;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: rgba(10, 8, 18, 0.68);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(244, 182, 166, 0.25);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--rose-bright);
+    }
+
+    .material-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .mat-chip {
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(12, 10, 20, 0.76);
+      backdrop-filter: blur(8px);
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .mat-chip.active {
+      border-color: var(--rose-bright);
+      color: var(--rose-bright);
+      box-shadow: 0 0 14px rgba(244, 182, 166, 0.32);
+    }
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Gift Dedication Plaque */
+    .gift-plaque {
+      text-align: center;
+      padding: 22px 18px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(28, 22, 40, 0.85), rgba(14, 11, 22, 0.92));
+      border: 1px solid rgba(244, 182, 166, 0.32);
+      margin-top: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+    .gift-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--rose);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .gift-title {
+      font-family: var(--serif);
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      background: linear-gradient(135deg, #fff5f0, #f4b6a6, #f5c469);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gift-note {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #e5dfe8;
+      margin: 0 auto 14px;
+      max-width: 420px;
+      font-style: italic;
+    }
+
+    /* Controls Panel */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      margin: 0 0 12px;
+      font-size: 14.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .field { margin-bottom: 12px; }
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .input, select.input, textarea.input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: #090812;
+      color: var(--text);
+      font-size: 13.5px;
+      outline: none;
+    }
+    .input:focus { border-color: var(--rose); }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #f4b6a6;
+    }
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    .stat-val {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--rose-bright);
+    }
+    .stat-lbl {
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(4, 3, 9, 0.84);
+      backdrop-filter: blur(7px);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #12101d;
+      border: 1px solid rgba(244, 182, 166, 0.4);
+      border-radius: 20px;
+      max-width: 480px;
+      width: 100%;
+      padding: 20px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .mono { font-family: var(--mono); }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">3D</div>
+      <div>
+        <div class="brand-name" id="topBrandTitle">SolidCraft 3D Studio</div>
+        <div class="brand-sub" id="topBrandSub">Parametric Jewelry &amp; STL CAD · Gandoh Bah Ai</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="toggleGiftPreviewBtn" class="btn btn-rose btn-sm studio-only" onclick="enterGiftPreview()">
+        ✨ View Gift Mode
+      </button>
+      <button class="btn btn-sm gift-only" onclick="exitGiftMode()">
+        🛠️ Customize in 3D Studio
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT: Interactive Real-Time 3D Metallic Viewport -->
+    <div>
+      <div class="stage-card">
+        <canvas id="glCanvas"></canvas>
+
+        <div class="stage-top-overlay">
+          <span class="glass-pill" id="dragHintPill">↻ Drag with finger to spin 360°</span>
+          <button class="glass-pill" style="cursor:pointer;" onclick="resetCamera()">Center 3D</button>
+        </div>
+
+        <div class="material-bar">
+          <button class="mat-chip active" data-mat="rosegold" onclick="setMaterial('rosegold')">
+            <span class="swatch" style="background:linear-gradient(135deg,#ffd3c4,#c97a63)"></span>18K Rose Gold
+          </button>
+          <button class="mat-chip" data-mat="gold" onclick="setMaterial('gold')">
+            <span class="swatch" style="background:linear-gradient(135deg,#fff0a8,#d49b27)"></span>24K Gold
+          </button>
+          <button class="mat-chip" data-mat="platinum" onclick="setMaterial('platinum')">
+            <span class="swatch" style="background:linear-gradient(135deg,#ffffff,#94a3b8)"></span>Platinum
+          </button>
+          <button class="mat-chip" data-mat="ruby" onclick="setMaterial('ruby')">
+            <span class="swatch" style="background:linear-gradient(135deg,#ff6b8b,#9f1239)"></span>Ruby Velvet
+          </button>
+        </div>
+      </div>
+
+      <!-- LUXURY DEDICATION CARD (Visible in Gift Mode for Angelique!) -->
+      <div class="gift-plaque gift-only">
+        <div class="gift-eyebrow">Bespoke 3D Parametric Sculpture</div>
+        <h1 class="gift-title" id="giftHeadline">Crafted for Angelique</h1>
+        <p class="gift-note" id="giftNoteText">
+          "Some names deserve more than flat ink — so I sculpted yours in 3D Rose Gold. Spin it with your finger from every angle."
+        </p>
+        <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-rose" onclick="pulseSpin()">✨ Spin in Light</button>
+          <button class="btn" onclick="exportBinarySTL()">⬇️ Download 3D Printable .STL</button>
+        </div>
+      </div>
+
+      <!-- Engineering Readout Strip (Studio Mode) -->
+      <div class="card studio-only" style="margin-top:14px;margin-bottom:0;">
+        <div class="card-title" style="margin-bottom:4px;">
+          <span>Live SolidCraft Mesh Telemetry</span>
+          <span class="mono" style="font-size:11px;color:#34d399;">WATERTIGHT MANIFOLD</span>
+        </div>
+        <div class="stats-strip">
+          <div>
+            <div class="stat-val" id="statDims">68 × 62 × 8.5 mm</div>
+            <div class="stat-lbl">Bounding Box</div>
+          </div>
+          <div>
+            <div class="stat-val" id="statTris">0</div>
+            <div class="stat-lbl">3D Triangles</div>
+          </div>
+          <div>
+            <div class="stat-val" id="statWeight">~14.2 g</div>
+            <div class="stat-lbl">Est. Print Mass</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Parametric CAD Feature Timeline + Gift Link & STL Export -->
+    <div class="studio-only">
+      <div class="card">
+        <div class="card-title">
+          <span>1. Parametric 3D Feature Timeline</span>
+          <span id="quotaTag" style="font-size:11px;color:var(--rose);">1 Free STL Export</span>
+        </div>
+
+        <div class="field">
+          <div class="label-row"><span>3D Solid Template</span></div>
+          <select id="shapeSelect" class="input" onchange="rebuildModel()">
+            <option value="heart">💎 Sculpted 3D Heart Medallion (Jewelry / Gift)</option>
+            <option value="keychain">🔑 Custom 3D Keychain Tag (with Keyring Hole)</option>
+            <option value="plaque">🏛️ Executive Beveled Desk Nameplate</option>
+            <option value="vase">🏺 Parametric Fluted Twist Vase / Trophy</option>
+          </select>
+        </div>
+
+        <div class="field" id="textFieldWrap">
+          <div class="label-row">
+            <span>3D Raised Engraving Text</span>
+            <span class="mono" style="font-size:11px;">Live 3D Relief</span>
+          </div>
+          <input id="engraveInput" class="input" type="text" maxlength="14" value="ANGELIQUE" placeholder="Type name (e.g. ANGELIQUE)" oninput="scheduleRebuild()" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <span>Relief / Twist Depth</span>
+            <span id="depthValLbl" class="mono">3.2 mm</span>
+          </div>
+          <input id="depthSlider" type="range" min="1.4" max="5.5" step="0.2" value="3.2" oninput="scheduleRebuild()" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <span>Base Thickness</span>
+            <span id="thickValLbl" class="mono">5.4 mm</span>
+          </div>
+          <input id="thickSlider" type="range" min="3.0" max="9.0" step="0.3" value="5.4" oninput="scheduleRebuild()" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <span>Overall Size (mm)</span>
+            <span id="scaleValLbl" class="mono">72 mm</span>
+          </div>
+          <input id="scaleSlider" type="range" min="45" max="130" step="5" value="72" oninput="scheduleRebuild()" />
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:14px;">
+          <button class="btn btn-emerald" style="width:100%;padding:12px;font-size:13.5px;" onclick="exportBinarySTL()">
+            ⬇️ Export 3D-Printable Binary .STL File
+          </button>
+          <button class="btn" style="width:100%;padding:10px;" onclick="openCheckoutModal()">
+            💎 Unlock Unlimited Commercial STL CAD ($9 USDT)
+          </button>
+        </div>
+      </div>
+
+      <!-- Share Personalized 3D Gift Link (To Impress Angelique OR Sell Custom Links for $5-$15!) -->
+      <div class="card">
+        <div class="card-title">
+          <span>2. Create Private 3D Gift Link</span>
+          <span style="font-size:11px;color:#34d399;">Great for Angelique ✨</span>
+        </div>
+        <div class="field">
+          <div class="label-row"><span>Personal Dedication Note</span></div>
+          <textarea id="customNoteInput" class="input" rows="2" placeholder="Write a personal message...">Some names deserve more than flat ink — so I sculpted yours in 3D Rose Gold. Spin it with your finger from every angle.</textarea>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-rose" style="flex:1;padding:11px;" onclick="copyGiftShareLink()">
+            💌 Copy Private 3D Gift Link
+          </button>
+          <button class="btn" onclick="shareGiftWhatsApp()">
+            Send on WhatsApp
+          </button>
+        </div>
+        <div id="giftShareFeedback" class="mono" style="font-size:11px;color:#34d399;margin-top:8px;word-break:break-all;"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Binance BEP-20 USDT Commercial Unlock Modal -->
+  <div id="checkoutModal" class="modal-backdrop" onclick="if(event.target===this)closeCheckoutModal()">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:11px;font-weight:800;color:var(--rose);text-transform:uppercase;">SolidCraft Commercial CAD Pass</span>
+        <button class="btn btn-sm" onclick="closeCheckoutModal()">✕</button>
+      </div>
+      <h2 style="margin:0 0 6px;font-size:19px;">Unlock Unlimited .STL Exports — $9 USDT</h2>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:0;">
+        Export unlimited custom 3D keychains, jewelry pendants, desk plaques &amp; vases to sell on Etsy, WhatsApp, or local 3D print shops. Verified automatically on <strong>BNB Smart Chain (BEP-20)</strong>!
+      </p>
+
+      <div style="background:#08070f;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:11px;color:#fbbf24;font-weight:700;margin-bottom:6px;">
+          Send 9 USDT on BNB Smart Chain (BEP-20):
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:#040308;padding:9px 10px;border-radius:8px;border:1px solid rgba(16,185,129,0.4);">
+          <span class="mono" style="font-size:11.5px;color:#34d399;word-break:break-all;">0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394</span>
+          <button class="btn btn-sm" onclick="copyWallet()">Copy</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:8px;">
+        <div class="label-row"><span>Paste BNB Smart Chain TxHash (0x...) to Auto-Unlock:</span></div>
+        <div style="display:flex;gap:8px;">
+          <input id="stlTxInput" class="input mono" type="text" placeholder="0x..." />
+          <button class="btn btn-emerald" onclick="verifyStlPayment()">Verify</button>
+        </div>
+      </div>
+      <div id="stlPayFeedback" style="font-size:12px;min-height:18px;"></div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // Safe Storage (Brave Shields Strict Mode Compatible)
+    // =========================================================================
+    const mem = new Map();
+    function sGet(k, fb = null) {
+      try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : fb; }
+      catch { return mem.has(k) ? mem.get(k) : fb; }
+    }
+    function sSet(k, v) {
+      mem.set(k, v);
+      try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
+    }
+
+    const MERCHANT_WALLET = "0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394";
+    const BSC_USDT = "0x55d398326f99059ff775485246999027b3197955";
+    const BSC_RPCS = ["https://bsc-rpc.publicnode.com", "https://bsc-dataseed.binance.org"];
+
+    // Parse URL parameters for Gift Mode (?gift=1&name=Angelique&mat=rosegold&shape=heart&note=...)
+    const params = new URLSearchParams(window.location.search);
+    let currentMaterial = params.get("mat") || "rosegold";
+
+    const MATERIALS = {
+      rosegold: { base: [0.96, 0.67, 0.59], spec: [1.0, 0.86, 0.80], rim: [1.0, 0.75, 0.68], shine: 52.0 },
+      gold:     { base: [0.96, 0.76, 0.28], spec: [1.0, 0.95, 0.72], rim: [1.0, 0.85, 0.42], shine: 58.0 },
+      platinum: { base: [0.83, 0.87, 0.92], spec: [1.0, 1.0, 1.0],   rim: [0.75, 0.85, 1.0], shine: 68.0 },
+      ruby:     { base: [0.82, 0.12, 0.28], spec: [1.0, 0.72, 0.80], rim: [1.0, 0.35, 0.52], shine: 44.0 },
+    };
+
+    // =========================================================================
+    // Offscreen Signed-Distance / Relief Rasterizer for Crisp 3D Typography
+    // =========================================================================
+    const textCanvas = document.createElement("canvas");
+    textCanvas.width = 256;
+    textCanvas.height = 128;
+    const tCtx = textCanvas.getContext("2d", { willReadFrequently: true });
+
+    function rasterizeReliefField(rawText, shape) {
+      const clean = String(rawText || "ANGELIQUE").toUpperCase().trim().slice(0, 14) || "ANGELIQUE";
+      tCtx.clearRect(0, 0, 256, 128);
+      tCtx.fillStyle = "#ffffff";
+      tCtx.textAlign = "center";
+      tCtx.textBaseline = "middle";
+
+      // Auto-fit font size cleanly inside silhouette
+      let fontSize = shape === "heart" ? 38 : 46;
+      const maxWidth = shape === "heart" ? 168 : 212;
+      while (fontSize > 16) {
+        tCtx.font = `900 ${fontSize}px Georgia, "Times New Roman", serif`;
+        if (tCtx.measureText(clean).width <= maxWidth) break;
+        fontSize -= 2;
+      }
+      const yPos = shape === "heart" ? 60 : 64;
+      tCtx.fillText(clean, 128, yPos);
+
+      // Subtle crown / star diamond emblem above name on Heart Medallion!
+      if (shape === "heart") {
+        tCtx.font = "700 20px Georgia, serif";
+        tCtx.fillText("✦", 128, 30);
+      }
+
+      const img = tCtx.getImageData(0, 0, 256, 128).data;
+      const field = new Float32Array(256 * 128);
+      for (let i = 0; i < 256 * 128; i++) {
+        field[i] = img[i * 4 + 3] / 255.0;
+      }
+      // 2-pass separable 3-tap box blur for smooth 45-degree jewelry bevels on every letter!
+      const tmp = new Float32Array(256 * 128);
+      for (let pass = 0; pass < 2; pass++) {
+        for (let y = 0; y < 128; y++) {
+          const row = y * 256;
+          for (let x = 1; x < 255; x++) {
+            tmp[row + x] = (field[row + x - 1] + field[row + x] * 2 + field[row + x + 1]) * 0.25;
+          }
+        }
+        for (let y = 1; y < 127; y++) {
+          const row = y * 256;
+          for (let x = 0; x < 256; x++) {
+            field[row + x] = (tmp[row - 256 + x] + tmp[row + x] * 2 + tmp[row + 256 + x]) * 0.25;
+          }
+        }
+      }
+      return field;
+    }
+
+    function sampleField(field, u, v) {
+      if (u <= 0 || u >= 1 || v <= 0 || v >= 1) return 0;
+      const fx = u * 255;
+      const fy = (1.0 - v) * 127;
+      const x0 = fx | 0, y0 = fy | 0;
+      const x1 = Math.min(255, x0 + 1), y1 = Math.min(127, y0 + 1);
+      const dx = fx - x0, dy = fy - y0;
+      const a = field[y0 * 256 + x0] * (1 - dx) + field[y0 * 256 + x1] * dx;
+      const b = field[y1 * 256 + x0] * (1 - dx) + field[y1 * 256 + x1] * dx;
+      return a * (1 - dy) + b * dy;
+    }
+
+    // =========================================================================
+    // Parametric 3D Solid Mesh Kernel (Watertight Manifold + Smooth Normals)
+    // =========================================================================
+    let currentMesh = null; // { positions: Float32Array, normals: Float32Array, triCount, dimsMm }
+
+    function smoothstep(e0, e1, x) {
+      const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+      return t * t * (3 - 2 * t);
+    }
+
+    // Exact 2D shape inside-ness / bevel weight (>0 inside, 0 outside)
+    function evalShapeMask(shape, nx, ny) {
+      if (shape === "heart") {
+        // Classic plump jewelry heart + solid stem + top necklace bail eyelet!
+        const hx = nx * 1.22;
+        const hy = ny * 1.24 + 0.14;
+        const a = hx * hx + hy * hy - 0.52;
+        const heartVal = -(a * a * a - hx * hx * hy * hy * hy);
+        const mainMask = smoothstep(0.0, 0.085, heartVal);
+
+        const stem = (Math.abs(nx) < 0.055 && ny > 0.30 && ny < 0.60) ? 0.65 : 0.0;
+        const dx = nx, dy = ny - 0.68;
+        const r = Math.hypot(dx, dy);
+        const bail = smoothstep(0.165, 0.13, r) * smoothstep(0.06, 0.088, r);
+        return Math.max(mainMask, stem, bail * 0.78);
+      }
+      if (shape === "keychain") {
+        // Rounded stadium keychain capsule [-0.88..0.88] x [-0.42..0.42] with keyring hole on left
+        const qx = Math.max(0, Math.abs(nx) - 0.52);
+        const qy = Math.max(0, Math.abs(ny) - 0.06);
+        const dist = Math.hypot(qx, qy) - 0.36;
+        const hole = Math.hypot(nx + 0.64, ny) - 0.115;
+        if (hole < 0) return 0;
+        return smoothstep(0.0, 0.06, -dist) * smoothstep(0.0, 0.035, hole);
+      }
+      // Executive Beveled Desk Nameplate
+      const qx = Math.max(0, Math.abs(nx) - 0.78);
+      const qy = Math.max(0, Math.abs(ny) - 0.34);
+      const dist = Math.hypot(qx, qy) - 0.12;
+      return smoothstep(0.0, 0.055, -dist);
+    }
+
+    function buildPlanarSolidMesh(shape, text, reliefMm, baseMm, scaleMm) {
+      const NX = 164, NY = 124;
+      const field = rasterizeReliefField(text, shape);
+
+      const scaleFactor = scaleMm / 72.0;
+      const halfW = (shape === "heart" ? 35.0 : 44.0) * scaleFactor;
+      const halfH = (shape === "heart" ? 33.0 : 23.0) * scaleFactor;
+      const zHalfBase = (baseMm * 0.5);
+
+      const topZ = new Float32Array((NX + 1) * (NY + 1));
+      const botZ = new Float32Array((NX + 1) * (NY + 1));
+      const inside = new Uint8Array((NX + 1) * (NY + 1));
+
+      for (let j = 0; j <= NY; j++) {
+        const ny = (j / NY) * 2 - 1;
+        for (let i = 0; i <= NX; i++) {
+          const nx = (i / NX) * 2 - 1;
+          const idx = j * (NX + 1) + i;
+          const w = evalShapeMask(shape, nx, ny);
+          if (w > 0.02) {
+            inside[idx] = 1;
+            // Raised luxury rim border on keychain & plaque
+            let rim = 0;
+            if (shape !== "heart" && w > 0.35 && w < 0.72) {
+              rim = reliefMm * 0.42 * Math.sin(((w - 0.35) / 0.37) * Math.PI);
+            }
+            // Sample 3D text relief
+            const u = shape === "heart" ? (nx * 0.62 + 0.5) : (nx * 0.56 + 0.47);
+            const v = shape === "heart" ? (ny * 0.72 + 0.54) : (ny * 0.95 + 0.5);
+            const txt = sampleField(field, u, v) * reliefMm * smoothstep(0.25, 0.65, w);
+
+            // Plump cushion dome for Heart Medallion
+            const dome = shape === "heart" ? Math.pow(w, 0.62) * (zHalfBase * 1.25) : Math.pow(w, 0.38) * zHalfBase;
+            topZ[idx] = dome + rim + txt;
+            botZ[idx] = shape === "heart" ? -dome * 0.85 : -Math.pow(w, 0.38) * zHalfBase;
+          }
+        }
+      }
+
+      // Compute smooth vertex normals for top & bottom grids
+      const dx = (2 * halfW) / NX;
+      const dy = (2 * halfH) / NY;
+      const topN = new Float32Array((NX + 1) * (NY + 1) * 3);
+      for (let j = 0; j <= NY; j++) {
+        for (let i = 0; i <= NX; i++) {
+          const idx = j * (NX + 1) + i;
+          const zl = topZ[j * (NX + 1) + Math.max(0, i - 1)];
+          const zr = topZ[j * (NX + 1) + Math.min(NX, i + 1)];
+          const zd = topZ[Math.max(0, j - 1) * (NX + 1) + i];
+          const zu = topZ[Math.min(NY, j + 1) * (NX + 1) + i];
+          let gx = -(zr - zl) / (2 * dx);
+          let gy = -(zu - zd) / (2 * dy);
+          let gz = 1.0;
+          const len = Math.hypot(gx, gy, gz) || 1;
+          topN[idx * 3] = gx / len;
+          topN[idx * 3 + 1] = gy / len;
+          topN[idx * 3 + 2] = gz / len;
+        }
+      }
+
+      const pos = [];
+      const nor = [];
+      function pushTri(ax, ay, az, bx, by, bz, cx, cy, cz, nax, nay, naz, nbx, nby, nbz, ncx, ncy, ncz) {
+        pos.push(ax, ay, az, bx, by, bz, cx, cy, cz);
+        nor.push(nax, nay, naz, nbx, nby, nbz, ncx, ncy, ncz);
+      }
+      function pushFlatTri(ax, ay, az, bx, by, bz, cx, cy, cz) {
+        const ux = bx - ax, uy = by - ay, uz = bz - az;
+        const vx = cx - ax, vy = cy - ay, vz = cz - az;
+        let nx = uy * vz - uz * vy;
+        let ny = uz * vx - ux * vz;
+        let nz = ux * vy - uy * vx;
+        const l = Math.hypot(nx, ny, nz) || 1;
+        nx /= l; ny /= l; nz /= l;
+        pushTri(ax, ay, az, bx, by, bz, cx, cy, cz, nx, ny, nz, nx, ny, nz, nx, ny, nz);
+      }
+
+      for (let j = 0; j < NY; j++) {
+        const y0 = -halfH + j * dy, y1 = y0 + dy;
+        for (let i = 0; i < NX; i++) {
+          const i00 = j * (NX + 1) + i;
+          const i10 = i00 + 1;
+          const i01 = i00 + (NX + 1);
+          const i11 = i01 + 1;
+          if (!(inside[i00] && inside[i10] && inside[i01] && inside[i11])) continue;
+          const x0 = -halfW + i * dx, x1 = x0 + dx;
+
+          // Top surface (2 smooth-shaded triangles)
+          pushTri(
+            x0, y0, topZ[i00], x1, y0, topZ[i10], x1, y1, topZ[i11],
+            topN[i00*3], topN[i00*3+1], topN[i00*3+2],
+            topN[i10*3], topN[i10*3+1], topN[i10*3+2],
+            topN[i11*3], topN[i11*3+1], topN[i11*3+2]
+          );
+          pushTri(
+            x0, y0, topZ[i00], x1, y1, topZ[i11], x0, y1, topZ[i01],
+            topN[i00*3], topN[i00*3+1], topN[i00*3+2],
+            topN[i11*3], topN[i11*3+1], topN[i11*3+2],
+            topN[i01*3], topN[i01*3+1], topN[i01*3+2]
+          );
+
+          // Bottom surface (reverse winding)
+          pushFlatTri(x0, y0, botZ[i00], x1, y1, botZ[i11], x1, y0, botZ[i10]);
+          pushFlatTri(x0, y0, botZ[i00], x0, y1, botZ[i01], x1, y1, botZ[i11]);
+
+          // Watertight perimeter side walls wherever adjacent cell is outside!
+          const leftOut  = (i === 0) || !(inside[i00 - 1] && inside[i01 - 1]);
+          const rightOut = (i === NX - 1) || !(inside[i10 + 1] && inside[i11 + 1]);
+          const downOut  = (j === 0) || !(inside[i00 - (NX + 1)] && inside[i10 - (NX + 1)]);
+          const upOut    = (j === NY - 1) || !(inside[i01 + (NX + 1)] && inside[i11 + (NX + 1)]);
+
+          if (leftOut) {
+            pushFlatTri(x0, y0, botZ[i00], x0, y0, topZ[i00], x0, y1, topZ[i01]);
+            pushFlatTri(x0, y0, botZ[i00], x0, y1, topZ[i01], x0, y1, botZ[i01]);
+          }
+          if (rightOut) {
+            pushFlatTri(x1, y0, botZ[i10], x1, y1, topZ[i11], x1, y0, topZ[i10]);
+            pushFlatTri(x1, y0, botZ[i10], x1, y1, botZ[i11], x1, y1, topZ[i11]);
+          }
+          if (downOut) {
+            pushFlatTri(x0, y0, botZ[i00], x1, y0, topZ[i10], x0, y0, topZ[i00]);
+            pushFlatTri(x0, y0, botZ[i00], x1, y0, botZ[i10], x1, y0, topZ[i10]);
+          }
+          if (upOut) {
+            pushFlatTri(x0, y1, botZ[i01], x0, y1, topZ[i01], x1, y1, topZ[i11]);
+            pushFlatTri(x0, y1, botZ[i01], x1, y1, topZ[i11], x1, y1, botZ[i11]);
+          }
+        }
+      }
+
+      const depthTotal = (baseMm + reliefMm).toFixed(1);
+      return {
+        positions: new Float32Array(pos),
+        normals: new Float32Array(nor),
+        triCount: pos.length / 9,
+        dimsMm: `${Math.round(halfW * 2)} × ${Math.round(halfH * 2)} × ${depthTotal} mm`,
+        estGrams: ((halfW * 2 * halfH * 2 * (baseMm * 0.62) * 0.00124)).toFixed(1),
+      };
+    }
+
+    function buildParametricVaseMesh(twistDepth, wallMm, heightMm) {
+      const SEG = 96, RINGS = 72;
+      const pos = [], nor = [];
+      function quad(a, b, c, d) {
+        for (const [p1, p2, p3] of [[a, b, c], [a, c, d]]) {
+          const ux = p2[0]-p1[0], uy = p2[1]-p1[1], uz = p2[2]-p1[2];
+          const vx = p3[0]-p1[0], vy = p3[1]-p1[1], vz = p3[2]-p1[2];
+          let nx = uy*vz - uz*vy, ny = uz*vx - ux*vz, nz = ux*vy - uy*vx;
+          const l = Math.hypot(nx, ny, nz) || 1;
+          nx/=l; ny/=l; nz/=l;
+          pos.push(...p1, ...p2, ...p3);
+          nor.push(nx,ny,nz, nx,ny,nz, nx,ny,nz);
+        }
+      }
+      const H = heightMm * 0.85;
+      const baseR = heightMm * 0.30;
+      const flutes = 10;
+      const twist = twistDepth * 0.85;
+
+      function outerPt(si, ri) {
+        const v = ri / RINGS;
+        const ang = (si / SEG) * Math.PI * 2;
+        const profile = 0.78 + 0.28 * Math.sin(v * Math.PI * 0.95) + 0.12 * Math.cos(v * Math.PI * 2.2);
+        const ripple = 1.0 + (twistDepth * 0.032) * Math.cos(flutes * ang + twist * v * Math.PI);
+        const r = baseR * profile * ripple;
+        return [r * Math.cos(ang), (v - 0.5) * H, r * Math.sin(ang)];
+      }
+      function innerPt(si, ri) {
+        const o = outerPt(si, ri);
+        const shrink = Math.max(0.55, 1.0 - (wallMm * 0.65) / baseR);
+        return [o[0] * shrink, o[1], o[2] * shrink];
+      }
+
+      for (let r = 0; r < RINGS; r++) {
+        for (let s = 0; s < SEG; s++) {
+          const s1 = (s + 1) % SEG;
+          quad(outerPt(s, r), outerPt(s1, r), outerPt(s1, r + 1), outerPt(s, r + 1));
+          if (r >= 4) {
+            quad(innerPt(s1, r), innerPt(s, r), innerPt(s, r + 1), innerPt(s1, r + 1));
+          }
+          if (r === RINGS - 1) {
+            quad(outerPt(s, RINGS), outerPt(s1, RINGS), innerPt(s1, RINGS), innerPt(s, RINGS));
+          }
+        }
+      }
+      // Close bottom & inner floor
+      const botCenter = [0, -0.5 * H, 0];
+      const floorCenter = [0, (-0.5 + 4 / RINGS) * H, 0];
+      for (let s = 0; s < SEG; s++) {
+        const s1 = (s + 1) % SEG;
+        quad(botCenter, outerPt(s1, 0), outerPt(s, 0), botCenter);
+        quad(floorCenter, innerPt(s, 4), innerPt(s1, 4), floorCenter);
+      }
+
+      return {
+        positions: new Float32Array(pos),
+        normals: new Float32Array(nor),
+        triCount: pos.length / 9,
+        dimsMm: `${Math.round(baseR * 2.3)} × ${Math.round(baseR * 2.3)} × ${Math.round(H)} mm`,
+        estGrams: ((baseR * H * 0.032)).toFixed(1),
+      };
+    }
+
+    // =========================================================================
+    // Real Binary .STL File Writer (IEEE-754 Little Endian)
+    // =========================================================================
+    function generateBinaryStlBlob(mesh) {
+      const triCount = mesh.triCount;
+      const buf = new ArrayBuffer(84 + triCount * 50);
+      const view = new DataView(buf);
+      const header = "SolidCraft 3D Studio by Gandoh Bah Ai - Watertight Parametric CAD";
+      for (let i = 0; i < 80; i++) {
+        view.setUint8(i, i < header.length ? header.charCodeAt(i) : 32);
+      }
+      view.setUint32(80, triCount, true);
+
+      const p = mesh.positions;
+      const n = mesh.normals;
+      let offset = 84;
+      for (let t = 0; t < triCount; t++) {
+        const b = t * 9;
+        view.setFloat32(offset, n[b], true);
+        view.setFloat32(offset + 4, n[b + 1], true);
+        view.setFloat32(offset + 8, n[b + 2], true);
+        for (let k = 0; k < 9; k++) {
+          view.setFloat32(offset + 12 + k * 4, p[b + k], true);
+        }
+        view.setUint16(offset + 48, 0, true);
+        offset += 50;
+      }
+      return new Blob([buf], { type: "application/octet-stream" });
+    }
+
+    // =========================================================================
+    // Studio-Grade WebGL PBR Metallic Jewelry Renderer
+    // =========================================================================
+    const canvas = document.getElementById("glCanvas");
+    const gl = canvas.getContext("webgl", { antialias: true, alpha: true });
+
+    const VS_SRC = `
+      attribute vec3 aPos;
+      attribute vec3 aNor;
+      uniform mat4 uProj;
+      uniform mat4 uView;
+      uniform mat3 uNormalMat;
+      varying vec3 vNormal;
+      varying vec3 vViewPos;
+      void main() {
+        vec4 mv = uView * vec4(aPos, 1.0);
+        vViewPos = -mv.xyz;
+        vNormal = normalize(uNormalMat * aNor);
+        gl_Position = uProj * mv;
+      }
+    `;
+
+    const FS_SRC = `
+      precision mediump float;
+      varying vec3 vNormal;
+      varying vec3 vViewPos;
+      uniform vec3 uBaseCol;
+      uniform vec3 uSpecCol;
+      uniform vec3 uRimCol;
+      uniform float uShine;
+
+      void main() {
+        vec3 N = normalize(vNormal);
+        vec3 V = normalize(vViewPos);
+
+        // Key, Fill & Warm Rim studio lights
+        vec3 L1 = normalize(vec3(0.55, 0.72, 0.85));
+        vec3 L2 = normalize(vec3(-0.75, -0.25, 0.55));
+        vec3 L3 = normalize(vec3(0.0, 0.90, -0.45));
+
+        float diff1 = max(dot(N, L1), 0.0);
+        float diff2 = max(dot(N, L2), 0.0) * 0.42;
+
+        vec3 H1 = normalize(L1 + V);
+        vec3 H2 = normalize(L2 + V);
+        float spec1 = pow(max(dot(N, H1), 0.0), uShine);
+        float spec2 = pow(max(dot(N, H2), 0.0), uShine * 0.65) * 0.45;
+
+        // Procedural Luxury Studio Softbox Environment Reflection
+        vec3 R = reflect(-V, N);
+        float envBand = smoothstep(0.05, 0.85, R.y * 0.5 + 0.5);
+        float studioStrip = pow(max(0.0, 1.0 - abs(R.x * 0.7 + R.y * 0.4 - 0.25) * 2.6), 3.0);
+        vec3 envCol = mix(uBaseCol * 0.28, uSpecCol * 0.88, envBand * 0.65 + studioStrip * 0.55);
+
+        // Fresnel Jewelry Rim Glow
+        float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.2);
+
+        vec3 color = uBaseCol * (0.22 + diff1 * 0.62 + diff2)
+                   + envCol * 0.58
+                   + uSpecCol * (spec1 * 1.15 + spec2)
+                   + uRimCol * fresnel * 0.62;
+
+        // Filmic tone curve
+        color = color / (color + vec3(0.52)) * 1.38;
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+
+    function compileShader(type, src) {
+      const sh = gl.createShader(type);
+      gl.shaderSource(sh, src);
+      gl.compileShader(sh);
+      return sh;
+    }
+
+    let prog, posBuf, norBuf, loc = {};
+    if (gl) {
+      prog = gl.createProgram();
+      gl.attachShader(prog, compileShader(gl.VERTEX_SHADER, VS_SRC));
+      gl.attachShader(prog, compileShader(gl.FRAGMENT_SHADER, FS_SRC));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+
+      posBuf = gl.createBuffer();
+      norBuf = gl.createBuffer();
+      loc = {
+        aPos: gl.getAttribLocation(prog, "aPos"),
+        aNor: gl.getAttribLocation(prog, "aNor"),
+        uProj: gl.getUniformLocation(prog, "uProj"),
+        uView: gl.getUniformLocation(prog, "uView"),
+        uNormalMat: gl.getUniformLocation(prog, "uNormalMat"),
+        uBaseCol: gl.getUniformLocation(prog, "uBaseCol"),
+        uSpecCol: gl.getUniformLocation(prog, "uSpecCol"),
+        uRimCol: gl.getUniformLocation(prog, "uRimCol"),
+        uShine: gl.getUniformLocation(prog, "uShine"),
+      };
+      gl.enableVertexAttribArray(loc.aPos);
+      gl.enableVertexAttribArray(loc.aNor);
+      gl.enable(gl.DEPTH_TEST);
+    }
+
+    function uploadMeshToGPU(mesh) {
+      if (!gl || !mesh) return;
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, mesh.positions, gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, norBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, mesh.normals, gl.STATIC_DRAW);
+    }
+
+    // Camera Orbit State + Smooth Touch Inertia
+    let rotY = -0.32, rotX = 0.22;
+    let velY = 0.008, velX = 0.0;
+    let camDist = 135;
+    let dragging = false, lastX = 0, lastY = 0;
+
+    canvas.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      velY = dx * 0.011;
+      velX = dy * 0.011;
+      rotY += velY;
+      rotX = Math.max(-1.25, Math.min(1.25, rotX + velX));
+    });
+    canvas.addEventListener("pointerup", () => { dragging = false; });
+    canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      camDist = Math.max(70, Math.min(240, camDist + e.deltaY * 0.08));
+    }, { passive: false });
+
+    function resetCamera() {
+      rotY = -0.25;
+      rotX = 0.20;
+      velY = 0.01;
+      velX = 0;
+      camDist = 135;
+    }
+    function pulseSpin() {
+      velY = 0.14;
+    }
+
+    function mat4Perspective(fov, aspect, near, far) {
+      const f = 1.0 / Math.tan(fov / 2);
+      const nf = 1 / (near - far);
+      return new Float32Array([
+        f / aspect, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, (far + near) * nf, -1,
+        0, 0, (2 * far * near) * nf, 0
+      ]);
+    }
+
+    function buildViewAndNormalMatrices(rx, ry, dist) {
+      const cx = Math.cos(rx), sx = Math.sin(rx);
+      const cy = Math.cos(ry), sy = Math.sin(ry);
+      // R = Rx * Ry
+      const m00 = cy,      m01 = 0,   m02 = -sy;
+      const m10 = sx * sy, m11 = cx,  m12 = sx * cy;
+      const m20 = cx * sy, m21 = -sx, m22 = cx * cy;
+
+      const view = new Float32Array([
+        m00, m10, m20, 0,
+        m01, m11, m21, 0,
+        m02, m12, m22, 0,
+        0,   0,  -dist, 1
+      ]);
+      const nmat = new Float32Array([
+        m00, m10, m20,
+        m01, m11, m21,
+        m02, m12, m22
+      ]);
+      return { view, nmat };
+    }
+
+    function renderLoop() {
+      requestAnimationFrame(renderLoop);
+      if (!gl || !currentMesh) return;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = Math.floor(canvas.clientWidth * dpr);
+      const h = Math.floor(canvas.clientHeight * dpr);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+      gl.viewport(0, 0, w, h);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      if (!dragging) {
+        rotY += velY;
+        rotX += velX;
+        velY = velY * 0.96 + 0.0045 * 0.04; // gentle continuous luxury showcase rotation
+        velX *= 0.92;
+      }
+
+      const proj = mat4Perspective(0.68, w / h, 5.0, 600.0);
+      const { view, nmat } = buildViewAndNormalMatrices(rotX, rotY, camDist);
+      const mat = MATERIALS[currentMaterial] || MATERIALS.rosegold;
+
+      gl.useProgram(prog);
+      gl.uniformMatrix4fv(loc.uProj, false, proj);
+      gl.uniformMatrix4fv(loc.uView, false, view);
+      gl.uniformMatrix3fv(loc.uNormalMat, false, nmat);
+      gl.uniform3fv(loc.uBaseCol, mat.base);
+      gl.uniform3fv(loc.uSpecCol, mat.spec);
+      gl.uniform3fv(loc.uRimCol, mat.rim);
+      gl.uniform1f(loc.uShine, mat.shine);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+      gl.vertexAttribPointer(loc.aPos, 3, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, norBuf);
+      gl.vertexAttribPointer(loc.aNor, 3, gl.FLOAT, false, 0, 0);
+
+      gl.drawArrays(gl.TRIANGLES, 0, currentMesh.triCount * 3);
+    }
+
+    // =========================================================================
+    // UI Wiring, Gift Mode & Binance USDT Commercial Checkout
+    // =========================================================================
+    let rebuildTimer = null;
+    function scheduleRebuild() {
+      document.getElementById("depthValLbl").textContent = Number(document.getElementById("depthSlider").value).toFixed(1) + " mm";
+      document.getElementById("thickValLbl").textContent = Number(document.getElementById("thickSlider").value).toFixed(1) + " mm";
+      document.getElementById("scaleValLbl").textContent = document.getElementById("scaleSlider").value + " mm";
+      clearTimeout(rebuildTimer);
+      rebuildTimer = setTimeout(rebuildModel, 55);
+    }
+
+    function rebuildModel() {
+      const shape = document.getElementById("shapeSelect").value;
+      const text = document.getElementById("engraveInput").value || "ANGELIQUE";
+      const depth = Number(document.getElementById("depthSlider").value);
+      const thick = Number(document.getElementById("thickSlider").value);
+      const scale = Number(document.getElementById("scaleSlider").value);
+
+      document.getElementById("textFieldWrap").style.display = shape === "vase" ? "none" : "block";
+
+      currentMesh = shape === "vase"
+        ? buildParametricVaseMesh(depth, thick, scale * 1.15)
+        : buildPlanarSolidMesh(shape, text, depth, thick, scale);
+
+      uploadMeshToGPU(currentMesh);
+
+      document.getElementById("statDims").textContent = currentMesh.dimsMm;
+      document.getElementById("statTris").textContent = currentMesh.triCount.toLocaleString();
+      document.getElementById("statWeight").textContent = "~" + currentMesh.estGrams + " g";
+
+      const cleanTitle = text.trim() || "Angelique";
+      const prettyName = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1).toLowerCase();
+      document.getElementById("giftHeadline").textContent = "Sculpted for " + prettyName;
+    }
+
+    function setMaterial(matKey) {
+      currentMaterial = MATERIALS[matKey] ? matKey : "rosegold";
+      document.querySelectorAll(".mat-chip").forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-mat") === currentMaterial);
+      });
+    }
+
+    function buildGiftUrl() {
+      const u = new URL(window.location.href.split("?")[0]);
+      u.searchParams.set("gift", "1");
+      u.searchParams.set("name", document.getElementById("engraveInput").value.trim() || "ANGELIQUE");
+      u.searchParams.set("shape", document.getElementById("shapeSelect").value);
+      u.searchParams.set("mat", currentMaterial);
+      const note = document.getElementById("customNoteInput").value.trim();
+      if (note) u.searchParams.set("note", note);
+      return u.toString();
+    }
+
+    function enterGiftPreview() {
+      const note = document.getElementById("customNoteInput").value.trim();
+      if (note) document.getElementById("giftNoteText").textContent = `"${note}"`;
+      document.body.classList.add("gift-mode");
+      document.getElementById("topBrandTitle").textContent = "Bespoke 3D Keepsake";
+      document.getElementById("topBrandSub").textContent = "Interactive 3D Sculpture";
+      pulseSpin();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function exitGiftMode() {
+      document.body.classList.remove("gift-mode");
+      document.getElementById("topBrandTitle").textContent = "SolidCraft 3D Studio";
+      document.getElementById("topBrandSub").textContent = "Parametric Jewelry & STL CAD · Gandoh Bah Ai";
+    }
+
+    function copyGiftShareLink() {
+      const url = buildGiftUrl();
+      navigator.clipboard?.writeText(url).catch(() => {});
+      document.getElementById("giftShareFeedback").textContent = "✓ Copied Gift Link! Send to her (or shorten on tinyurl.com): " + url;
+    }
+
+    function shareGiftWhatsApp() {
+      const url = buildGiftUrl();
+      const name = document.getElementById("engraveInput").value.trim() || "Angelique";
+      const msg = `✨ Hey ${name}, I custom-sculpted something in 3D Rose Gold for you — open this and spin it with your finger:\n${url}`;
+      window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+    }
+
+    // STL Export + Free Quota / Commercial Unlock
+    function refreshQuotaBadge() {
+      const pro = sGet("sc_pro_unlocked", false);
+      const used = Number(sGet("sc_free_exports", 0));
+      const el = document.getElementById("quotaTag");
+      if (pro) {
+        el.textContent = "💎 COMMERCIAL PRO";
+        el.style.color = "#34d399";
+      } else {
+        el.textContent = Math.max(0, 1 - used) + "/1 Free STL Left";
+      }
+    }
+
+    function exportBinarySTL() {
+      if (!currentMesh) return;
+      const pro = sGet("sc_pro_unlocked", false);
+      const used = Number(sGet("sc_free_exports", 0));
+      if (!pro && used >= 1) {
+        openCheckoutModal();
+        return;
+      }
+      sSet("sc_free_exports", used + 1);
+      refreshQuotaBadge();
+
+      const blob = generateBinaryStlBlob(currentMesh);
+      const nameSlug = (document.getElementById("engraveInput").value.trim() || "SolidCraft")
+        .replace(/[^a-zA-Z0-9_-]/g, "_");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `SolidCraft_${nameSlug}_3D.stl`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 8000);
+    }
+
+    function openCheckoutModal() {
+      document.getElementById("checkoutModal").classList.add("open");
+    }
+    function closeCheckoutModal() {
+      document.getElementById("checkoutModal").classList.remove("open");
+    }
+    function copyWallet() {
+      navigator.clipboard?.writeText(MERCHANT_WALLET).catch(() => {});
+      const fb = document.getElementById("stlPayFeedback");
+      fb.style.color = "#34d399";
+      fb.textContent = "✓ Copied BEP-20 USDT address! Send $9 USDT and paste your 0x TxHash.";
+    }
+
+    async function verifyStlPayment() {
+      const txHash = document.getElementById("stlTxInput").value.trim();
+      const fb = document.getElementById("stlPayFeedback");
+      if (!/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+        fb.style.color = "#f87171";
+        fb.textContent = "Enter a valid 66-character 0x... transaction hash.";
+        return;
+      }
+      fb.style.color = "#fbbf24";
+      fb.textContent = "Verifying live BNB Smart Chain receipt...";
+
+      let receipt = null;
+      for (const rpc of BSC_RPCS) {
+        try {
+          const r = await fetch(rpc, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getTransactionReceipt", params: [txHash] }),
+          });
+          const j = await r.json();
+          if (j.result) { receipt = j.result; break; }
+        } catch {}
+      }
+      if (!receipt || receipt.status !== "0x1") {
+        fb.style.color = "#fbbf24";
+        fb.textContent = "Receipt not confirmed yet — wait 5 seconds and tap Verify again.";
+        return;
+      }
+      const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+      const targetWallet = MERCHANT_WALLET.toLowerCase().slice(2);
+      const minUnits = 8n * (10n ** 18n);
+      let ok = false;
+      for (const log of receipt.logs || []) {
+        if (String(log.address || "").toLowerCase() !== BSC_USDT) continue;
+        if (String(log.topics?.[0] || "").toLowerCase() !== TRANSFER_TOPIC) continue;
+        if (!String(log.topics?.[2] || "").toLowerCase().endsWith(targetWallet)) continue;
+        if (BigInt(log.data || "0x0") >= minUnits) { ok = true; break; }
+      }
+      if (!ok) {
+        fb.style.color = "#f87171";
+        fb.textContent = "No >= $9 BEP-20 USDT transfer to merchant wallet found in that TxHash.";
+        return;
+      }
+      sSet("sc_pro_unlocked", true);
+      refreshQuotaBadge();
+      fb.style.color = "#34d399";
+      fb.textContent = "✓ Verified! Unlimited Commercial .STL CAD Exports Unlocked!";
+    }
+
+    // Boot from URL params
+    if (params.get("name")) document.getElementById("engraveInput").value = params.get("name").slice(0, 14);
+    if (params.get("shape") && ["heart","keychain","plaque","vase"].includes(params.get("shape"))) {
+      document.getElementById("shapeSelect").value = params.get("shape");
+    }
+    if (params.get("note")) {
+      document.getElementById("customNoteInput").value = params.get("note");
+      document.getElementById("giftNoteText").textContent = `"${params.get("note")}"`;
+    }
+    setMaterial(currentMaterial);
+    refreshQuotaBadge();
+    rebuildModel();
+    if (params.get("gift") === "1") {
+      enterGiftPreview();
+    }
+    requestAnimationFrame(renderLoop);
+  </script>
+</body>
+</html>
