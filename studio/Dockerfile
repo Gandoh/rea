@@ -34,6 +34,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY website/public/examples/notes-electron ./website/public/examples/notes-electron
 COPY studio ./studio
+RUN npm install --prefix studio --omit=dev --no-audit --no-fund
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0

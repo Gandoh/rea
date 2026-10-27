@@ -1,0 +1,13 @@
+{
+  "name": "rea-alphashield-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AlphaShield Trader Terminal, Smart Contract Rug-Checker & REA Cloud Studio powered by Kelviq Merchant-of-Record Billing",
+  "scripts": {
+    "start": "node server/index.mjs"
+  },
+  "dependencies": {
+    "@kelviq/node-sdk": "^2.9.0"
+  }
+}

@@ -1,7 +1,7 @@
-# One-click Render.com Blueprint (place or reference from repo root)
+# One-click Render.com Blueprint (AlphaShield + REA Cloud Studio + Kelviq MoR Billing)
 services:
   - type: web
-    name: rea-cloud-studio
+    name: gandoh-alphashield
     runtime: docker
     dockerfilePath: ./studio/Dockerfile
     dockerContext: .
@@ -12,3 +12,15 @@ services:
         value: "3080"
       - key: REA_BOOTSTRAP_API_KEY
         generateValue: true
+      - key: KELVIQ_ENV
+        value: "production"
+      - key: KELVIQ_PRO_PLAN_ID
+        value: "alphashield-pro"
+      - key: KELVIQ_WHALE_PLAN_ID
+        value: "alphashield-whale"
+      - key: KELVIQ_SERVER_API_KEY
+        sync: false
+      - key: KELVIQ_CLIENT_API_KEY
+        sync: false
+      - key: KELVIQ_WEBHOOK_SECRET
+        sync: false

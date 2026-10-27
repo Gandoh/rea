@@ -1,6 +1,9 @@
-# REA Cloud Studio — Commercial SaaS Platform
+# REA Cloud Studio & AlphaShield — Commercial SaaS Suite
 
-**REA Cloud Studio** packages REA (`rea-agents` v6.8.0) into a multi-tenant commercial B2B SaaS platform with real-time security posture scoring, CI/CD pull-request release gating, HAR-to-RL `AgentEnv` synthesis, metered REST API keys, and Stripe subscription billing.
+**REA Cloud Studio** + **AlphaShield by Gandoh Bah Ai** package REA (`rea-agents` v6.8.0) and real-time market intelligence into two ready-to-monetize SaaS products backed by **Kelviq Merchant-of-Record** (`@kelviq/node-sdk`) and Stripe billing:
+
+- **AlphaShield (`/alphashield` · `studio/alphashield/index.html`)** — High-conversion B2C/Prosumer Live Crypto Market Terminal + On-Chain EVM Smart Contract Rug/Honeypot Scanner + SafeAPK/Wallet Drainer File Gate + 1-Tap Viral X/Telegram/WhatsApp Alert Cards (`$19/mo` Pro Trader · `$49/mo` Whale & Alpha Group via Kelviq).
+- **REA Cloud Studio (`/` · `studio/index.html`)** — B2B Developer & AI Lab Security Platform with Electron/JS Attack-Surface X-Ray, ShipGate CI/CD PR Release Gate, and HAR-to-RL `AgentEnv` Synthesis.
 
 ---
 
@@ -29,13 +32,25 @@
 ## Local Development
 
 ```bash
-# 1. Build REA core once from repository root
+# 1. Build REA core & install Kelviq SDK inside studio/
 HUSKY=0 npm_config_engine_strict=false npm ci
 npm_config_engine_strict=false npm run build:cached
+npm_config_engine_strict=false npm install --prefix studio
 
-# 2. Start REA Cloud Studio (binds to 0.0.0.0:3080)
+# 2. (Optional) Configure Kelviq keys in studio/.env.local
+cp studio/.env.example studio/.env.local
+
+# 3. Start REA Cloud Studio + AlphaShield (/alphashield) on 0.0.0.0:3080
 PORT=3080 node studio/server/index.mjs
 ```
+
+## Kelviq Merchant-of-Record Setup (`Gandoh Bah Ai`)
+
+1. In [app.kelviq.com](https://app.kelviq.com) (`Gandoh Bah Ai`), create two plans matching `studio/.env.example`:
+   - `alphashield-pro` — **$19/month** (`$159/year`)
+   - `alphashield-whale` — **$49/month** (`$399/year`)
+2. Set `KELVIQ_SERVER_API_KEY`, `KELVIQ_CLIENT_API_KEY`, `KELVIQ_ENV=production`, and `KELVIQ_WEBHOOK_SECRET` in Railway / Render / `studio/.env.local`.
+3. Point your Kelviq Webhook URL to `https://<your-domain>/api/webhooks/kelviq` (`webhook-id`, `webhook-timestamp`, `webhook-signature` verified via `@kelviq/node-sdk`).
 
 ## Production Deployment (Docker / Render / Railway / Fly.io)
 

@@ -6,6 +6,7 @@ import { basename, dirname, extname, join, normalize, resolve } from "node:path"
 import { fileURLToPath } from "node:url";
 
 import { ReaStudioEngine } from "./reaEngine.mjs";
+import { KelviqBillingBridge, loadDotEnvFiles } from "./kelviqBilling.mjs";
 import { renderAuditMarkdown } from "./riskScoring.mjs";
 import { ensureStudioSamples } from "./sampleFactory.mjs";
 import { PLANS, TenantBillingStore } from "./tenantBilling.mjs";
@@ -14,7 +15,11 @@ import { zipDirectory } from "./zipBuilder.mjs";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const STUDIO_ROOT = resolve(__dirname, "..");
 const PUBLIC_DIR = join(STUDIO_ROOT, "public");
+const ALPHASHIELD_DIR = join(STUDIO_ROOT, "alphashield");
 const REPO_ROOT = resolve(STUDIO_ROOT, "..");
+
+loadDotEnvFiles([STUDIO_ROOT, REPO_ROOT]);
+
 const RUNTIME_DIR = process.env.REA_STUDIO_RUNTIME_DIR || "/tmp/rea-studio-runtime";
 const DATA_DIR = process.env.REA_STUDIO_DATA_DIR || join(RUNTIME_DIR, "data");
 
@@ -40,6 +45,7 @@ const engine = new ReaStudioEngine(REPO_ROOT, RUNTIME_DIR);
 const billing = new TenantBillingStore(join(DATA_DIR, "tenant-store.json"), {
   bootstrapApiKey: process.env.REA_BOOTSTRAP_API_KEY,
 });
+const kelviq = new KelviqBillingBridge();
 
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
@@ -49,7 +55,7 @@ function sendJson(res, status, payload) {
     "cache-control": "no-store",
     "access-control-allow-origin": "*",
     "access-control-allow-headers":
-      "content-type, authorization, x-filename, x-studio-session, stripe-signature",
+      "content-type, authorization, x-filename, x-studio-session, stripe-signature, webhook-id, webhook-timestamp, webhook-signature",
     "access-control-allow-methods": "GET, POST, OPTIONS",
   });
   res.end(body);
@@ -183,6 +189,42 @@ const server = createHttpServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && pathname === "/api/webhooks/kelviq") {
+      const rawBuf = await readBodyBuffer(req, 2 * 1024 * 1024);
+      try {
+        await kelviq.init();
+        const event = kelviq.verifyAndParseWebhook(rawBuf, req.headers);
+        const type = String(event?.type || event?.event || "");
+        const data = event?.data || event?.object || event || {};
+        const meta = data?.metadata || event?.metadata || {};
+        const tenantId = meta.tenant_id || data.customerId || data.customer_id;
+        const planRaw = meta.plan_id || data.planIdentifier || data?.plan?.identifier;
+
+        if (/checkout\.completed|subscription\.(created|activated|updated)/i.test(type) && tenantId) {
+          const mappedPlan = PLANS[planRaw] ? planRaw : kelviq.internalPlanFromKelviq(planRaw);
+          const provisioned = billing.applyPlanProvisioning(tenantId, mappedPlan, {
+            source: "kelviq_webhook",
+          });
+          sendJson(res, 200, { ok: true, event_type: type, provisioned });
+          return;
+        }
+        if (/subscription\.(cancelled|canceled|expired)/i.test(type) && tenantId) {
+          const downgraded = billing.applyPlanProvisioning(tenantId, "free_trial", {
+            source: "kelviq_subscription_ended",
+          });
+          sendJson(res, 200, { ok: true, event_type: type, downgraded });
+          return;
+        }
+        sendJson(res, 200, { ok: true, ignored: type });
+      } catch (err) {
+        sendJson(res, 400, {
+          ok: false,
+          error: { message: err instanceof Error ? err.message : "Kelviq webhook verification failed" },
+        });
+      }
+      return;
+    }
+
     // Resolve active tenant workspace for UI session calls
     const activeTenant = billing.resolveTenantFromRequest(req);
 
@@ -249,16 +291,80 @@ const server = createHttpServer(async (req, res) => {
 
     if (req.method === "POST" && pathname === "/api/billing/confirm-sandbox") {
       const body = await readJsonBody(req);
-      if (billing.stripeSecretKey) {
+      if (billing.stripeSecretKey || kelviq.isConfigured) {
         return sendJson(res, 403, {
           ok: false,
-          error: { message: "Live Stripe is enabled; plans are provisioned exclusively via signed Stripe webhooks." },
+          error: { message: "Live billing keys are enabled; plans are provisioned via signed webhooks or license keys." },
         });
       }
       const out = billing.applyPlanProvisioning(activeTenant.id, body.plan_id, {
         source: "sandbox_checkout",
       });
       sendJson(res, out.ok ? 200 : 400, out);
+      return;
+    }
+
+    // -----------------------------------------------------------------------
+    // Kelviq Merchant-of-Record Routes + AlphaShield Deep EVM Audit
+    // -----------------------------------------------------------------------
+    if (req.method === "GET" && pathname === "/api/kelviq/status") {
+      await kelviq.init();
+      sendJson(res, 200, {
+        ok: true,
+        kelviq: kelviq.statusSummary(),
+        tenant: billing.sanitizeTenant(activeTenant),
+      });
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/api/kelviq/checkout") {
+      const body = await readJsonBody(req);
+      const originUrl = resolvePublicOrigin(req);
+      const out = await kelviq.createCheckoutSession({
+        tenant: activeTenant,
+        planId: body.plan_id || "indie",
+        chargePeriod: body.charge_period || "MONTHLY",
+        originUrl,
+      });
+      sendJson(res, out.ok ? 200 : 400, out);
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/api/kelviq/portal") {
+      const out = await kelviq.createPortalSession({ tenant: activeTenant });
+      sendJson(res, out.ok ? 200 : 400, out);
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/api/kelviq/license/activate") {
+      const body = await readJsonBody(req);
+      const out = await kelviq.activateLicenseKey({
+        licenseKey: body.license_key,
+        tenant: activeTenant,
+        instanceName: body.instance_name || "alphashield-web",
+      });
+      if (!out.ok) return sendJson(res, 400, out);
+      const provisioned = billing.applyPlanProvisioning(activeTenant.id, out.plan_id, {
+        source: "kelviq_license_key",
+      });
+      sendJson(res, 200, { ...out, tenant: provisioned.tenant });
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/api/alphashield/evm-audit") {
+      const body = await readJsonBody(req);
+      const rawHex = String(body.bytecode || "").trim().replace(/^0x/i, "");
+      if (!/^[0-9a-fA-F]{8,}$/.test(rawHex)) {
+        return sendJson(res, 400, { ok: false, error: { message: "Provide valid hex contract bytecode." } });
+      }
+      const quota = billing.checkAndConsumeQuota(activeTenant, "scan");
+      if (!quota.ok) return sendJson(res, quota.status || 402, quota);
+
+      const carrier = join(engine.uploadsDir, `evm-${Date.now()}-${randomBytes(3).toString("hex")}.hex`);
+      writeFileSync(carrier, rawHex);
+      const inspected = await engine.inspectShipGateArtifact(carrier, "evm-bytecode");
+      await kelviq.reportScanUsage(activeTenant.id, "contract-scans");
+      sendJson(res, inspected.ok ? 200 : 422, { ...inspected, tenant: quota.tenant });
       return;
     }
 
@@ -674,8 +780,19 @@ const server = createHttpServer(async (req, res) => {
     }
 
     // -----------------------------------------------------------------------
-    // Static Frontend Serving (SPA fallback to index.html)
+    // Static Frontend Serving (/alphashield + Studio SPA)
     // -----------------------------------------------------------------------
+    if (pathname === "/alphashield" || pathname === "/alphashield/") {
+      const alphaHtml = readFileSync(join(ALPHASHIELD_DIR, "index.html"));
+      res.writeHead(200, {
+        "content-type": "text/html; charset=utf-8",
+        "content-length": alphaHtml.length,
+        "cache-control": "no-cache",
+      });
+      res.end(alphaHtml);
+      return;
+    }
+
     let filePath = pathname === "/" ? join(PUBLIC_DIR, "index.html") : join(PUBLIC_DIR, normalize(pathname));
     if (!filePath.startsWith(PUBLIC_DIR) || !existsSync(filePath)) {
       filePath = join(PUBLIC_DIR, "index.html");
