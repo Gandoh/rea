@@ -838,6 +838,20 @@
         </div>
       </div>
     </section>
+
+    <!-- Merchant-of-Record Compliance Footer (Terms, Privacy, Refund Policy) -->
+    <footer style="margin-top:22px;padding:16px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--muted);line-height:1.6;">
+      <div><strong>AlphaShield by Gandoh Bah Ai</strong> — Automated Software Bytecode &amp; Malware Security Scanner SaaS</div>
+      <div style="font-size:11px;margin:4px 0 8px;">
+        AlphaShield provides automated static software &amp; smart-contract code analysis tools only. We do not hold funds, execute trades, or provide financial advice.
+      </div>
+      <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
+        <a href="#terms" onclick="openLegalModal('terms');return false;">Terms of Service</a>
+        <a href="#privacy" onclick="openLegalModal('privacy');return false;">Privacy Policy</a>
+        <a href="#refunds" onclick="openLegalModal('refunds');return false;">Refund &amp; Cancellation Policy</a>
+        <a href="#pricing" onclick="switchTab('pricing');return false;">Pricing ($19/mo · $49/mo)</a>
+      </div>
+    </footer>
   </main>
 
   <!-- Mobile Sticky Bottom Tab Bar -->
@@ -909,6 +923,17 @@
         2. Run <strong>Rug-Scan</strong> → tap <strong>Post Alert on X</strong> or <strong>Share to WhatsApp/Telegram</strong>.<br/>
         3. Traders click your alert link → use their 3 free scans → hit the paywall → <strong>10–50 traders × $19/mo = $190–$950/mo recurring!</strong>
       </div>
+    </div>
+  </div>
+
+  <!-- Legal / MoR Compliance Modal -->
+  <div id="legalModal" class="modal-backdrop" onclick="if(event.target===this)closeModal('legalModal')">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="badge badge-indigo">Gandoh Bah Ai · Legal &amp; Policies</span>
+        <button class="btn btn-sm" onclick="closeModal('legalModal')">✕</button>
+      </div>
+      <div id="legalModalContent" style="font-size:12.5px;line-height:1.55;color:#cbd5e1;"></div>
     </div>
   </div>
 
@@ -1000,6 +1025,22 @@
     }
     function closeModal(id) {
       document.getElementById(id).classList.remove("open");
+    }
+
+    function openLegalModal(section) {
+      const box = document.getElementById("legalModalContent");
+      const map = {
+        terms: `<h3 style="margin-top:0;color:#fff;">Terms of Service — AlphaShield by Gandoh Bah Ai</h3>
+          <p>AlphaShield is a self-serve cybersecurity and static software analysis SaaS operated by <strong>Gandoh Bah Ai</strong>. Subscriptions grant digital license access to automated EVM bytecode selector inspection and Android/archive static malware checks.</p>
+          <p>AlphaShield is strictly an informational software security tool. We never custody assets, broker transactions, or provide investment advice. Payments and tax invoicing are processed securely by our Merchant of Record, <strong>Kelviq</strong>.</p>`,
+        privacy: `<h3 style="margin-top:0;color:#fff;">Privacy Policy</h3>
+          <p>AlphaShield performs local WebCrypto SHA-256 and Shannon entropy checks directly in your browser wherever possible. We collect only the account email and billing metadata required by our Merchant of Record (Kelviq) to deliver your software license key and manage subscriptions. We never sell personal data.</p>`,
+        refunds: `<h3 style="margin-top:0;color:#fff;">Refund &amp; Cancellation Policy</h3>
+          <p><strong>Cancel Anytime:</strong> Subscriptions can be cancelled in one click at any time via the Kelviq Customer Billing Portal with zero cancellation fees.</p>
+          <p><strong>14-Day Refund Guarantee:</strong> If your license key fails to activate or you are unsatisfied within 14 days of your initial purchase, contact our support email listed on your Kelviq receipt for a full refund.</p>`,
+      };
+      box.innerHTML = map[section] || map.terms;
+      document.getElementById("legalModal").classList.add("open");
     }
 
     function generateCustomRevenueLink() {
