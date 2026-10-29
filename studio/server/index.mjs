@@ -804,6 +804,17 @@ const server = createHttpServer(async (req, res) => {
       return;
     }
 
+    if (pathname === "/canvix" || pathname === "/canvix/") {
+      const cvHtml = readFileSync(join(STUDIO_ROOT, "canvix", "index.html"));
+      res.writeHead(200, {
+        "content-type": "text/html; charset=utf-8",
+        "content-length": cvHtml.length,
+        "cache-control": "no-cache",
+      });
+      res.end(cvHtml);
+      return;
+    }
+
     let filePath = pathname === "/" ? join(PUBLIC_DIR, "index.html") : join(PUBLIC_DIR, normalize(pathname));
     if (!filePath.startsWith(PUBLIC_DIR) || !existsSync(filePath)) {
       filePath = join(PUBLIC_DIR, "index.html");
