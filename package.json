@@ -379,14 +379,14 @@
     "write-file-atomic": "7.0.0",
     "ws": "8.21.0",
     "yaml": "2.9.0",
-    "zod": "4.4.3"
+    "zod": "4.6.7"
   },
   "overrides": {
     "typed-rest-client": {
-      "qs": "6.16.0"
+      "qs": "6.17.1"
     },
     "vitepress": {
-      "vite": "6.4.4"
+      "vite": "6.4.5"
     }
   },
   "devDependencies": {
