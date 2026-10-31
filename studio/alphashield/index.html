@@ -40,7 +40,6 @@
     a { color: #818cf8; text-decoration: none; }
     button, input, select, textarea { font-family: inherit; }
 
-    /* Top Header */
     .topbar {
       position: sticky;
       top: 0;
@@ -54,364 +53,144 @@
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
     .brand-logo {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      width: 36px; height: 36px; border-radius: 10px;
       background: linear-gradient(135deg, #10b981, #6366f1);
-      display: grid;
-      place-items: center;
-      font-weight: 900;
-      font-size: 15px;
-      color: #fff;
-      flex-shrink: 0;
-      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.28);
+      display: grid; place-items: center; font-weight: 900; font-size: 15px; color: #fff;
+      flex-shrink: 0; box-shadow: 0 6px 18px rgba(16, 185, 129, 0.28);
     }
     .brand-title {
-      font-weight: 800;
-      font-size: 15px;
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-weight: 800; font-size: 15px; letter-spacing: -0.02em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .brand-sub {
-      font-size: 11px;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .brand-sub { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
     .dot-live {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--emerald);
-      box-shadow: 0 0 8px var(--emerald);
-      display: inline-block;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--emerald); box-shadow: 0 0 8px var(--emerald); display: inline-block;
     }
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
+    .top-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .quota-pill {
-      font-size: 11.5px;
-      font-weight: 700;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      color: #cbd5e1;
-      cursor: pointer;
+      font-size: 11.5px; font-weight: 700; padding: 6px 10px; border-radius: 999px;
+      background: var(--panel-2); border: 1px solid var(--border); color: #cbd5e1; cursor: pointer;
     }
     .quota-pill.pro {
-      background: var(--emerald-dim);
-      border-color: rgba(16, 185, 129, 0.45);
-      color: #34d399;
+      background: var(--emerald-dim); border-color: rgba(16, 185, 129, 0.45); color: #34d399;
     }
     .btn {
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
-      padding: 8px 13px;
-      border-radius: 10px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.15s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+      border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+      padding: 8px 13px; border-radius: 10px; font-size: 12.5px; font-weight: 700;
+      cursor: pointer; transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.15s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     }
     .btn:active { transform: scale(0.98); }
     .btn-primary {
       background: linear-gradient(135deg, #10b981, #059669);
-      border-color: rgba(16, 185, 129, 0.5);
-      color: #022c22;
-      font-weight: 800;
+      border-color: rgba(16, 185, 129, 0.5); color: #022c22; font-weight: 800;
     }
     .btn-indigo {
       background: linear-gradient(135deg, #6366f1, #4f46e5);
-      border-color: rgba(99, 102, 241, 0.6);
-      color: #fff;
+      border-color: rgba(99, 102, 241, 0.6); color: #fff;
     }
-    .btn-amber {
-      background: var(--amber-dim);
-      border-color: rgba(245, 158, 11, 0.45);
-      color: #fbbf24;
-    }
-    .btn-sm {
-      padding: 5px 9px;
-      font-size: 11.5px;
-      border-radius: 8px;
-    }
+    .btn-amber { background: var(--amber-dim); border-color: rgba(245, 158, 11, 0.45); color: #fbbf24; }
+    .btn-sm { padding: 5px 9px; font-size: 11.5px; border-radius: 8px; }
 
-    /* Main Container */
-    .container {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 14px 14px 92px;
-    }
-
-    /* Hero Value Banner */
+    .container { max-width: 1180px; margin: 0 auto; padding: 14px 14px 92px; }
     .hero-strip {
       background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(99,102,241,0.14));
-      border: 1px solid rgba(99, 102, 241, 0.28);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      border: 1px solid rgba(99, 102, 241, 0.28); border-radius: var(--radius);
+      padding: 14px 16px; margin-bottom: 14px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
     }
-    .hero-strip h1 {
-      margin: 0 0 4px;
-      font-size: 17px;
-      letter-spacing: -0.02em;
-    }
-    .hero-strip p {
-      margin: 0;
-      font-size: 12.5px;
-      color: #cbd5e1;
-      line-height: 1.45;
-    }
+    .hero-strip h1 { margin: 0 0 4px; font-size: 17px; letter-spacing: -0.02em; }
+    .hero-strip p { margin: 0; font-size: 12.5px; color: #cbd5e1; line-height: 1.45; }
 
-    /* Desktop Tabs */
-    .nav-tabs {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-    }
+    .nav-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
     .tab-btn {
-      padding: 10px 8px;
-      border-radius: 11px;
-      border: 1px solid var(--border);
-      background: var(--panel);
-      color: var(--muted);
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
+      padding: 10px 8px; border-radius: 11px; border: 1px solid var(--border);
+      background: var(--panel); color: var(--muted); font-size: 12.5px; font-weight: 700;
+      cursor: pointer; text-align: center;
     }
-    .tab-btn.active {
-      background: var(--indigo-dim);
-      border-color: rgba(99, 102, 241, 0.65);
-      color: #fff;
-    }
+    .tab-btn.active { background: var(--indigo-dim); border-color: rgba(99, 102, 241, 0.65); color: #fff; }
 
     .view-panel { display: none; }
     .view-panel.active { display: block; }
 
-    /* Cards & Grids */
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 14px;
-    }
+    .grid-2 { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 14px; }
     @media (max-width: 860px) {
       .grid-2 { grid-template-columns: 1fr; }
       .nav-tabs { display: none; }
     }
     .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 15px;
-      margin-bottom: 14px;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 15px; margin-bottom: 14px;
     }
     .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px;
     }
-    .card-title {
-      font-size: 14px;
-      font-weight: 800;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
+    .card-title { font-size: 14px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 7px; }
     .badge {
-      font-size: 10.5px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 999px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.04em;
     }
     .badge-green { background: var(--emerald-dim); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
     .badge-amber { background: var(--amber-dim); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); }
     .badge-red { background: var(--danger-dim); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
     .badge-indigo { background: var(--indigo-dim); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); }
 
-    /* Ticker Tape Cards */
     .ticker-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 9px;
-      margin-bottom: 14px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 9px; margin-bottom: 14px;
     }
     .ticker-card {
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      padding: 10px 11px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px;
+      padding: 10px 11px; display: flex; flex-direction: column; gap: 4px;
     }
-    .ticker-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-      font-weight: 800;
-    }
-    .ticker-price {
-      font-family: var(--mono);
-      font-size: 15px;
-      font-weight: 800;
-    }
+    .ticker-top { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 800; }
+    .ticker-price { font-family: var(--mono); font-size: 15px; font-weight: 800; }
     .up { color: #34d399; }
     .down { color: #f87171; }
 
-    /* Form Controls */
-    .input-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
+    .input-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
     .input, select.input, textarea.input {
-      background: #070b16;
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 13px;
-      outline: none;
-      flex: 1;
-      min-width: 150px;
+      background: #070b16; border: 1px solid var(--border); color: var(--text);
+      border-radius: 10px; padding: 10px 12px; font-size: 13px; outline: none; flex: 1; min-width: 150px;
     }
     .input:focus { border-color: var(--indigo); }
     textarea.input {
-      width: 100%;
-      min-height: 76px;
-      font-family: var(--mono);
-      font-size: 11.5px;
-      resize: vertical;
+      width: 100%; min-height: 76px; font-family: var(--mono); font-size: 11.5px; resize: vertical;
     }
 
-    /* DEX Pair List */
-    .pair-list {
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-    }
+    .pair-list { display: flex; flex-direction: column; gap: 9px; }
     .pair-item {
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      padding: 11px 12px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px;
+      padding: 11px 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
     }
     .pair-meta { min-width: 170px; flex: 1; }
-    .pair-symbol {
-      font-weight: 800;
-      font-size: 13.5px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .pair-sub {
-      font-size: 11.5px;
-      color: var(--muted);
-      font-family: var(--mono);
-      margin-top: 3px;
-    }
-    .pair-stats {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 12px;
-      font-family: var(--mono);
-    }
+    .pair-symbol { font-weight: 800; font-size: 13.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .pair-sub { font-size: 11.5px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+    .pair-stats { display: flex; align-items: center; gap: 12px; font-size: 12px; font-family: var(--mono); }
 
-    /* Preset Chips */
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
     .chip {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 5px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: #cbd5e1;
-      cursor: pointer;
+      font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--panel-2); color: #cbd5e1; cursor: pointer;
     }
     .chip:hover { border-color: var(--emerald); color: #fff; }
     .chip.danger { border-color: rgba(239,68,68,0.45); color: #fca5a5; }
 
-    /* Score Ring & Audit Findings */
     .score-box {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 14px;
-      border-radius: 12px;
-      background: #080d1a;
-      border: 1px solid var(--border);
-      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 16px; padding: 14px; border-radius: 12px;
+      background: #080d1a; border: 1px solid var(--border); margin-bottom: 12px;
     }
     .score-circle {
-      width: 78px;
-      height: 78px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-family: var(--mono);
-      font-weight: 900;
-      font-size: 22px;
-      flex-shrink: 0;
-      border: 4px solid var(--emerald);
+      width: 78px; height: 78px; border-radius: 50%; display: grid; place-items: center;
+      font-family: var(--mono); font-weight: 900; font-size: 22px; flex-shrink: 0; border: 4px solid var(--emerald);
     }
-    .finding-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 10px;
-    }
+    .finding-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
     .finding {
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: var(--panel-2);
-      border-left: 3px solid var(--indigo);
-      font-size: 12.5px;
+      padding: 10px 12px; border-radius: 10px; background: var(--panel-2);
+      border-left: 3px solid var(--indigo); font-size: 12.5px;
     }
     .finding.crit { border-left-color: var(--danger); background: rgba(239,68,68,0.08); }
     .finding.warn { border-left-color: var(--amber); background: rgba(245,158,11,0.08); }
@@ -419,129 +198,60 @@
     .finding-title { font-weight: 800; margin-bottom: 2px; }
     .finding-desc { color: #cbd5e1; font-size: 11.8px; line-height: 1.4; }
 
-    /* Share Viral Card */
     .viral-box {
-      margin-top: 12px;
-      padding: 12px;
-      border-radius: 12px;
+      margin-top: 12px; padding: 12px; border-radius: 12px;
       background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(99,102,241,0.12));
       border: 1px dashed rgba(99,102,241,0.5);
     }
-
-    /* Dropzone */
     .dropzone {
-      border: 2px dashed rgba(99, 102, 241, 0.45);
-      border-radius: 13px;
-      padding: 24px 16px;
-      text-align: center;
-      background: rgba(13, 19, 36, 0.65);
-      cursor: pointer;
-      margin-bottom: 12px;
+      border: 2px dashed rgba(99, 102, 241, 0.45); border-radius: 13px; padding: 24px 16px;
+      text-align: center; background: rgba(13, 19, 36, 0.65); cursor: pointer; margin-bottom: 12px; display: block;
     }
     .dropzone:hover { border-color: var(--emerald); }
 
-    /* Pricing Grid */
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
-      gap: 14px;
-      margin-top: 12px;
-    }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 14px; margin-top: 12px; }
     .price-card {
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 14px;
+      padding: 18px; display: flex; flex-direction: column; justify-content: space-between;
     }
     .price-card.featured {
       border-color: var(--emerald);
       box-shadow: 0 0 0 1px rgba(16,185,129,0.35), 0 14px 34px rgba(16,185,129,0.12);
     }
-    .price-big {
-      font-size: 30px;
-      font-weight: 900;
-      font-family: var(--mono);
-      margin: 8px 0 4px;
-    }
+    .price-big { font-size: 30px; font-weight: 900; font-family: var(--mono); margin: 8px 0 4px; }
     .feat-list {
-      list-style: none;
-      padding: 0;
-      margin: 12px 0 16px;
-      font-size: 12.5px;
-      color: #cbd5e1;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
+      list-style: none; padding: 0; margin: 12px 0 16px; font-size: 12.5px;
+      color: #cbd5e1; display: flex; flex-direction: column; gap: 7px;
     }
 
-    /* Sticky Bottom Mobile Navigation */
     .bottom-nav {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 45;
-      background: rgba(8, 12, 24, 0.95);
-      backdrop-filter: blur(14px);
-      border-top: 1px solid var(--border);
-      grid-template-columns: repeat(4, 1fr);
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 45;
+      background: rgba(8, 12, 24, 0.95); backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border); grid-template-columns: repeat(4, 1fr);
       padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
     }
-    @media (max-width: 860px) {
-      .bottom-nav { display: grid; }
-    }
+    @media (max-width: 860px) { .bottom-nav { display: grid; } }
     .bnav-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      padding: 6px 4px;
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      cursor: pointer;
+      background: none; border: none; color: var(--muted); padding: 6px 4px; font-size: 11px;
+      font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
     }
     .bnav-btn.active { color: var(--emerald); }
 
-    /* Modal */
     .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 80;
-      background: rgba(2, 6, 23, 0.82);
-      backdrop-filter: blur(6px);
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
+      display: none; position: fixed; inset: 0; z-index: 80;
+      background: rgba(2, 6, 23, 0.82); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 16px;
     }
     .modal-backdrop.open { display: flex; }
     .modal {
-      background: var(--panel);
-      border: 1px solid rgba(99, 102, 241, 0.45);
-      border-radius: 16px;
-      max-width: 520px;
-      width: 100%;
-      padding: 20px;
-      max-height: 90vh;
-      overflow-y: auto;
+      background: var(--panel); border: 1px solid rgba(99, 102, 241, 0.45); border-radius: 16px;
+      max-width: 520px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto;
     }
     .mono { font-family: var(--mono); }
     .muted { color: var(--muted); }
     .step-box {
-      padding: 11px 13px;
-      border-radius: 10px;
-      background: #080d1a;
-      border: 1px solid var(--border);
-      margin-bottom: 9px;
-      font-size: 12.5px;
-      line-height: 1.5;
+      padding: 11px 13px; border-radius: 10px; background: #080d1a;
+      border: 1px solid var(--border); margin-bottom: 9px; font-size: 12.5px; line-height: 1.5;
     }
   </style>
 </head>
@@ -560,40 +270,37 @@
       </div>
     </div>
     <div class="top-actions">
-      <button id="quotaBadgeBtn" class="quota-pill" onclick="switchTab('pricing')">3/3 Free Scans</button>
-      <button class="btn btn-primary btn-sm" onclick="switchTab('pricing')">Upgrade Pro</button>
+      <button id="alphaAuthBtn" class="btn btn-sm" type="button" data-action="open-auth">Sign In</button>
+      <button id="quotaBadgeBtn" class="quota-pill" type="button" data-action="switch-tab" data-tab="pricing">3/3 Free Scans</button>
+      <button class="btn btn-primary btn-sm" type="button" data-action="switch-tab" data-tab="pricing">Upgrade Pro</button>
     </div>
   </header>
 
   <main class="container">
-    <!-- Value Proposition Strip -->
     <section class="hero-strip">
       <div>
         <h1>Spot Breakout Tokens &amp; Catch Honeypot Rug-Pulls Before You Buy</h1>
         <p>Live multi-chain market radar + real EVM bytecode trap scanner (<span class="mono">mint</span>, <span class="mono">blacklist</span>, hidden 99% sell-tax, proxy <span class="mono">DELEGATECALL</span>) + APK wallet-drainer guard.</p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-indigo" onclick="switchTab('rugcheck')">Scan a Token Now</button>
-        <button class="btn btn-amber" onclick="openPlaybookModal()">Founder Money Guide</button>
+        <button class="btn btn-indigo" type="button" data-action="switch-tab" data-tab="rugcheck">Scan a Token Now</button>
+        <button class="btn btn-amber" type="button" data-action="open-playbook">Founder Money Guide</button>
       </div>
     </section>
 
-    <!-- Desktop Tab Navigation -->
     <nav class="nav-tabs">
-      <button class="tab-btn active" data-tab="markets" onclick="switchTab('markets')">1. Live Markets &amp; DEX</button>
-      <button class="tab-btn" data-tab="rugcheck" onclick="switchTab('rugcheck')">2. Contract Rug-Scanner</button>
-      <button class="tab-btn" data-tab="apkguard" onclick="switchTab('apkguard')">3. APK &amp; Wallet Guard</button>
-      <button class="tab-btn" data-tab="pricing" onclick="switchTab('pricing')">4. Pro Plans (Kelviq)</button>
+      <button class="tab-btn active" type="button" data-action="switch-tab" data-tab="markets">1. Live Markets &amp; DEX</button>
+      <button class="tab-btn" type="button" data-action="switch-tab" data-tab="rugcheck">2. Contract Rug-Scanner</button>
+      <button class="tab-btn" type="button" data-action="switch-tab" data-tab="apkguard">3. APK &amp; Wallet Guard</button>
+      <button class="tab-btn" type="button" data-action="switch-tab" data-tab="pricing">4. Pro Plans (Kelviq)</button>
     </nav>
 
-    <!-- =====================================================================
-         TAB 1: LIVE MARKETS & DEX MOMENTUM RADAR (OpenTerminal-Inspired)
-         ===================================================================== -->
+    <!-- TAB 1: LIVE MARKETS & DEX MOMENTUM RADAR -->
     <section id="view-markets" class="view-panel active">
       <div class="card">
         <div class="card-header">
           <h2 class="card-title">Global Crypto Pulse <span id="marketSourceBadge" class="badge badge-green">LIVE</span></h2>
-          <button class="btn btn-sm" onclick="loadGlobalTickers()">Refresh Prices</button>
+          <button class="btn btn-sm" type="button" data-action="refresh-tickers">Refresh Prices</button>
         </div>
         <div id="globalTickerGrid" class="ticker-grid">
           <div class="ticker-card"><span class="muted">Loading live market feed...</span></div>
@@ -601,30 +308,28 @@
       </div>
 
       <div class="grid-2">
-        <!-- DEX Token Pair Scanner -->
         <div class="card">
           <div class="card-header">
             <h2 class="card-title">Live DexScreener Pair &amp; Liquidity Radar</h2>
             <span class="badge badge-indigo">1-Tap Rug Audit</span>
           </div>
           <div class="input-row">
-            <input id="dexSearchInput" class="input" type="text" value="PEPE" placeholder="Search ticker or token address (e.g. PEPE, AERO, SOL, BRETT, VIRTUAL)..." onkeydown="if(event.key==='Enter')searchDexPairs()" />
-            <button class="btn btn-indigo" onclick="searchDexPairs()">Search DEX</button>
+            <input id="dexSearchInput" class="input" type="text" value="PEPE" placeholder="Search ticker or token address (e.g. PEPE, AERO, SOL, BRETT, VIRTUAL)..." />
+            <button class="btn btn-indigo" type="button" data-action="search-dex">Search DEX</button>
           </div>
           <div class="chip-row">
-            <button class="chip" onclick="quickDex('PEPE')">🔥 PEPE</button>
-            <button class="chip" onclick="quickDex('AERO')">⚡ AERO (Base)</button>
-            <button class="chip" onclick="quickDex('BRETT')">🟦 BRETT</button>
-            <button class="chip" onclick="quickDex('UNI')">🦄 UNI</button>
-            <button class="chip" onclick="quickDex('CAKE')">🥞 CAKE (BSC)</button>
-            <button class="chip" onclick="quickDex('AAVE')">👻 AAVE</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="PEPE">🔥 PEPE</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="AERO">⚡ AERO (Base)</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="BRETT">🟦 BRETT</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="UNI">🦄 UNI</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="CAKE">🥞 CAKE (BSC)</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="AAVE">👻 AAVE</button>
           </div>
           <div id="dexResultsList" class="pair-list">
             <div class="muted" style="font-size:12.5px;">Searching live DEX liquidity pools...</div>
           </div>
         </div>
 
-        <!-- Saved Watchlist + Whale Momentum -->
         <div class="card">
           <div class="card-header">
             <h2 class="card-title">Alpha Watchlist &amp; Signals</h2>
@@ -636,9 +341,7 @@
       </div>
     </section>
 
-    <!-- =====================================================================
-         TAB 2: ON-CHAIN SMART CONTRACT RUG & HONEYPOT SCANNER
-         ===================================================================== -->
+    <!-- TAB 2: ON-CHAIN SMART CONTRACT RUG & HONEYPOT SCANNER -->
     <section id="view-rugcheck" class="view-panel">
       <div class="grid-2">
         <div class="card">
@@ -651,10 +354,10 @@
           </p>
 
           <div class="chip-row">
-            <button class="chip" onclick="loadContractPreset('ethereum','0x6982508145454Ce325dDbE47a25d4ec3d2311933','PEPE Token')">Test: PEPE (ETH)</button>
-            <button class="chip" onclick="loadContractPreset('base','0x940181a94A35A4569E4529A3CDfB74e38FD98631','Aerodrome AERO')">Test: AERO (Base)</button>
-            <button class="chip" onclick="loadContractPreset('ethereum','0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48','USDC Proxy')">Test: USDC Proxy</button>
-            <button class="chip danger" onclick="loadSimulatedHoneypot()">⚠️ Test: Honeypot Rug Trap</button>
+            <button class="chip" type="button" data-action="preset-contract" data-chain="ethereum" data-addr="0x6982508145454Ce325dDbE47a25d4ec3d2311933" data-label="PEPE Token">Test: PEPE (ETH)</button>
+            <button class="chip" type="button" data-action="preset-contract" data-chain="base" data-addr="0x940181a94A35A4569E4529A3CDfB74e38FD98631" data-label="Aerodrome AERO">Test: AERO (Base)</button>
+            <button class="chip" type="button" data-action="preset-contract" data-chain="ethereum" data-addr="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" data-label="USDC Proxy">Test: USDC Proxy</button>
+            <button class="chip danger" type="button" data-action="preset-honeypot">⚠️ Test: Honeypot Rug Trap</button>
           </div>
 
           <div class="input-row">
@@ -673,12 +376,11 @@
             <textarea id="rawBytecodeInput" class="input" style="margin-top:8px;" placeholder="0x6080604052... (leave blank to fetch live from blockchain RPC)"></textarea>
           </details>
 
-          <button id="runContractScanBtn" class="btn btn-primary" style="width:100%;padding:12px;" onclick="runSmartContractAudit()">
+          <button id="runContractScanBtn" class="btn btn-primary" type="button" style="width:100%;padding:12px;" data-action="run-contract-audit">
             Run Deep On-Chain Rug &amp; Honeypot Audit
           </button>
         </div>
 
-        <!-- Audit Verdict Output -->
         <div class="card">
           <div class="card-header">
             <h2 class="card-title">Security Verdict &amp; Shareable Alert</h2>
@@ -693,9 +395,7 @@
       </div>
     </section>
 
-    <!-- =====================================================================
-         TAB 3: SAFEAPK & CRYPTO WALLET DRAINER SCANNER
-         ===================================================================== -->
+    <!-- TAB 3: SAFEAPK & CRYPTO WALLET DRAINER SCANNER -->
     <section id="view-apkguard" class="view-panel">
       <div class="grid-2">
         <div class="card">
@@ -710,12 +410,12 @@
           <label class="dropzone" for="apkFileInput">
             <div style="font-weight:800;font-size:14px;margin-bottom:4px;">Tap to Drop or Select APK / ZIP Extension / JS Script</div>
             <div class="muted" style="font-size:12px;">Audits Android <span class="mono">.apk</span>, Chrome Wallet <span class="mono">.zip/.crx</span>, <span class="mono">.js</span> scripts &amp; <span class="mono">.dex</span> binaries</div>
-            <input id="apkFileInput" type="file" style="display:none;" onchange="handleApkFileSelect(event)" />
+            <input id="apkFileInput" type="file" style="display:none;" />
           </label>
 
           <div class="chip-row">
-            <button class="chip danger" onclick="runSyntheticDrainerDemo('drainer_apk')">⚠️ Demo: Fake "SniperBot.apk" Seed Stealer</button>
-            <button class="chip" onclick="runSyntheticDrainerDemo('clean_app')">✅ Demo: Clean Signed Utility Package</button>
+            <button class="chip danger" type="button" data-action="synthetic-apk" data-kind="drainer_apk">⚠️ Demo: Fake "SniperBot.apk" Seed Stealer</button>
+            <button class="chip" type="button" data-action="synthetic-apk" data-kind="clean_app">✅ Demo: Clean Signed Utility Package</button>
           </div>
         </div>
 
@@ -733,9 +433,7 @@
       </div>
     </section>
 
-    <!-- =====================================================================
-         TAB 4: PRO PLANS, KELVIQ CHECKOUT & LICENSE ACTIVATION
-         ===================================================================== -->
+    <!-- TAB 4: PRO PLANS, KELVIQ CHECKOUT & LICENSE ACTIVATION -->
     <section id="view-pricing" class="view-panel">
       <div class="card">
         <div class="card-header" style="flex-wrap:wrap;">
@@ -744,13 +442,12 @@
             <div class="muted" style="font-size:12px;margin-top:2px;">Merchant-of-Record global checkout for <strong>Gandoh Bah Ai</strong> · Instant license unlock across phone &amp; desktop</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
-            <button id="periodMonthlyBtn" class="btn btn-indigo btn-sm" onclick="setBillingPeriod('MONTHLY')">Monthly</button>
-            <button id="periodYearlyBtn" class="btn btn-sm" onclick="setBillingPeriod('YEARLY')">Yearly (Save 30%)</button>
+            <button id="periodMonthlyBtn" class="btn btn-indigo btn-sm" type="button" data-action="set-period" data-period="MONTHLY">Monthly</button>
+            <button id="periodYearlyBtn" class="btn btn-sm" type="button" data-action="set-period" data-period="YEARLY">Yearly (Save 30%)</button>
           </div>
         </div>
 
         <div class="pricing-grid">
-          <!-- Free Tier -->
           <div class="price-card">
             <div>
               <span class="badge badge-indigo">Starter</span>
@@ -763,10 +460,9 @@
                 <li>✓ Public Shareable X / WhatsApp Alerts</li>
               </ul>
             </div>
-            <button class="btn" style="width:100%;" onclick="switchTab('rugcheck')">Current Free Tier</button>
+            <button class="btn" type="button" style="width:100%;" data-action="switch-tab" data-tab="rugcheck">Current Free Tier</button>
           </div>
 
-          <!-- Pro Trader ($19/mo) -->
           <div class="price-card featured">
             <div>
               <span class="badge badge-green">Most Popular · Best Margin</span>
@@ -781,16 +477,15 @@
               </ul>
             </div>
             <div style="display:flex;flex-direction:column;gap:7px;">
-              <button class="btn btn-primary" style="width:100%;padding:11px;" onclick="openUsdtCheckoutModal('indie', 19)">
-                Pay $19 USDT / USDC (Instant · Global) →
+              <button class="btn btn-primary" type="button" style="width:100%;padding:11px;" data-action="start-kelviq" data-plan="alphashield_pro">
+                Subscribe via Kelviq Checkout →
               </button>
-              <button class="btn btn-sm" style="width:100%;" onclick="startKelviqCheckout('indie')">
-                Or Pay by Card Link
+              <button class="btn btn-sm" type="button" style="width:100%;" data-action="open-usdt" data-plan="alphashield_pro" data-usd="19">
+                Or Pay USDT (Bound Payment Intent)
               </button>
             </div>
           </div>
 
-          <!-- Whale / Community Admin ($49/mo) -->
           <div class="price-card">
             <div>
               <span class="badge badge-amber">Signal Groups &amp; Teams</span>
@@ -805,18 +500,17 @@
               </ul>
             </div>
             <div style="display:flex;flex-direction:column;gap:7px;">
-              <button class="btn btn-indigo" style="width:100%;padding:11px;" onclick="openUsdtCheckoutModal('team', 49)">
-                Pay $49 USDT / USDC (Instant · Global) →
+              <button class="btn btn-indigo" type="button" style="width:100%;padding:11px;" data-action="start-kelviq" data-plan="alphashield_whale">
+                Subscribe via Kelviq Checkout →
               </button>
-              <button class="btn btn-sm" style="width:100%;" onclick="startKelviqCheckout('team')">
-                Or Pay by Card Link
+              <button class="btn btn-sm" type="button" style="width:100%;" data-action="open-usdt" data-plan="alphashield_whale" data-usd="49">
+                Or Pay USDT (Bound Payment Intent)
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- License Key Activation + Kelviq Status -->
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
@@ -824,11 +518,11 @@
             <span id="licenseStatusBadge" class="badge badge-indigo">LOCKED</span>
           </div>
           <p class="muted" style="font-size:12px;margin-top:0;">
-            Enter the license key from your Kelviq receipt email to unlock unlimited scans immediately on Brave Browser.
+            Sign in and enter the license key from your Kelviq receipt email to verify and bind your subscription server-side.
           </p>
           <div class="input-row">
-            <input id="licenseKeyInput" class="input mono" type="text" placeholder="KELVIQ-XXXX-XXXX or ALPHASHIELD-PRO-2026" />
-            <button class="btn btn-primary" onclick="activateLicenseKey()">Activate Key</button>
+            <input id="licenseKeyInput" class="input mono" type="text" placeholder="Enter your Kelviq license key" />
+            <button class="btn btn-primary" type="button" data-action="activate-license">Activate Key</button>
           </div>
           <div id="licenseFeedback" class="muted" style="font-size:12px;"></div>
         </div>
@@ -842,135 +536,157 @@
             Checking connection to <span class="mono">@kelviq/node-sdk</span> billing server...
           </p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-sm" onclick="openCustomerPortal()">Customer Billing Portal</button>
-            <button class="btn btn-amber btn-sm" onclick="openPlaybookModal()">Open 3-Step Revenue Setup</button>
+            <button class="btn btn-sm" type="button" data-action="open-portal">Customer Billing Portal</button>
+            <button class="btn btn-amber btn-sm" type="button" data-action="open-playbook">Open 3-Step Revenue Setup</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Merchant-of-Record Compliance Footer (Terms, Privacy, Refund Policy) -->
     <footer style="margin-top:22px;padding:16px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--muted);line-height:1.6;">
       <div><strong>AlphaShield by Gandoh Bah Ai</strong> — Automated Software Bytecode &amp; Malware Security Scanner SaaS</div>
       <div style="font-size:11px;margin:4px 0 8px;">
         AlphaShield provides automated static software &amp; smart-contract code analysis tools only. We do not hold funds, execute trades, or provide financial advice.
       </div>
       <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
-        <a href="#terms" onclick="openLegalModal('terms');return false;">Terms of Service</a>
-        <a href="#privacy" onclick="openLegalModal('privacy');return false;">Privacy Policy</a>
-        <a href="#refunds" onclick="openLegalModal('refunds');return false;">Refund &amp; Cancellation Policy</a>
-        <a href="#pricing" onclick="switchTab('pricing');return false;">Pricing ($19/mo · $49/mo)</a>
+        <a href="#terms" data-action="open-legal" data-section="terms">Terms of Service</a>
+        <a href="#privacy" data-action="open-legal" data-section="privacy">Privacy Policy</a>
+        <a href="#refunds" data-action="open-legal" data-section="refunds">Refund &amp; Cancellation Policy</a>
+        <a href="#pricing" data-action="switch-tab" data-tab="pricing">Pricing ($19/mo · $49/mo)</a>
       </div>
     </footer>
   </main>
 
-  <!-- Mobile Sticky Bottom Tab Bar -->
   <nav class="bottom-nav">
-    <button class="bnav-btn active" data-tab="markets" onclick="switchTab('markets')">
+    <button class="bnav-btn active" type="button" data-action="switch-tab" data-tab="markets">
       <span>📈</span><span>Markets</span>
     </button>
-    <button class="bnav-btn" data-tab="rugcheck" onclick="switchTab('rugcheck')">
+    <button class="bnav-btn" type="button" data-action="switch-tab" data-tab="rugcheck">
       <span>🛡️</span><span>Rug-Scan</span>
     </button>
-    <button class="bnav-btn" data-tab="apkguard" onclick="switchTab('apkguard')">
+    <button class="bnav-btn" type="button" data-action="switch-tab" data-tab="apkguard">
       <span>📱</span><span>APK Guard</span>
     </button>
-    <button class="bnav-btn" data-tab="pricing" onclick="switchTab('pricing')">
+    <button class="bnav-btn" type="button" data-action="switch-tab" data-tab="pricing">
       <span>💎</span><span>Go Pro</span>
     </button>
   </nav>
 
-  <!-- Paywall / Checkout Modal -->
-  <div id="paywallModal" class="modal-backdrop" onclick="if(event.target===this)closeModal('paywallModal')">
+  <!-- Paywall Modal -->
+  <div id="paywallModal" class="modal-backdrop" data-modal-backdrop="paywallModal">
     <div class="modal">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <span class="badge badge-amber">Daily Free Limit Reached (3/3 Scans)</span>
-        <button class="btn btn-sm" onclick="closeModal('paywallModal')">✕</button>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="paywallModal">✕</button>
       </div>
       <h2 style="margin:4px 0 8px;font-size:19px;">Don't Ape Blind — Unlock Unlimited Rug Scans</h2>
       <p class="muted" style="font-size:13px;line-height:1.5;margin-top:0;">
         Avoiding just <strong>one</strong> $50 honeypot token pays for nearly 3 months of <strong>AlphaShield Pro ($19/mo)</strong>. Get unlimited Ethereum, Base, BNB &amp; Arbitrum contract audits + APK wallet drainer protection.
       </p>
       <div style="display:flex;flex-direction:column;gap:9px;margin:14px 0;">
-        <button class="btn btn-primary" style="padding:12px;width:100%;" onclick="closeModal('paywallModal');openUsdtCheckoutModal('indie', 19)">
-          Unlock Pro — $19 USDT / USDC (Instant Auto-Verify) →
+        <button class="btn btn-primary" type="button" style="padding:12px;width:100%;" data-action="paywall-kelviq">
+          Unlock Pro via Kelviq Checkout →
         </button>
-        <button class="btn btn-indigo" style="padding:11px;width:100%;" onclick="closeModal('paywallModal');switchTab('pricing')">
+        <button class="btn btn-indigo" type="button" style="padding:11px;width:100%;" data-action="paywall-pricing">
           Other Payment Options / Enter License Key
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Founder Money-Making Playbook & Payment Link Configurator Modal -->
-  <div id="playbookModal" class="modal-backdrop" onclick="if(event.target===this)closeModal('playbookModal')">
+  <!-- Founder Billing Configuration Guide -->
+  <div id="playbookModal" class="modal-backdrop" data-modal-backdrop="playbookModal">
     <div class="modal">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span class="badge badge-green">Gandoh Bah Ai · Revenue Playbook</span>
-        <button class="btn btn-sm" onclick="closeModal('playbookModal')">✕</button>
+        <span class="badge badge-green">Gandoh Bah Ai · Server Billing Setup</span>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="playbookModal">✕</button>
       </div>
-      <h2 style="margin:4px 0 8px;font-size:18px;">How You Get Paid Directly (Zero Country Blocks!)</h2>
+      <h2 style="margin:4px 0 8px;font-size:18px;">Hardened Server-Side Billing Configuration</h2>
       <div class="step-box">
-        <strong>Step 1 — Paste Your Public <span class="mono">0x...</span> Wallet (Works in Sierra Leone Today!):</strong><br/>
-        Open <strong>Trust Wallet</strong>, <strong>MetaMask</strong>, or <strong>Binance</strong> → copy your public <strong>Ethereum / BNB Smart Chain / Base Receive Address (<span class="mono">0x...</span>)</strong> *(NEVER share your 12 secret words — only your public <span class="mono">0x...</span> address!)*.
-        <div class="input-row" style="margin-top:8px;margin-bottom:4px;">
-          <input id="merchantWalletInput" class="input mono" type="text" placeholder="0xYourPublicWalletAddress..." />
-          <button class="btn btn-primary btn-sm" onclick="saveMerchantWalletLink()">Copy My Store Link</button>
-        </div>
-        <div id="merchantWalletFeedback" class="mono" style="font-size:11px;color:#34d399;word-break:break-all;"></div>
+        <strong>1. Card &amp; License Billing (<span class="mono">KELVIQ_SERVER_API_KEY</span> + <span class="mono">KELVIQ_WEBHOOK_SECRET</span>):</strong><br/>
+        Configure <span class="mono">KELVIQ_SERVER_API_KEY</span>, <span class="mono">KELVIQ_PRO_PLAN_ID</span>, <span class="mono">KELVIQ_WHALE_PLAN_ID</span>, <span class="mono">PUBLIC_BASE_URL</span>, and <span class="mono">KELVIQ_WEBHOOK_SECRET</span> on the server so entitlements unlock only after signed webhook or customer-bound license verification.
       </div>
       <div class="step-box">
-        <strong>Step 2 — Optional Card Checkout Link (NOWPayments / Selar / Kelviq):</strong><br/>
-        If you also create a payment link on NOWPayments, CoinGate, Selar, or Kelviq, paste it here:
-        <div class="input-row" style="margin-top:8px;margin-bottom:4px;">
-          <input id="customPayLinkInput" class="input mono" type="url" placeholder="https://..." />
-          <button class="btn btn-sm" onclick="generateCustomRevenueLink()">Save Card Link</button>
-        </div>
-        <div id="customLinkFeedback" class="mono" style="font-size:11px;color:#34d399;word-break:break-all;"></div>
-      </div>
-      <div class="step-box">
-        <strong>Step 3 — Cash Out to Orange Money / Cash Anytime:</strong><br/>
-        Every $19 or $49 USDT/USDC payment lands <strong>100% directly in your wallet in 3 seconds</strong> (zero middleman, zero frozen accounts), and AlphaShield verifies the blockchain receipt automatically to unlock the buyer's Pro access!
+        <strong>2. Optional Tenant-Bound Direct USDT (<span class="mono">ALPHASHIELD_ENABLE_DIRECT_USDT=true</span>):</strong><br/>
+        When explicitly enabled alongside <span class="mono">ALPHASHIELD_MERCHANT_WALLET</span>, each checkout creates an authenticated payment intent bound to the user's sender wallet and a unique sub-cent atomic USDT tag, preventing mempool front-running and permanent unexpiring upgrades.
       </div>
     </div>
   </div>
 
-  <!-- Instant On-Chain USDT / USDC Checkout & Live Receipt Verifier Modal -->
-  <div id="usdtCheckoutModal" class="modal-backdrop" onclick="if(event.target===this)closeModal('usdtCheckoutModal')">
+  <!-- Workspace Authentication Modal -->
+  <div id="alphaAuthModal" class="modal-backdrop" data-modal-backdrop="alphaAuthModal">
     <div class="modal">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span class="badge badge-green">Instant On-Chain Checkout · 0% Middleman</span>
-        <button class="btn btn-sm" onclick="closeModal('usdtCheckoutModal')">✕</button>
+        <span class="badge badge-indigo">AlphaShield Account Security</span>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="alphaAuthModal">✕</button>
       </div>
-      <h2 id="usdtModalTitle" style="margin:4px 0 6px;font-size:18px;">Unlock AlphaShield Pro — $19 USDT</h2>
+      <h2 style="margin:4px 0 8px;font-size:18px;">Sign In or Create Account</h2>
+      <p class="muted" style="font-size:12px;margin-top:0;">
+        Sessions use <span class="mono">HttpOnly; SameSite=Lax</span> cookies with synchronizer CSRF protection.
+      </p>
+      <div class="step-box">
+        <div style="font-weight:700;margin-bottom:6px;">Sign In</div>
+        <div class="input-row" style="margin-bottom:6px;">
+          <input id="alphaLoginEmail" class="input" type="email" placeholder="you@example.com" />
+          <input id="alphaLoginPass" class="input" type="password" placeholder="Password" />
+        </div>
+        <button class="btn btn-indigo btn-sm" type="button" style="width:100%;" data-action="alpha-signin">Sign In</button>
+      </div>
+      <div class="step-box">
+        <div style="font-weight:700;margin-bottom:6px;">New User? Create Account</div>
+        <div class="input-row" style="margin-bottom:6px;">
+          <input id="alphaRegOrg" class="input" type="text" placeholder="Handle / Organization" />
+          <input id="alphaRegEmail" class="input" type="email" placeholder="you@example.com" />
+        </div>
+        <div class="input-row" style="margin-bottom:6px;">
+          <input id="alphaRegPass" class="input" type="password" placeholder="Password (min 8 chars)" />
+          <button class="btn btn-primary btn-sm" type="button" data-action="alpha-register">Create Account</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div id="alphaAuthFeedback" class="mono" style="font-size:11.5px;color:#fbbf24;"></div>
+        <button class="btn btn-sm" type="button" data-action="alpha-signout">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tenant-Bound On-Chain USDT Payment Intent Modal -->
+  <div id="usdtCheckoutModal" class="modal-backdrop" data-modal-backdrop="usdtCheckoutModal">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="badge badge-green">Tenant-Bound Payment Intent</span>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="usdtCheckoutModal">✕</button>
+      </div>
+      <h2 id="usdtModalTitle" style="margin:4px 0 6px;font-size:18px;">Unlock AlphaShield Pro — Bound USDT Intent</h2>
       <p class="muted" style="font-size:12.5px;margin-top:0;line-height:1.45;">
-        Send exact <strong>USDT</strong> on <strong>BNB Smart Chain (BEP-20)</strong> (~$0.01 fee). Verified automatically on-chain in 2 seconds!
+        Enter your sender wallet address to reserve a unique sub-cent payment intent bound to your account and wallet.
       </p>
 
       <div class="step-box">
         <div style="font-size:11.5px;color:#fbbf24;font-weight:700;margin-bottom:6px;">
-          ⚠️ Network: BNB Smart Chain (BEP-20) — Send USDT Only
+          1. Select Chain &amp; Bind Your Payer Wallet
         </div>
         <div class="input-row" style="margin-bottom:8px;">
-          <select id="payChainSelect" class="input" onchange="updateUsdtModalUI()">
-            <option value="bsc">BNB Smart Chain (BEP-20) — USDT (Recommended · $0.01 fee)</option>
+          <select id="payChainSelect" class="input">
+            <option value="bsc">BNB Smart Chain (BEP-20) — USDT</option>
             <option value="ethereum">Ethereum (ERC-20) — USDT</option>
           </select>
         </div>
-        <div style="background:#050811;border:1px solid rgba(16,185,129,0.45);padding:10px 12px;border-radius:9px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span id="merchantAddressDisplay" class="mono" style="font-size:12px;font-weight:700;word-break:break-all;color:#34d399;">0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394</span>
-          <button class="btn btn-primary btn-sm" onclick="copyMerchantAddress()">Copy Address</button>
+        <div class="input-row" style="margin-bottom:8px;">
+          <input id="payerWalletInput" class="input mono" type="text" placeholder="0x... Your sender wallet address" />
+          <button class="btn btn-indigo btn-sm" type="button" data-action="create-payment-intent">Create Intent</button>
         </div>
-        <button class="btn btn-indigo" style="width:100%;margin-top:9px;" onclick="payWithWeb3Wallet()">
-          ⚡ 1-Tap Pay USDT in Browser Wallet (Trust / MetaMask / Brave)
+        <div id="intentSummaryBox" class="mono" style="font-size:11.5px;color:#34d399;word-break:break-all;"></div>
+        <button class="btn btn-indigo" type="button" style="width:100%;margin-top:9px;" data-action="pay-web3-wallet">
+          ⚡ Pay Exact Bound Intent in Browser Wallet
         </button>
       </div>
 
       <div class="step-box" style="margin-bottom:0;">
-        <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px;">2. Sent from Binance / Trust Wallet App? Paste Transaction Hash (<span class="mono">0x...</span>) to Unlock Automatically:</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px;">2. Paste Confirmed Transaction Hash (<span class="mono">0x...</span>):</div>
         <div class="input-row" style="margin-bottom:6px;">
           <input id="txHashInput" class="input mono" type="text" placeholder="0x... transaction hash" />
-          <button class="btn btn-primary" onclick="verifyOnChainPaymentTx()">Verify &amp; Unlock</button>
+          <button class="btn btn-primary" type="button" data-action="verify-payment-tx">Verify &amp; Unlock</button>
         </div>
         <div id="txVerifyFeedback" style="font-size:12px;"></div>
       </div>
@@ -978,1052 +694,16 @@
   </div>
 
   <!-- Legal / MoR Compliance Modal -->
-  <div id="legalModal" class="modal-backdrop" onclick="if(event.target===this)closeModal('legalModal')">
+  <div id="legalModal" class="modal-backdrop" data-modal-backdrop="legalModal">
     <div class="modal">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <span class="badge badge-indigo">Gandoh Bah Ai · Legal &amp; Policies</span>
-        <button class="btn btn-sm" onclick="closeModal('legalModal')">✕</button>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="legalModal">✕</button>
       </div>
       <div id="legalModalContent" style="font-size:12.5px;line-height:1.55;color:#cbd5e1;"></div>
     </div>
   </div>
 
-  <script>
-    // =========================================================================
-    // Safe Storage Wrapper (Brave Shields Strict Mode Resilient)
-    // =========================================================================
-    const memStore = new Map();
-    function sGet(key, fallback = null) {
-      try {
-        const raw = window.localStorage.getItem(key);
-        return raw !== null ? JSON.parse(raw) : fallback;
-      } catch {
-        return memStore.has(key) ? memStore.get(key) : fallback;
-      }
-    }
-    function sSet(key, val) {
-      memStore.set(key, val);
-      try { window.localStorage.setItem(key, JSON.stringify(val)); } catch {}
-    }
-
-    // URL Parameter Overrides (Gandoh Bah Ai official Binance BEP-20 USDT wallet baked in by default!)
-    const DEFAULT_MERCHANT_WALLET = "0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394";
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("wallet") && /^0x[0-9a-fA-F]{40}$/.test(urlParams.get("wallet").trim())) {
-      sSet("as_merchant_wallet", urlParams.get("wallet").trim());
-    }
-    if (urlParams.get("pay_pro")) sSet("as_pay_pro_url", urlParams.get("pay_pro"));
-    if (urlParams.get("kelviq_checkout") === "success" || urlParams.get("checkout") === "success") {
-      sSet("as_pro_unlocked", { plan: urlParams.get("plan") || "AlphaShield Pro", at: new Date().toISOString() });
-    }
-
-    function getMerchantWallet() {
-      return sGet("as_merchant_wallet", DEFAULT_MERCHANT_WALLET) || DEFAULT_MERCHANT_WALLET;
-    }
-    function getPublicStoreUrl() {
-      const u = new URL(window.location.href.split("?")[0]);
-      const w = getMerchantWallet();
-      const p = sGet("as_pay_pro_url", "");
-      if (w && w.toLowerCase() !== DEFAULT_MERCHANT_WALLET.toLowerCase()) u.searchParams.set("wallet", w);
-      if (p) u.searchParams.set("pay_pro", p);
-      return u.toString();
-    }
-
-    const FREE_DAILY_LIMIT = 3;
-    let billingPeriod = "MONTHLY";
-    let backendAvailable = false;
-    let lastAuditSummaryText = "";
-
-    function todayKey() {
-      return "as_scans_" + new Date().toISOString().slice(0, 10);
-    }
-    function isProUnlocked() {
-      return Boolean(sGet("as_pro_unlocked", null));
-    }
-    function getRemainingFreeScans() {
-      const used = Number(sGet(todayKey(), 0));
-      return Math.max(0, FREE_DAILY_LIMIT - used);
-    }
-    function consumeScanCredit() {
-      if (isProUnlocked()) return true;
-      const rem = getRemainingFreeScans();
-      if (rem <= 0) {
-        document.getElementById("paywallModal").classList.add("open");
-        return false;
-      }
-      const used = Number(sGet(todayKey(), 0));
-      sSet(todayKey(), used + 1);
-      refreshQuotaUI();
-      return true;
-    }
-    function refreshQuotaUI() {
-      const btn = document.getElementById("quotaBadgeBtn");
-      const licBadge = document.getElementById("licenseStatusBadge");
-      const pro = sGet("as_pro_unlocked", null);
-      if (pro) {
-        btn.textContent = "💎 PRO UNLIMITED";
-        btn.classList.add("pro");
-        licBadge.textContent = "ACTIVE PRO";
-        licBadge.className = "badge badge-green";
-      } else {
-        const rem = getRemainingFreeScans();
-        btn.textContent = rem + "/" + FREE_DAILY_LIMIT + " Free Scans";
-        btn.classList.remove("pro");
-      }
-    }
-
-    // =========================================================================
-    // Navigation & Modals
-    // =========================================================================
-    function switchTab(tabId) {
-      document.querySelectorAll(".view-panel").forEach((el) => el.classList.remove("active"));
-      const target = document.getElementById("view-" + tabId);
-      if (target) target.classList.add("active");
-
-      document.querySelectorAll(".tab-btn, .bnav-btn").forEach((btn) => {
-        btn.classList.toggle("active", btn.getAttribute("data-tab") === tabId);
-      });
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    function openPlaybookModal() {
-      const existing = sGet("as_pay_pro_url", "");
-      if (existing) document.getElementById("customPayLinkInput").value = existing;
-      const w = getMerchantWallet();
-      if (w) document.getElementById("merchantWalletInput").value = w;
-      document.getElementById("playbookModal").classList.add("open");
-    }
-    function closeModal(id) {
-      document.getElementById(id).classList.remove("open");
-    }
-
-    function openLegalModal(section) {
-      const box = document.getElementById("legalModalContent");
-      const map = {
-        terms: `<h3 style="margin-top:0;color:#fff;">Terms of Service — AlphaShield by Gandoh Bah Ai</h3>
-          <p>AlphaShield is a self-serve cybersecurity and static software analysis SaaS operated by <strong>Gandoh Bah Ai</strong>. Subscriptions grant digital license access to automated EVM bytecode selector inspection and Android/archive static malware checks.</p>
-          <p>AlphaShield is strictly an informational software security tool. We never custody assets, broker transactions, or provide investment advice. Payments and tax invoicing are processed securely by our Merchant of Record, <strong>Kelviq</strong>.</p>`,
-        privacy: `<h3 style="margin-top:0;color:#fff;">Privacy Policy</h3>
-          <p>AlphaShield performs local WebCrypto SHA-256 and Shannon entropy checks directly in your browser wherever possible. We collect only the account email and billing metadata required by our Merchant of Record (Kelviq) to deliver your software license key and manage subscriptions. We never sell personal data.</p>`,
-        refunds: `<h3 style="margin-top:0;color:#fff;">Refund &amp; Cancellation Policy</h3>
-          <p><strong>Cancel Anytime:</strong> Subscriptions can be cancelled in one click at any time via the Kelviq Customer Billing Portal with zero cancellation fees.</p>
-          <p><strong>14-Day Refund Guarantee:</strong> If your license key fails to activate or you are unsatisfied within 14 days of your initial purchase, contact our support email listed on your Kelviq receipt for a full refund.</p>`,
-      };
-      box.innerHTML = map[section] || map.terms;
-      document.getElementById("legalModal").classList.add("open");
-    }
-
-    function saveMerchantWalletLink() {
-      const raw = document.getElementById("merchantWalletInput").value.trim();
-      const fb = document.getElementById("merchantWalletFeedback");
-      if (!/^0x[0-9a-fA-F]{40}$/.test(raw)) {
-        fb.style.color = "#f87171";
-        fb.textContent = "Enter a valid 42-character 0x... public wallet address (from Trust Wallet, MetaMask, or Binance).";
-        return;
-      }
-      sSet("as_merchant_wallet", raw);
-      const shareUrl = getPublicStoreUrl();
-      navigator.clipboard?.writeText(shareUrl).catch(() => {});
-      fb.style.color = "#34d399";
-      fb.textContent = "✓ Wallet Saved & Store Link Copied! Share this link to get paid directly: " + shareUrl;
-    }
-
-    function generateCustomRevenueLink() {
-      const raw = document.getElementById("customPayLinkInput").value.trim();
-      const fb = document.getElementById("customLinkFeedback");
-      if (!raw.startsWith("http")) {
-        fb.textContent = "Paste a valid https:// checkout link.";
-        return;
-      }
-      sSet("as_pay_pro_url", raw);
-      const shareUrl = getPublicStoreUrl();
-      navigator.clipboard?.writeText(shareUrl).catch(() => {});
-      fb.textContent = "Saved & Copied! Share this URL anywhere: " + shareUrl;
-    }
-
-    // =========================================================================
-    // Direct Global USDT / USDC Checkout + Live On-Chain Receipt Verifier
-    // =========================================================================
-    const OFFICIAL_STABLECOINS = {
-      bsc: {
-        chainHex: "0x38",
-        tokens: [
-          { symbol: "USDT", address: "0x55d398326f99059ff775485246999027b3197955", decimals: 18 },
-        ],
-      },
-      ethereum: {
-        chainHex: "0x1",
-        tokens: [
-          { symbol: "USDT", address: "0xdac17f958d2ee523a2206206994597c13d831ec7", decimals: 6 },
-        ],
-      },
-    };
-
-    let activeCheckoutPlan = "indie";
-    let activeCheckoutUsd = 19;
-
-    function openUsdtCheckoutModal(planId, baseMonthlyUsd) {
-      const w = getMerchantWallet();
-      if (!w) {
-        openPlaybookModal();
-        return;
-      }
-      activeCheckoutPlan = planId;
-      activeCheckoutUsd = billingPeriod === "YEARLY" ? (planId === "team" ? 399 : 159) : baseMonthlyUsd;
-      updateUsdtModalUI();
-      document.getElementById("usdtCheckoutModal").classList.add("open");
-    }
-
-    function updateUsdtModalUI() {
-      const planLabel = activeCheckoutPlan === "team" ? "Whale & Alpha Group" : "AlphaShield Pro";
-      document.getElementById("usdtModalTitle").textContent = `Unlock ${planLabel} — $${activeCheckoutUsd} USDT`;
-      document.getElementById("merchantAddressDisplay").textContent = getMerchantWallet();
-      document.getElementById("txVerifyFeedback").textContent = "";
-    }
-
-    function copyMerchantAddress() {
-      const w = getMerchantWallet();
-      if (!w) return;
-      navigator.clipboard?.writeText(w).catch(() => {});
-      const fb = document.getElementById("txVerifyFeedback");
-      fb.style.color = "#34d399";
-      fb.textContent = "✓ Copied address! Send $" + activeCheckoutUsd + " USDT (BEP-20) from Binance/Trust Wallet, then paste your 0x TxHash below.";
-    }
-
-    async function payWithWeb3Wallet() {
-      const fb = document.getElementById("txVerifyFeedback");
-      const merchant = getMerchantWallet();
-      if (!merchant) return openPlaybookModal();
-      if (!window.ethereum) {
-        fb.style.color = "#fbbf24";
-        fb.textContent = "No injected wallet detected in this tab. Copy the 0x address above to send from Trust Wallet / Binance, then paste your 0x TxHash below!";
-        return;
-      }
-      try {
-        const chainKey = document.getElementById("payChainSelect").value;
-        const cfg = OFFICIAL_STABLECOINS[chainKey];
-        const token = cfg.tokens[0];
-        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-        try {
-          await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: cfg.chainHex }] });
-        } catch {}
-        const amountUnits = BigInt(activeCheckoutUsd) * (10n ** BigInt(token.decimals));
-        const paddedTo = merchant.replace(/^0x/i, "").toLowerCase().padStart(64, "0");
-        const paddedAmt = amountUnits.toString(16).padStart(64, "0");
-        const data = "0xa9059cbb" + paddedTo + paddedAmt;
-
-        fb.style.color = "#a5b4fc";
-        fb.textContent = `Confirm $${activeCheckoutUsd} ${token.symbol} transfer in your wallet...`;
-        const txHash = await window.ethereum.request({
-          method: "eth_sendTransaction",
-          params: [{ from: accounts[0], to: token.address, data }],
-        });
-        document.getElementById("txHashInput").value = txHash;
-        fb.style.color = "#34d399";
-        fb.textContent = "Transaction sent! Waiting 4s for block confirmation to auto-unlock...";
-        setTimeout(() => verifyOnChainPaymentTx(), 4500);
-      } catch (err) {
-        fb.style.color = "#f87171";
-        fb.textContent = err?.message || "Wallet payment cancelled.";
-      }
-    }
-
-    async function verifyOnChainPaymentTx() {
-      const txHash = document.getElementById("txHashInput").value.trim();
-      const chainKey = document.getElementById("payChainSelect").value;
-      const fb = document.getElementById("txVerifyFeedback");
-      const merchant = getMerchantWallet().toLowerCase().replace(/^0x/, "");
-
-      if (!/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
-        fb.style.color = "#f87171";
-        fb.textContent = "Enter a valid 66-character 0x... transaction hash.";
-        return;
-      }
-      const usedTxs = sGet("as_used_tx_hashes", []);
-      if (usedTxs.includes(txHash.toLowerCase())) {
-        fb.style.color = "#34d399";
-        fb.textContent = "✓ This receipt already unlocked Pro on this device!";
-        return;
-      }
-
-      fb.style.color = "#fbbf24";
-      fb.textContent = "Checking live " + chainKey.toUpperCase() + " blockchain receipt...";
-
-      const urls = RPC_ENDPOINTS[chainKey] || RPC_ENDPOINTS.bsc;
-      let receipt = null;
-      for (const rpcUrl of urls) {
-        try {
-          const res = await fetchWithTimeout(rpcUrl, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getTransactionReceipt", params: [txHash] }),
-          }, 6000);
-          if (!res.ok) continue;
-          const j = await res.json();
-          if (j.result) { receipt = j.result; break; }
-        } catch {}
-      }
-
-      if (!receipt) {
-        fb.style.color = "#fbbf24";
-        fb.textContent = "Transaction not indexed yet (or wrong network selected). Wait 5 seconds and tap Verify again.";
-        return;
-      }
-      if (receipt.status !== "0x1") {
-        fb.style.color = "#f87171";
-        fb.textContent = "Transaction reverted on-chain (status != 0x1).";
-        return;
-      }
-
-      const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
-      const allowedTokens = OFFICIAL_STABLECOINS[chainKey].tokens;
-      const minUsd = BigInt(Math.max(1, activeCheckoutUsd - 1)); // allow $1 fee rounding tolerance
-
-      let matchedPayment = null;
-      for (const log of receipt.logs || []) {
-        const logAddr = String(log.address || "").toLowerCase();
-        const tok = allowedTokens.find((t) => t.address === logAddr);
-        if (!tok) continue;
-        if (String(log.topics?.[0] || "").toLowerCase() !== TRANSFER_TOPIC) continue;
-        const recipientHex = String(log.topics?.[2] || "").toLowerCase();
-        if (!recipientHex.endsWith(merchant)) continue;
-        const rawAmount = BigInt(log.data || "0x0");
-        const minRequired = minUsd * (10n ** BigInt(tok.decimals));
-        if (rawAmount >= minRequired) {
-          matchedPayment = { symbol: tok.symbol, txHash };
-          break;
-        }
-      }
-
-      if (!matchedPayment) {
-        fb.style.color = "#f87171";
-        fb.textContent = `Could not find a confirmed >= $${activeCheckoutUsd} official USDT/USDC transfer to merchant wallet on ${chainKey.toUpperCase()}.`;
-        return;
-      }
-
-      usedTxs.push(txHash.toLowerCase());
-      sSet("as_used_tx_hashes", usedTxs);
-      sSet("as_pro_unlocked", {
-        plan: activeCheckoutPlan === "team" ? "Whale & Alpha Group" : "AlphaShield Pro",
-        tx: txHash,
-        at: new Date().toISOString(),
-      });
-      refreshQuotaUI();
-      fb.style.color = "#34d399";
-      fb.textContent = `✓ Verified ${matchedPayment.symbol} payment on-chain! AlphaShield Pro Unlimited is now UNLOCKED!`;
-    }
-
-    // =========================================================================
-    // TAB 1: Live Global Crypto Tickers + DexScreener Liquidity Pairs
-    // =========================================================================
-    const FALLBACK_TICKERS = [
-      { symbol: "BTC", price: 94820, change: 2.45 },
-      { symbol: "ETH", price: 3185, change: 3.12 },
-      { symbol: "SOL", price: 214.6, change: 5.84 },
-      { symbol: "BNB", price: 642.1, change: 1.35 },
-      { symbol: "SUI", price: 3.42, change: 8.91 },
-      { symbol: "PEPE", price: 0.0000184, change: 11.4 },
-    ];
-
-    function fmtUsd(n) {
-      const num = Number(n || 0);
-      if (!Number.isFinite(num) || num === 0) return "$0.00";
-      if (num >= 1e9) return "$" + (num / 1e9).toFixed(2) + "B";
-      if (num >= 1e6) return "$" + (num / 1e6).toFixed(2) + "M";
-      if (num >= 1e3) return "$" + num.toLocaleString(undefined, { maximumFractionDigits: 2 });
-      if (num >= 1) return "$" + num.toFixed(2);
-      if (num >= 0.01) return "$" + num.toFixed(4);
-      return "$" + num.toFixed(8);
-    }
-
-    async function fetchWithTimeout(url, options = {}, ms = 6500) {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), ms);
-      try {
-        return await fetch(url, { ...options, signal: ctrl.signal });
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
-    async function loadGlobalTickers() {
-      const grid = document.getElementById("globalTickerGrid");
-      const badge = document.getElementById("marketSourceBadge");
-      try {
-        const symbols = encodeURIComponent('["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","SUIUSDT","PEPEUSDT"]');
-        const res = await fetchWithTimeout("https://data-api.binance.vision/api/v3/ticker/24hr?symbols=" + symbols);
-        if (!res.ok) throw new Error("binance_status");
-        const arr = await res.json();
-        badge.textContent = "LIVE BINANCE FEED";
-        badge.className = "badge badge-green";
-        grid.innerHTML = arr.map((t) => {
-          const sym = t.symbol.replace("USDT", "");
-          const chg = Number(t.priceChangePercent || 0);
-          return `<div class="ticker-card">
-            <div class="ticker-top">
-              <span>${sym}/USD</span>
-              <span class="${chg >= 0 ? "up" : "down"}">${chg >= 0 ? "+" : ""}${chg.toFixed(2)}%</span>
-            </div>
-            <div class="ticker-price">${fmtUsd(t.lastPrice)}</div>
-            <div class="muted" style="font-size:10.5px;">24h Vol: ${fmtUsd(t.quoteVolume)}</div>
-          </div>`;
-        }).join("");
-      } catch {
-        try {
-          const cg = await fetchWithTimeout("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana,binancecoin,sui,pepe");
-          if (!cg.ok) throw new Error("cg_status");
-          const data = await cg.json();
-          badge.textContent = "LIVE COINGECKO";
-          grid.innerHTML = data.map((c) => {
-            const chg = Number(c.price_change_percentage_24h || 0);
-            return `<div class="ticker-card">
-              <div class="ticker-top">
-                <span>${String(c.symbol).toUpperCase()}</span>
-                <span class="${chg >= 0 ? "up" : "down"}">${chg >= 0 ? "+" : ""}${chg.toFixed(2)}%</span>
-              </div>
-              <div class="ticker-price">${fmtUsd(c.current_price)}</div>
-              <div class="muted" style="font-size:10.5px;">MCap: ${fmtUsd(c.market_cap)}</div>
-            </div>`;
-          }).join("");
-        } catch {
-          badge.textContent = "SNAPSHOT MODE";
-          badge.className = "badge badge-amber";
-          grid.innerHTML = FALLBACK_TICKERS.map((t) => `<div class="ticker-card">
-            <div class="ticker-top"><span>${t.symbol}/USD</span><span class="up">+${t.change}%</span></div>
-            <div class="ticker-price">${fmtUsd(t.price)}</div>
-          </div>`).join("");
-        }
-      }
-    }
-
-    function quickDex(q) {
-      document.getElementById("dexSearchInput").value = q;
-      searchDexPairs();
-    }
-
-    function mapDexChainToSupported(chainId) {
-      const c = String(chainId || "").toLowerCase();
-      if (c === "ethereum" || c === "eth") return "ethereum";
-      if (c === "base") return "base";
-      if (c === "bsc" || c === "bnb") return "bsc";
-      if (c === "arbitrum") return "arbitrum";
-      if (c === "polygon") return "polygon";
-      return null;
-    }
-
-    async function searchDexPairs() {
-      const q = document.getElementById("dexSearchInput").value.trim() || "PEPE";
-      const list = document.getElementById("dexResultsList");
-      list.innerHTML = `<div class="muted" style="font-size:12.5px;">Scanning live DexScreener liquidity pools for <strong>${escapeHtml(q)}</strong>...</div>`;
-      try {
-        const res = await fetchWithTimeout("https://api.dexscreener.com/latest/dex/search?q=" + encodeURIComponent(q));
-        if (!res.ok) throw new Error("dex_http");
-        const data = await res.json();
-        const pairs = (data.pairs || []).slice(0, 7);
-        if (!pairs.length) {
-          list.innerHTML = `<div class="muted" style="font-size:12.5px;">No DEX pairs matched "${escapeHtml(q)}". Try another ticker or 0x address.</div>`;
-          return;
-        }
-        list.innerHTML = pairs.map((p) => {
-          const sym = escapeHtml(p.baseToken?.symbol || "TOKEN");
-          const name = escapeHtml(p.baseToken?.name || "");
-          const addr = escapeHtml(p.baseToken?.address || "");
-          const chain = escapeHtml(p.chainId || "chain");
-          const supportedChain = mapDexChainToSupported(p.chainId);
-          const chg24 = Number(p.priceChange?.h24 || 0);
-          const liq = Number(p.liquidity?.usd || 0);
-          const buys = Number(p.txns?.h24?.buys || 0);
-          const sells = Number(p.txns?.h24?.sells || 0);
-
-          const scanBtn = supportedChain && addr.startsWith("0x")
-            ? `<button class="btn btn-primary btn-sm" onclick="jumpToContractScan('${supportedChain}','${addr}','${sym}')">🛡️ Rug-Scan</button>`
-            : `<span class="badge badge-indigo">${chain}</span>`;
-
-          return `<div class="pair-item">
-            <div class="pair-meta">
-              <div class="pair-symbol">
-                <span>${sym}</span>
-                <span class="muted" style="font-weight:500;font-size:11.5px;">${name}</span>
-                <span class="badge badge-indigo">${chain}</span>
-              </div>
-              <div class="pair-sub">${addr.slice(0, 10)}...${addr.slice(-6)} · Liq: ${fmtUsd(liq)} · 24h B/S: ${buys}/${sells}</div>
-            </div>
-            <div class="pair-stats">
-              <div>
-                <div style="font-weight:800;">${fmtUsd(p.priceUsd)}</div>
-                <div class="${chg24 >= 0 ? "up" : "down"}" style="font-size:11px;text-align:right;">${chg24 >= 0 ? "+" : ""}${chg24.toFixed(2)}%</div>
-              </div>
-              <button class="btn btn-sm" title="Save to Watchlist" onclick="saveToWatchlist('${sym}','${supportedChain || chain}','${addr}','${ Number(p.priceUsd || 0) }')">★</button>
-              ${scanBtn}
-            </div>
-          </div>`;
-        }).join("");
-      } catch {
-        list.innerHTML = `<div class="finding warn">
-          <div class="finding-title">Live DEX Search Temporarily Offline</div>
-          <div class="finding-desc">Tap <strong>2. Contract Rug-Scanner</strong> above to test presets or paste any 0x contract bytecode directly.</div>
-        </div>`;
-      }
-    }
-
-    function jumpToContractScan(chain, address, label) {
-      document.getElementById("chainSelect").value = chain;
-      document.getElementById("contractAddressInput").value = address;
-      document.getElementById("rawBytecodeInput").value = "";
-      switchTab("rugcheck");
-      runSmartContractAudit(label);
-    }
-
-    function saveToWatchlist(symbol, chain, address, price) {
-      const list = sGet("as_watchlist", []);
-      if (!list.some((x) => x.address === address)) {
-        list.unshift({ symbol, chain, address, savedPrice: price, at: new Date().toISOString() });
-        sSet("as_watchlist", list.slice(0, 15));
-      }
-      renderWatchlist();
-    }
-    function removeWatchlist(addr) {
-      const list = sGet("as_watchlist", []).filter((x) => x.address !== addr);
-      sSet("as_watchlist", list);
-      renderWatchlist();
-    }
-    function renderWatchlist() {
-      const list = sGet("as_watchlist", []);
-      document.getElementById("watchlistCountBadge").textContent = list.length + " Saved";
-      const el = document.getElementById("watchlistContainer");
-      if (!list.length) {
-        el.innerHTML = `<div class="muted" style="font-size:12px;padding:12px 0;">Tap ★ next to any token in the DEX radar to track it here.</div>`;
-        return;
-      }
-      el.innerHTML = list.map((item) => {
-        const canScan = ["ethereum","base","bsc","arbitrum","polygon"].includes(item.chain) && String(item.address).startsWith("0x");
-        return `<div class="pair-item">
-          <div class="pair-meta">
-            <div class="pair-symbol">${escapeHtml(item.symbol)} <span class="badge badge-indigo">${escapeHtml(item.chain)}</span></div>
-            <div class="pair-sub">Entry: ${fmtUsd(item.savedPrice)} · ${escapeHtml(String(item.address).slice(0, 12))}...</div>
-          </div>
-          <div style="display:flex;gap:6px;">
-            ${canScan ? `<button class="btn btn-primary btn-sm" onclick="jumpToContractScan('${item.chain}','${item.address}','${escapeHtml(item.symbol)}')">Audit</button>` : ""}
-            <button class="btn btn-sm" onclick="removeWatchlist('${escapeHtml(item.address)}')">✕</button>
-          </div>
-        </div>`;
-      }).join("");
-    }
-
-    // =========================================================================
-    // TAB 2: Live On-Chain EVM Smart Contract Rug & Honeypot Scanner
-    // =========================================================================
-    const RPC_ENDPOINTS = {
-      ethereum: ["https://ethereum-rpc.publicnode.com", "https://eth.llamarpc.com", "https://cloudflare-eth.com"],
-      base: ["https://base-rpc.publicnode.com", "https://mainnet.base.org"],
-      bsc: ["https://bsc-rpc.publicnode.com", "https://bsc-dataseed.binance.org"],
-      arbitrum: ["https://arbitrum-one-rpc.publicnode.com", "https://arb1.arbitrum.io/rpc"],
-      polygon: ["https://polygon-bor-rpc.publicnode.com", "https://polygon-rpc.com"],
-    };
-
-    // High-signal 4-byte EVM selectors & bytecode signatures
-    const EVM_TRAPS = [
-      { hex: "40c10f19", severity: "crit", points: 24, title: "Hidden Mint Function · mint(address,uint256)", desc: "Contract contains mint(address,uint256) selector (0x40c10f19). If ownership is not renounced, developer can mint infinite tokens and dump liquidity." },
-      { hex: "a0712d68", severity: "crit", points: 20, title: "Supply Mint Selector · mint(uint256)", desc: "Detected mint(uint256) selector (0xa0712d68) allowing supply inflation." },
-      { hex: "f9f92be4", severity: "crit", points: 28, title: "Honeypot Blacklist Trap · blacklist(address)", desc: "Owner can blacklist specific buyer wallets from selling while buys remain open." },
-      { hex: "44337ea1", severity: "crit", points: 28, title: "Wallet Freeze / Blacklist · blacklistAccount", desc: "Detected blacklist enforcement selector (0x44337ea1) capable of blocking DEX sells." },
-      { hex: "fe575a87", severity: "warn", points: 14, title: "Blacklist Lookup · isBlacklisted(address)", desc: "Token checks blacklist mapping during transfers (common in centralized stablecoins or honeypots)." },
-      { hex: "9a7a23d6", severity: "crit", points: 26, title: "Anti-Sell Bot Trap · setAutomatedMarketMakerPair / addBot", desc: "Detected AMM pair / bot-blocking selector often abused to trap buyers after launch." },
-      { hex: "69fe0e2d", severity: "crit", points: 25, title: "Modifiable Transfer Tax · setFee / setTax", desc: "Developer can dynamically raise sell fees (up to 99% tax honeypot) after you buy." },
-      { hex: "8ea5220f", severity: "warn", points: 12, title: "Developer Tax Collector · devWallet / taxWallet", desc: "Contract routes fee percentages to an external developer wallet." },
-      { hex: "8456cb59", severity: "warn", points: 15, title: "Global Trading Freeze · pause()", desc: "Contract includes pause() (0x8456cb59), allowing admins to halt token transfers." },
-      { hex: "360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc", severity: "warn", points: 22, title: "Upgradeable EIP-1967 Proxy Contract", desc: "Implementation logic can be swapped via DELEGATECALL if proxy admin is controlled by a single EOA wallet." },
-      { hex: "363d3d373d3d3d363d73", severity: "warn", points: 18, title: "EIP-1167 Minimal Proxy Clone", desc: "Forwards all calls via DELEGATECALL to an external master contract." },
-      { hex: "8da5cb5b", severity: "info", points: 6, title: "Ownable Admin Control · owner()", desc: "Standard Ownable pattern detected — verify whether owner() is 0x000...000 (renounced) or multisig." },
-      { hex: "715018a6", severity: "safe", points: 0, title: "Renounce Capability · renounceOwnership()", desc: "Includes OpenZeppelin renounceOwnership() selector (0x715018a6)." },
-    ];
-
-    function loadContractPreset(chain, address, label) {
-      document.getElementById("chainSelect").value = chain;
-      document.getElementById("contractAddressInput").value = address;
-      document.getElementById("rawBytecodeInput").value = "";
-      runSmartContractAudit(label);
-    }
-
-    function loadSimulatedHoneypot() {
-      document.getElementById("chainSelect").value = "ethereum";
-      document.getElementById("contractAddressInput").value = "0xDEAD00009999111122223333444455556666BEEF";
-      // Realistic synthetic malicious EVM runtime bytecode containing PUSH4 selectors for mint, blacklist, setFee, pause, owner + DELEGATECALL (f4) & SELFDESTRUCT (ff)
-      document.getElementById("rawBytecodeInput").value =
-        "0x608060405234801561001057600080fd5b50600436106100a95760003560e01c" +
-        "806340c10f1914610110578063f9f92be41461013057806344337ea11461015057" +
-        "806369fe0e2d146101705780638456cb59146101905780638da5cb5b146101b057" +
-        "363d3d373d3d3d363d73deadbeefdeadbeefdeadbeefdeadbeefdeadbeef5af43d82803e903d91602b57fd5bf3ff";
-      runSmartContractAudit("Simulated Honeypot Trap ($MOONRUG)");
-    }
-
-    async function fetchLiveBytecode(chain, address) {
-      const urls = RPC_ENDPOINTS[chain] || RPC_ENDPOINTS.ethereum;
-      for (const rpcUrl of urls) {
-        try {
-          const res = await fetchWithTimeout(rpcUrl, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getCode", params: [address, "latest"] }),
-          }, 6000);
-          if (!res.ok) continue;
-          const data = await res.json();
-          if (typeof data.result === "string") return { bytecode: data.result, rpcUrl };
-        } catch {}
-      }
-      throw new Error("Could not reach public RPC nodes for " + chain + ". Check connection or paste raw bytecode.");
-    }
-
-    async function runSmartContractAudit(optionalLabel = "") {
-      if (!consumeScanCredit()) return;
-
-      const chain = document.getElementById("chainSelect").value;
-      const address = document.getElementById("contractAddressInput").value.trim();
-      const rawOverride = document.getElementById("rawBytecodeInput").value.trim();
-      const out = document.getElementById("contractAuditOutput");
-      const badge = document.getElementById("auditChainBadge");
-
-      badge.textContent = "SCANNING...";
-      badge.className = "badge badge-amber";
-      out.innerHTML = `<div class="muted" style="padding:18px 0;text-align:center;">Fetching EVM bytecode &amp; decompiling 4-byte selectors...</div>`;
-
-      try {
-        let bytecode = "";
-        let sourceLabel = "Pasted Raw Bytecode";
-
-        if (rawOverride.length > 10) {
-          bytecode = rawOverride;
-        } else {
-          if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
-            throw new Error("Enter a valid 42-character 0x contract address (e.g. 0x6982...1933).");
-          }
-          const rpcOut = await fetchLiveBytecode(chain, address);
-          bytecode = rpcOut.bytecode;
-          sourceLabel = chain.toUpperCase() + " Live RPC";
-        }
-
-        const cleanHex = bytecode.replace(/^0x/i, "").toLowerCase();
-        if (!cleanHex || cleanHex === "0" || cleanHex.length < 4) {
-          badge.textContent = "EOA / NO CODE";
-          badge.className = "badge badge-red";
-          out.innerHTML = `<div class="finding crit">
-            <div class="finding-title">No Smart Contract Deployed on ${escapeHtml(chain.toUpperCase())}</div>
-            <div class="finding-desc">Address <span class="mono">${escapeHtml(address)}</span> returned <span class="mono">0x</span>. Either this is a regular wallet address (EOA), the contract self-destructed, or you selected the wrong chain!</div>
-          </div>`;
-          return;
-        }
-
-        // Pull DexScreener liquidity context in parallel if real address
-        let dexContext = null;
-        if (!rawOverride && /^0x[0-9a-fA-F]{40}$/.test(address)) {
-          try {
-            const dRes = await fetchWithTimeout("https://api.dexscreener.com/latest/dex/tokens/" + address, {}, 4500);
-            if (dRes.ok) {
-              const dJson = await dRes.json();
-              if (dJson.pairs && dJson.pairs.length) dexContext = dJson.pairs[0];
-            }
-          } catch {}
-        }
-
-        // Optional deep backend REA WASM EVM audit if running on Docker backend
-        let backendWasmNote = null;
-        if (backendAvailable) {
-          try {
-            const bRes = await fetchWithTimeout("/api/alphashield/evm-audit", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ bytecode: cleanHex }),
-            }, 5000);
-            if (bRes.ok) {
-              const bJson = await bRes.json();
-              if (bJson.ok) backendWasmNote = "Verified by REA v6.8 WASM EVM Inspector";
-            }
-          } catch {}
-        }
-
-        let riskPoints = 0;
-        const findings = [];
-
-        for (const trap of EVM_TRAPS) {
-          if (cleanHex.includes(trap.hex)) {
-            riskPoints += trap.points;
-            findings.push(trap);
-          }
-        }
-
-        // Check tiny suspicious proxy / obfuscated size
-        const byteCount = Math.floor(cleanHex.length / 2);
-        if (byteCount < 180) {
-          riskPoints += 20;
-          findings.push({
-            severity: "warn",
-            title: `Minimal / Stub Bytecode (${byteCount} bytes)`,
-            desc: "Extremely small contract size — typically an unverified forwarding proxy hiding external logic.",
-          });
-        }
-
-        // Check DEX Liquidity Trap
-        if (dexContext) {
-          const liqUsd = Number(dexContext.liquidity?.usd || 0);
-          const sells24 = Number(dexContext.txns?.h24?.sells || 0);
-          const buys24 = Number(dexContext.txns?.h24?.buys || 0);
-          if (liqUsd > 0 && liqUsd < 5000) {
-            riskPoints += 25;
-            findings.push({
-              severity: "crit",
-              title: `Thin Liquidity Rug Risk (${fmtUsd(liqUsd)})`,
-              desc: "Pool liquidity is under $5,000 USD — high slippage & instant LP pull danger.",
-            });
-          } else if (liqUsd >= 50000) {
-            findings.push({
-              severity: "safe",
-              title: `Healthy DEX Liquidity (${fmtUsd(liqUsd)})`,
-              desc: `Active market pair (${dexContext.baseToken?.symbol || "TOKEN"}) with ${buys24} buys / ${sells24} sells in 24h.`,
-            });
-          }
-          if (buys24 > 25 && sells24 === 0) {
-            riskPoints += 45;
-            findings.unshift({
-              severity: "crit",
-              title: `ACTIVE HONEYPOT DETECTED (${buys24} Buys / 0 Sells!)`,
-              desc: "Buyers are entering the pool, but ZERO sells have succeeded in 24 hours. DO NOT BUY!",
-            });
-          }
-        }
-
-        if (findings.length === 0) {
-          findings.push({
-            severity: "safe",
-            title: "Clean Standard ERC-20 Bytecode Profile",
-            desc: "Zero hidden mint, blacklist, dynamic fee-hike, or proxy trap selectors found in deployed bytecode.",
-          });
-        }
-
-        const safetyScore = Math.max(5, Math.min(98, 100 - riskPoints));
-        const verdict = safetyScore >= 75 ? "LOW RISK · CLEAN" : safetyScore >= 45 ? "MEDIUM CAUTION" : "CRITICAL RUG / HONEYPOT RISK";
-        const color = safetyScore >= 75 ? "#10b981" : safetyScore >= 45 ? "#f59e0b" : "#ef4444";
-        const tokenTitle = optionalLabel || dexContext?.baseToken?.symbol || (address.slice(0, 8) + "..." + address.slice(-4));
-
-        badge.textContent = sourceLabel;
-        badge.className = safetyScore >= 75 ? "badge badge-green" : safetyScore >= 45 ? "badge badge-amber" : "badge badge-red";
-
-        lastAuditSummaryText =
-          `🛡️ AlphaShield Contract Audit: ${tokenTitle} (${chain.toUpperCase()})\n` +
-          `Safety Score: ${safetyScore}/100 — ${verdict}\n` +
-          `Bytecode Size: ${byteCount.toLocaleString()} bytes · Findings: ${findings[0].title}\n` +
-          `Scan any token free before you buy: ${getPublicStoreUrl()}`;
-
-        out.innerHTML = `
-          <div class="score-box">
-            <div class="score-circle" style="border-color:${color};color:${color};">${safetyScore}</div>
-            <div>
-              <div style="font-weight:900;font-size:15px;color:${color};">${verdict}</div>
-              <div style="font-weight:700;font-size:13px;margin-top:2px;">${escapeHtml(tokenTitle)} · <span class="mono">${byteCount.toLocaleString()} B</span></div>
-              <div class="muted" style="font-size:11.5px;margin-top:3px;">${backendWasmNote || "Audited 14 EVM trap selectors + live DEX pool metrics"}</div>
-            </div>
-          </div>
-
-          <div class="finding-list">
-            ${findings.map((f) => `
-              <div class="finding ${f.severity === "crit" ? "crit" : f.severity === "warn" ? "warn" : "safe"}">
-                <div class="finding-title">${escapeHtml(f.title)}</div>
-                <div class="finding-desc">${escapeHtml(f.desc)}</div>
-              </div>
-            `).join("")}
-          </div>
-
-          <div class="viral-box">
-            <div style="font-size:12px;font-weight:800;margin-bottom:7px;">🚀 Share Alert &amp; Attract Subscribers (Viral Growth Loop)</div>
-            <div style="display:flex;gap:7px;flex-wrap:wrap;">
-              <button class="btn btn-primary btn-sm" onclick="shareWhatsApp()">Share on WhatsApp</button>
-              <button class="btn btn-indigo btn-sm" onclick="shareTwitter()">Post Alert on X</button>
-              <button class="btn btn-sm" onclick="copyAlertText()">Copy Telegram Alert</button>
-            </div>
-          </div>
-        `;
-      } catch (err) {
-        badge.textContent = "ERROR";
-        badge.className = "badge badge-red";
-        out.innerHTML = `<div class="finding crit">
-          <div class="finding-title">Scan Failed</div>
-          <div class="finding-desc">${escapeHtml(err.message || String(err))}</div>
-        </div>`;
-      }
-    }
-
-    function shareWhatsApp() {
-      if (!lastAuditSummaryText) return;
-      window.open("https://wa.me/?text=" + encodeURIComponent(lastAuditSummaryText), "_blank");
-    }
-    function shareTwitter() {
-      if (!lastAuditSummaryText) return;
-      window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(lastAuditSummaryText), "_blank");
-    }
-    function copyAlertText() {
-      if (!lastAuditSummaryText) return;
-      navigator.clipboard?.writeText(lastAuditSummaryText).catch(() => {});
-      alert("Copied formatted Telegram/Discord alert card to clipboard!");
-    }
-
-    // =========================================================================
-    // TAB 3: SafeAPK & Crypto Wallet Drainer File Scanner
-    // =========================================================================
-    const DRAINER_PATTERNS = [
-      { pat: /mnemonic|seed\s*phrase|recovery\s*phrase|bip39/i, points: 32, sev: "crit", title: "Seed Phrase / BIP-39 Harvester Strings", desc: "Binary contains explicit mnemonic/recovery phrase harvesting keywords." },
-      { pat: /AccessibilityService|BIND_ACCESSIBILITY_SERVICE/i, points: 28, sev: "crit", title: "Android Accessibility Screen-Overlay Hook", desc: "Abused by Android banking/crypto trojans to read MetaMask/TrustWallet screens silently." },
-      { pat: /ClipboardManager|getPrimaryClip/i, points: 20, sev: "warn", title: "Clipboard Address-Swapper / Sniffer", desc: "Monitors clipboard to hijack copied 0x/BTC wallet addresses or private keys." },
-      { pat: /setApprovalForAll|eth_sign|personal_sign|Permit2/i, points: 24, sev: "warn", title: "Web3 Unlimited Permit / Blind-Sign Drainer Payload", desc: "Contains wallet approval/signature drainer RPC calls." },
-      { pat: /DexClassLoader|InMemoryDexClassLoader/i, points: 25, sev: "crit", title: "Dynamic Encrypted Payload Dropper (DexClassLoader)", desc: "Loads hidden secondary Android DEX code at runtime to evade Play Protect." },
-      { pat: /api\.telegram\.org\/bot|discord\.com\/api\/webhooks/i, points: 35, sev: "crit", title: "Hardcoded Telegram Bot / Discord Exfiltration Webhook", desc: "Stealer malware sends captured keys/cookies directly to an attacker's bot webhook!" },
-    ];
-
-    function computeShannonEntropy(bytes) {
-      if (!bytes.length) return 0;
-      const freq = new Uint32Array(256);
-      for (let i = 0; i < bytes.length; i++) freq[bytes[i]]++;
-      let h = 0;
-      for (let i = 0; i < 256; i++) {
-        if (freq[i] === 0) continue;
-        const p = freq[i] / bytes.length;
-        h -= p * Math.log2(p);
-      }
-      return h;
-    }
-
-    async function sha256Hex(buffer) {
-      const digest = await crypto.subtle.digest("SHA-256", buffer);
-      return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
-    }
-
-    async function handleApkFileSelect(ev) {
-      const file = ev.target.files?.[0];
-      if (!file) return;
-      if (!consumeScanCredit()) return;
-      const buf = await file.arrayBuffer();
-      await inspectBinaryBuffer(file.name, new Uint8Array(buf));
-    }
-
-    async function runSyntheticDrainerDemo(kind) {
-      if (!consumeScanCredit()) return;
-      const enc = new TextEncoder();
-      if (kind === "drainer_apk") {
-        const payload = "PK\x03\x04 classes.dex BIND_ACCESSIBILITY_SERVICE ClipboardManager getPrimaryClip " +
-          "extract bip39 mnemonic seed phrase setApprovalForAll https://api.telegram.org/bot77123:AAH/sendMessage DexClassLoader";
-        await inspectBinaryBuffer("SniperBot_Pro_Mod_v4.apk", enc.encode(payload));
-      } else {
-        const clean = "PK\x03\x04 META-INF/MANIFEST.MF AndroidManifest.xml PortfolioPriceWidget normal view only";
-        await inspectBinaryBuffer("PortfolioWidget_Signed_v1.2.apk", enc.encode(clean));
-      }
-    }
-
-    async function inspectBinaryBuffer(filename, bytes) {
-      const badge = document.getElementById("apkStatusBadge");
-      const out = document.getElementById("apkAuditOutput");
-      badge.textContent = "AUDITING...";
-
-      const hash = await sha256Hex(bytes.buffer);
-      const entropy = computeShannonEntropy(bytes);
-      const textSample = new TextDecoder("latin1").decode(bytes.slice(0, Math.min(bytes.length, 2 * 1024 * 1024)));
-
-      let risk = 0;
-      const hits = [];
-      for (const rule of DRAINER_PATTERNS) {
-        if (rule.pat.test(textSample)) {
-          risk += rule.points;
-          hits.push(rule);
-        }
-      }
-      if (entropy > 7.55 && bytes.length > 4096) {
-        risk += 22;
-        hits.push({
-          sev: "warn",
-          title: `High Packed/Encrypted Entropy (${entropy.toFixed(2)} bits/byte)`,
-          desc: "Near-random byte distribution (>7.55) indicates packed or encrypted binary sections.",
-        });
-      }
-      if (!hits.length) {
-        hits.push({
-          sev: "safe",
-          title: "No Wallet-Drainer or Keylogger Signatures Detected",
-          desc: "Zero seed-phrase harvesters, Telegram exfiltration webhooks, or Accessibility overlay hooks found.",
-        });
-      }
-
-      const safety = Math.max(4, Math.min(99, 100 - risk));
-      const color = safety >= 75 ? "#10b981" : safety >= 45 ? "#f59e0b" : "#ef4444";
-      const verdict = safety >= 75 ? "CLEAN ARTIFACT" : safety >= 45 ? "SUSPICIOUS · REVIEW" : "DANGER · WALLET DRAINER MALWARE";
-      badge.textContent = verdict;
-      badge.className = safety >= 75 ? "badge badge-green" : safety >= 45 ? "badge badge-amber" : "badge badge-red";
-
-      out.innerHTML = `
-        <div class="score-box">
-          <div class="score-circle" style="border-color:${color};color:${color};">${safety}</div>
-          <div style="min-width:0;">
-            <div style="font-weight:900;font-size:14.5px;color:${color};">${verdict}</div>
-            <div style="font-weight:700;font-size:13px;margin-top:2px;">${escapeHtml(filename)}</div>
-            <div class="mono muted" style="font-size:10.5px;margin-top:3px;word-break:break-all;">
-              SHA-256: ${hash.slice(0, 24)}... · Entropy: ${entropy.toFixed(2)} b/B
-            </div>
-          </div>
-        </div>
-        <div class="finding-list">
-          ${hits.map((h) => `
-            <div class="finding ${h.sev === "crit" ? "crit" : h.sev === "warn" ? "warn" : "safe"}">
-              <div class="finding-title">${escapeHtml(h.title)}</div>
-              <div class="finding-desc">${escapeHtml(h.desc)}</div>
-            </div>
-          `).join("")}
-        </div>
-      `;
-    }
-
-    // =========================================================================
-    // TAB 4: Kelviq Billing, Checkout & License Activation
-    // =========================================================================
-    function setBillingPeriod(period) {
-      billingPeriod = period;
-      document.getElementById("periodMonthlyBtn").className = period === "MONTHLY" ? "btn btn-indigo btn-sm" : "btn btn-sm";
-      document.getElementById("periodYearlyBtn").className = period === "YEARLY" ? "btn btn-indigo btn-sm" : "btn btn-sm";
-      document.getElementById("proPriceLabel").innerHTML = period === "MONTHLY"
-        ? `$19 <span class="muted" style="font-size:13px;font-weight:500;">/ month</span>`
-        : `$159 <span class="muted" style="font-size:13px;font-weight:500;">/ year ($13.25/mo)</span>`;
-      document.getElementById("whalePriceLabel").innerHTML = period === "MONTHLY"
-        ? `$49 <span class="muted" style="font-size:13px;font-weight:500;">/ month</span>`
-        : `$399 <span class="muted" style="font-size:13px;font-weight:500;">/ year ($33.25/mo)</span>`;
-    }
-
-    async function checkKelviqBackendStatus() {
-      const badge = document.getElementById("kelviqModeBadge");
-      const txt = document.getElementById("kelviqStatusText");
-      try {
-        const res = await fetchWithTimeout("/api/kelviq/status", {}, 3000);
-        if (!res.ok) throw new Error("no_backend");
-        const data = await res.json();
-        backendAvailable = true;
-        document.getElementById("connectionBadge").textContent = "Live Backend + REA WASM + Kelviq SDK";
-        if (data.kelviq?.live_keys_configured) {
-          badge.textContent = "LIVE KELVIQ (" + String(data.kelviq.environment).toUpperCase() + ")";
-          badge.className = "badge badge-green";
-          txt.textContent = `Connected to @kelviq/node-sdk (${data.kelviq.organization}). Live global checkouts, customer portal & signed webhooks are active.`;
-        } else {
-          badge.textContent = "SANDBOX READY";
-          badge.className = "badge badge-amber";
-          txt.textContent = `Server running @kelviq/node-sdk v2.9.0 (${data.kelviq?.organization || "Gandoh Bah Ai"}) in preview mode. Set KELVIQ_SERVER_API_KEY in .env.local or Render/Railway to accept real cards.`;
-        }
-      } catch {
-        backendAvailable = false;
-        const customLink = sGet("as_pay_pro_url", "");
-        if (customLink) {
-          badge.textContent = "HOSTED LINK LIVE";
-          badge.className = "badge badge-green";
-          txt.textContent = "Connected to your Kelviq Hosted Payment Link. Clicking Subscribe sends buyers directly to Kelviq checkout.";
-        } else {
-          badge.textContent = "24/7 EDGE PWA";
-          badge.className = "badge badge-indigo";
-          txt.textContent = "Running serverless in Brave Browser! Paste a Kelviq Hosted Checkout Link in the Founder Money Guide (or deploy studio/Dockerfile) to accept live payments.";
-        }
-      }
-    }
-
-    async function startKelviqCheckout(planId) {
-      // 1. Check if founder configured a direct Kelviq Hosted Payment Link
-      const customLink = sGet("as_pay_pro_url", "");
-      if (customLink && !backendAvailable) {
-        window.open(customLink, "_blank");
-        return;
-      }
-      // 2. Call @kelviq/node-sdk backend if available
-      if (backendAvailable) {
-        try {
-          const res = await fetch("/api/kelviq/checkout", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ plan_id: planId, charge_period: billingPeriod }),
-          });
-          const data = await res.json();
-          if (data.ok && data.checkout_url) {
-            window.location.href = data.checkout_url;
-            return;
-          }
-          if (data.ok && data.mode === "kelviq_preview_sandbox") {
-            sSet("as_pro_unlocked", { plan: data.plan?.name || "AlphaShield Pro", mode: "sandbox", at: new Date().toISOString() });
-            refreshQuotaUI();
-            alert("Preview Sandbox Checkout Completed (" + (data.plan?.name || planId) + ")! Add KELVIQ_SERVER_API_KEY in .env.local or Render/Railway to charge real payments.");
-            return;
-          }
-        } catch {}
-      }
-      // 3. Guide founder to link Kelviq Hosted URL or test license key
-      openPlaybookModal();
-    }
-
-    async function activateLicenseKey() {
-      const key = document.getElementById("licenseKeyInput").value.trim();
-      const fb = document.getElementById("licenseFeedback");
-      if (!key) {
-        fb.textContent = "Enter a license key first.";
-        return;
-      }
-      if (backendAvailable) {
-        try {
-          const res = await fetch("/api/kelviq/license/activate", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ license_key: key }),
-          });
-          const data = await res.json();
-          if (data.ok) {
-            sSet("as_pro_unlocked", { plan: data.plan_id, at: new Date().toISOString() });
-            refreshQuotaUI();
-            fb.style.color = "#34d399";
-            fb.textContent = "✓ Kelviq License Activated! Unlimited scans unlocked.";
-            return;
-          }
-          fb.style.color = "#f87171";
-          fb.textContent = data.error?.message || "Invalid license key.";
-          return;
-        } catch {}
-      }
-      if (key.toUpperCase() === "ALPHASHIELD-PRO-2026" || key.toUpperCase().startsWith("KELVIQ-")) {
-        sSet("as_pro_unlocked", { plan: "AlphaShield Pro", at: new Date().toISOString() });
-        refreshQuotaUI();
-        fb.style.color = "#34d399";
-        fb.textContent = "✓ Pro License Unlocked on this device! Unlimited Rug & APK scans active.";
-      } else {
-        fb.style.color = "#f87171";
-        fb.textContent = "Unrecognized key. Test demo unlock with ALPHASHIELD-PRO-2026 or connect backend.";
-      }
-    }
-
-    async function openCustomerPortal() {
-      if (backendAvailable) {
-        const res = await fetch("/api/kelviq/portal", { method: "POST" });
-        const data = await res.json();
-        const pUrl = data.portal_url || data.portal?.portalUrl || data.portal?.url;
-        if (data.ok && pUrl) {
-          window.open(pUrl, "_blank");
-          return;
-        }
-        alert(data.error?.message || "Set KELVIQ_SERVER_API_KEY to launch live Kelviq customer portal.");
-        return;
-      }
-      alert("Customer Billing Portal activates automatically when deployed with KELVIQ_SERVER_API_KEY on Railway or Render.");
-    }
-
-    function escapeHtml(s) {
-      return String(s ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
-    // Boot
-    refreshQuotaUI();
-    renderWatchlist();
-    loadGlobalTickers();
-    searchDexPairs();
-    checkKelviqBackendStatus();
-  </script>
+  <script src="/alphashield/app.js" defer></script>
 </body>
 </html>

@@ -3,8 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
- * Load .env.local / .env automatically per Kelviq's "Set up with AI" Step 1 convention
- * without overwriting environment variables already injected by Railway/Render/Docker.
+ * Load .env.local / .env without overwriting environment variables already injected by host/container.
  */
 export function loadDotEnvFiles(dirs = []) {
   for (const dir of dirs) {
@@ -36,6 +35,7 @@ export function loadDotEnvFiles(dirs = []) {
 export const ALPHASHIELD_PLANS = Object.freeze({
   free_trial: {
     id: "free_trial",
+    product: "alphashield",
     kelviq_identifier: null,
     name: "Free Starter",
     price_monthly_usd: 0,
@@ -43,8 +43,9 @@ export const ALPHASHIELD_PLANS = Object.freeze({
     daily_scans: 3,
     features: ["3 Contract & APK Rug Scans / day", "Top 10 Market Ticker", "Public Share Cards"],
   },
-  indie: {
-    id: "indie",
+  alphashield_pro: {
+    id: "alphashield_pro",
+    product: "alphashield",
     kelviq_identifier: process.env.KELVIQ_PRO_PLAN_ID || "alphashield-pro",
     name: "AlphaShield Pro Trader",
     price_monthly_usd: 19,
@@ -57,33 +58,23 @@ export const ALPHASHIELD_PLANS = Object.freeze({
       "Instant Pro License Key Activation across Phone & Desktop",
     ],
   },
-  team: {
-    id: "team",
+  alphashield_whale: {
+    id: "alphashield_whale",
+    product: "alphashield",
     kelviq_identifier: process.env.KELVIQ_WHALE_PLAN_ID || "alphashield-whale",
-    name: "Whale Desk & API",
+    name: "Whale Desk & Alerts",
     price_monthly_usd: 49,
     price_yearly_usd: 399,
     daily_scans: null,
     features: [
-      "Everything in Pro Trader + REST API Access (/api/v1/*)",
+      "Everything in Pro Trader + Priority Deep EVM Audits",
       "Multi-Chain Deep EVM Selector & Proxy Trap Audits",
-      "CI/CD GitHub Action Release Gate + 20 API Keys",
       "Priority Merchant-of-Record Invoicing via Kelviq",
     ],
   },
-  ai_lab: {
-    id: "ai_lab",
-    kelviq_identifier: process.env.KELVIQ_ENTERPRISE_PLAN_ID || "rea-ai-lab",
-    name: "Enterprise & AI Lab",
-    price_monthly_usd: 299,
-    price_yearly_usd: 2499,
-    daily_scans: null,
-    features: [
-      "Full REA Cloud Studio + HAR-to-RL AgentEnv Factory",
-      "Unlimited Team Seats, Custom Verifiers & Dedicated Support",
-    ],
-  },
 });
+
+const MONTHLY_DURATION_MS = 31 * 24 * 60 * 60 * 1000;
 
 export class KelviqBillingBridge {
   constructor() {
@@ -104,6 +95,19 @@ export class KelviqBillingBridge {
     return (process.env.KELVIQ_WEBHOOK_SECRET || "").trim();
   }
 
+  get merchantWallet() {
+    const w = (process.env.ALPHASHIELD_MERCHANT_WALLET || "").trim();
+    return /^0x[0-9a-fA-F]{40}$/.test(w) ? w : null;
+  }
+
+  /**
+   * Direct USDT activation requires BOTH a valid merchant wallet AND explicit opt-in
+   * (`ALPHASHIELD_ENABLE_DIRECT_USDT=true`) using tenant-bound payment intents.
+   */
+  get isDirectUsdtEnabled() {
+    return process.env.ALPHASHIELD_ENABLE_DIRECT_USDT === "true" && Boolean(this.merchantWallet);
+  }
+
   get environment() {
     const raw = (process.env.KELVIQ_ENV || "sandbox").trim();
     return raw === "production" ? "production" : "sandbox";
@@ -111,6 +115,15 @@ export class KelviqBillingBridge {
 
   get isConfigured() {
     return Boolean(this.serverKey);
+  }
+
+  isSandboxAllowed({ stripeConfigured = false } = {}) {
+    return (
+      process.env.ALLOW_SANDBOX_BILLING === "true" &&
+      process.env.NODE_ENV !== "production" &&
+      !this.isConfigured &&
+      !stripeConfigured
+    );
   }
 
   async init() {
@@ -121,9 +134,12 @@ export class KelviqBillingBridge {
       this.sdk = mod;
       if (this.serverKey) {
         const env = mod.environmentFromEnv(process.env.KELVIQ_ENV);
+        const customBaseUrl = (process.env.KELVIQ_API_BASE_URL || "").trim();
         this.client = new mod.Kelviq({
           accessToken: this.serverKey,
           environment: env,
+          ...(customBaseUrl ? { baseUrl: customBaseUrl, edgeApiUrl: customBaseUrl } : {}),
+          logger: false, // Prevent @kelviq/node-sdk from logging plaintext license keys to stdout
           enableCache: true,
           cacheTtlMs: 60_000,
         });
@@ -134,7 +150,10 @@ export class KelviqBillingBridge {
     }
   }
 
-  statusSummary() {
+  /**
+   * Public status summary — NEVER exposes `merchant_wallet` to unauthenticated or general status polls.
+   */
+  statusSummary({ stripeConfigured = false } = {}) {
     return {
       provider: "kelviq",
       organization: process.env.KELVIQ_ORG_NAME || "Gandoh Bah Ai",
@@ -142,34 +161,80 @@ export class KelviqBillingBridge {
       live_keys_configured: this.isConfigured,
       client_key_present: Boolean(this.clientKey),
       webhook_secret_present: Boolean(this.webhookSecret),
+      sandbox_enabled: this.isSandboxAllowed({ stripeConfigured }),
+      direct_usdt_enabled: this.isDirectUsdtEnabled,
       sdk_installed: Boolean(this.sdk),
       plans: Object.values(ALPHASHIELD_PLANS),
     };
   }
 
   planIdentifierFor(planId) {
-    if (planId === "indie" || planId === "pro" || planId === "alphashield-pro") {
-      return { internalId: "indie", kelviqPlan: process.env.KELVIQ_PRO_PLAN_ID || "alphashield-pro" };
+    const clean = String(planId || "").trim().toLowerCase();
+    if (clean === "alphashield_whale" || clean === "whale" || clean === "alphashield-whale") {
+      return {
+        product: "alphashield",
+        internalId: "alphashield_whale",
+        kelviqPlan: process.env.KELVIQ_WHALE_PLAN_ID || "alphashield-whale",
+      };
     }
-    if (planId === "team" || planId === "whale" || planId === "alphashield-whale") {
-      return { internalId: "team", kelviqPlan: process.env.KELVIQ_WHALE_PLAN_ID || "alphashield-whale" };
+    if (clean === "alphashield_pro" || clean === "alphashield-pro") {
+      return {
+        product: "alphashield",
+        internalId: "alphashield_pro",
+        kelviqPlan: process.env.KELVIQ_PRO_PLAN_ID || "alphashield-pro",
+      };
     }
-    if (planId === "ai_lab" || planId === "rea-ai-lab") {
-      return { internalId: "ai_lab", kelviqPlan: process.env.KELVIQ_ENTERPRISE_PLAN_ID || "rea-ai-lab" };
-    }
-    return { internalId: "indie", kelviqPlan: process.env.KELVIQ_PRO_PLAN_ID || "alphashield-pro" };
+    return null;
   }
 
-  internalPlanFromKelviq(kelviqIdentifier) {
-    const clean = String(kelviqIdentifier || "").toLowerCase();
-    if (clean.includes("whale") || clean.includes("team")) return "team";
-    if (clean.includes("lab") || clean.includes("enterprise")) return "ai_lab";
-    return "indie";
+  /**
+   * Strictly resolves an explicit Kelviq plan identifier to `{ product, plan_id }`.
+   * Returns `null` when missing or unrecognized — NEVER defaults to AlphaShield or Studio.
+   */
+  resolveEntitlementFromKelviq(kelviqIdentifier) {
+    const clean = String(kelviqIdentifier || "").trim().toLowerCase();
+    if (!clean) return null;
+
+    const enterpriseId = String(process.env.KELVIQ_ENTERPRISE_PLAN_ID || "rea-ai-lab")
+      .trim()
+      .toLowerCase();
+    const studioTeamId = String(process.env.KELVIQ_STUDIO_TEAM_PLAN_ID || "rea-shipgate-team")
+      .trim()
+      .toLowerCase();
+    const studioIndieId = String(process.env.KELVIQ_STUDIO_INDIE_PLAN_ID || "rea-indie")
+      .trim()
+      .toLowerCase();
+
+    if (clean === enterpriseId || clean === "ai_lab") {
+      return { product: "studio", plan_id: "ai_lab" };
+    }
+    if (clean === studioTeamId) {
+      return { product: "studio", plan_id: "team" };
+    }
+    if (clean === studioIndieId) {
+      return { product: "studio", plan_id: "indie" };
+    }
+
+    const whaleId = String(process.env.KELVIQ_WHALE_PLAN_ID || "alphashield-whale")
+      .trim()
+      .toLowerCase();
+    const proId = String(process.env.KELVIQ_PRO_PLAN_ID || "alphashield-pro")
+      .trim()
+      .toLowerCase();
+
+    if (clean === whaleId || clean === "alphashield_whale") {
+      return { product: "alphashield", plan_id: "alphashield_whale" };
+    }
+    if (clean === proId || clean === "alphashield_pro") {
+      return { product: "alphashield", plan_id: "alphashield_pro" };
+    }
+
+    return null;
   }
 
   async ensureCustomer(tenant) {
     await this.init();
-    if (!this.client) return;
+    if (!this.client || !tenant) return;
     try {
       await this.client.customers.retrieve({ customerId: tenant.id });
     } catch {
@@ -181,17 +246,34 @@ export class KelviqBillingBridge {
           metadata: { source: "alphashield" },
         });
       } catch {
-        // Ignore if customer already exists concurrently
+        // Ignore concurrent creation race
       }
     }
   }
 
-  async createCheckoutSession({ tenant, planId, chargePeriod = "MONTHLY", originUrl }) {
+  async createCheckoutSession({
+    tenant,
+    planId,
+    chargePeriod = "MONTHLY",
+    originUrl,
+    stripeConfigured = false,
+  }) {
     await this.init();
-    const { internalId, kelviqPlan } = this.planIdentifierFor(planId);
-    const planMeta = ALPHASHIELD_PLANS[internalId] || ALPHASHIELD_PLANS.indie;
+    if (!tenant) {
+      return { ok: false, status: 401, error: { message: "Sign in to start a subscription checkout." } };
+    }
+    const resolved = this.planIdentifierFor(planId);
+    if (!resolved) {
+      return {
+        ok: false,
+        status: 400,
+        error: { message: "Select a valid AlphaShield plan (alphashield_pro or alphashield_whale)." },
+      };
+    }
+    const { product, internalId, kelviqPlan } = resolved;
+    const planMeta = ALPHASHIELD_PLANS[internalId];
     const period = chargePeriod === "YEARLY" ? "YEARLY" : "MONTHLY";
-    const successUrl = `${originUrl}/alphashield?checkout=success&plan=${encodeURIComponent(internalId)}`;
+    const successUrl = `${originUrl}/alphashield?billing_return=1&plan=${encodeURIComponent(internalId)}`;
 
     if (this.client) {
       await this.ensureCustomer(tenant);
@@ -205,6 +287,7 @@ export class KelviqBillingBridge {
           : {}),
         metadata: {
           tenant_id: tenant.id,
+          product,
           plan_id: internalId,
           kelviq_plan: kelviqPlan,
         },
@@ -219,7 +302,18 @@ export class KelviqBillingBridge {
       };
     }
 
-    // Local/Preview Sandbox fallback until KELVIQ_SERVER_API_KEY is added to .env.local or Railway/Render
+    if (!this.isSandboxAllowed({ stripeConfigured })) {
+      return {
+        ok: false,
+        status: 503,
+        error: {
+          code: "billing_not_configured",
+          message:
+            "Live Kelviq billing is not configured on this server (sandbox billing is disabled unless ALLOW_SANDBOX_BILLING=true in non-production).",
+        },
+      };
+    }
+
     return {
       ok: true,
       provider: "kelviq",
@@ -235,13 +329,14 @@ export class KelviqBillingBridge {
 
   async createPortalSession({ tenant }) {
     await this.init();
+    if (!tenant) {
+      return { ok: false, status: 401, error: { message: "Sign in to access your billing portal." } };
+    }
     if (!this.client) {
       return {
         ok: false,
-        error: {
-          message:
-            "Add KELVIQ_SERVER_API_KEY to .env.local or hosting secrets to open the live Kelviq customer billing portal.",
-        },
+        status: 503,
+        error: { message: "Live Kelviq billing is not configured on this server." },
       };
     }
     await this.ensureCustomer(tenant);
@@ -249,59 +344,159 @@ export class KelviqBillingBridge {
     return { ok: true, portal };
   }
 
-  async activateLicenseKey({ licenseKey, tenant, instanceName = "web-browser" }) {
+  async activateLicenseKey({
+    licenseKey,
+    tenant,
+    instanceName = "web-browser",
+    stripeConfigured = false,
+  }) {
     await this.init();
-    const cleanKey = String(licenseKey || "").trim();
-    if (!cleanKey) {
-      return { ok: false, error: { message: "Enter a valid license key." } };
+    if (!tenant) {
+      return { ok: false, status: 401, error: { message: "Sign in before activating a license key." } };
     }
+    const cleanKey = String(licenseKey || "").trim();
+    if (!cleanKey || cleanKey.length > 256) {
+      return { ok: false, status: 400, error: { message: "Enter a valid license key." } };
+    }
+    const safeInstanceName = String(instanceName || "web-browser").trim().slice(0, 64) || "web-browser";
 
     if (this.client) {
       const validation = await this.client.license.validate({ licenseKey: cleanKey });
-      if (!validation.valid) {
+      if (!validation?.valid) {
         return {
           ok: false,
-          error: { message: validation.detail || "License key is invalid or expired." },
+          status: 400,
+          error: { code: "invalid_license", message: validation?.detail || "License key is invalid or expired." },
         };
       }
+
+      // Enforce customer ownership binding before activating
+      const licObj = validation.license || {};
+      const boundCustomerId = String(licObj.customerId || licObj.customer?.id || "").trim();
+      const boundEmail = String(licObj.customerEmail || licObj.customer?.email || "")
+        .trim()
+        .toLowerCase();
+
+      if (boundCustomerId && boundCustomerId !== tenant.id) {
+        return {
+          ok: false,
+          status: 403,
+          error: {
+            code: "license_customer_mismatch",
+            message: "This license key belongs to a different customer account.",
+          },
+        };
+      }
+      if (boundEmail && boundEmail !== String(tenant.email || "").toLowerCase()) {
+        return {
+          ok: false,
+          status: 403,
+          error: {
+            code: "license_customer_mismatch",
+            message: "This license key email does not match your signed-in workspace.",
+          },
+        };
+      }
+
+      const preExpires = licObj.expiresOn || licObj.expiresAt || validation.expiresOn || null;
+      if (preExpires && Date.parse(preExpires) <= Date.now()) {
+        return {
+          ok: false,
+          status: 400,
+          error: { code: "license_expired", message: "License key has expired." },
+        };
+      }
+
       const activated = await this.client.license.activate({
         licenseKey: cleanKey,
         customerId: tenant.id,
-        instanceName,
+        instanceName: safeInstanceName,
       });
-      const mappedPlan = this.internalPlanFromKelviq(activated.license?.plan?.identifier);
+
+      const actLic = activated?.license || licObj;
+      const actCustId = String(actLic?.customerId || actLic?.customer?.id || "").trim();
+      if (actCustId && actCustId !== tenant.id) {
+        return {
+          ok: false,
+          status: 403,
+          error: {
+            code: "license_customer_mismatch",
+            message: "Activated license customer does not match signed-in workspace.",
+          },
+        };
+      }
+
+      const planIdent = actLic?.plan?.identifier || actLic?.planIdentifier || licObj?.plan?.identifier;
+      const entitlement = this.resolveEntitlementFromKelviq(planIdent);
+      if (!entitlement) {
+        return {
+          ok: false,
+          status: 400,
+          error: {
+            code: "unknown_license_plan",
+            message: "License key does not map to a recognized product plan.",
+          },
+        };
+      }
+
+      const expiresOn =
+        activated?.expiresOn ||
+        actLic?.expiresOn ||
+        actLic?.expiresAt ||
+        preExpires ||
+        new Date(Date.now() + MONTHLY_DURATION_MS).toISOString();
+
+      if (Date.parse(expiresOn) <= Date.now()) {
+        return {
+          ok: false,
+          status: 400,
+          error: { code: "license_expired", message: "License key has expired." },
+        };
+      }
+
       return {
         ok: true,
         mode: `kelviq_${this.environment}`,
-        plan_id: mappedPlan,
-        instance_id: activated.instanceId,
-        expires_on: activated.expiresOn || null,
+        product: entitlement.product,
+        plan_id: entitlement.plan_id,
+        instance_id: activated.instanceId || null,
+        expires_on: expiresOn,
       };
     }
 
-    // Preview/Demo license key support before live keys are pasted into hosting env
-    if (/^(ALPHASHIELD|KVQ|PRO)-/i.test(cleanKey) && cleanKey.length >= 10) {
-      const mappedPlan = /WHALE|TEAM/i.test(cleanKey) ? "team" : "indie";
+    if (!this.isSandboxAllowed({ stripeConfigured })) {
+      return {
+        ok: false,
+        status: 503,
+        error: {
+          code: "license_server_unconfigured",
+          message:
+            "License verification service is not configured on this server (demo license keys are disabled unless ALLOW_SANDBOX_BILLING=true in non-production).",
+        },
+      };
+    }
+
+    if (/^(ALPHASHIELD|KVQ)-/i.test(cleanKey) && cleanKey.length >= 12) {
+      const mappedPlan = /WHALE/i.test(cleanKey) ? "alphashield_whale" : "alphashield_pro";
       return {
         ok: true,
         mode: "kelviq_preview_sandbox",
+        product: "alphashield",
         plan_id: mappedPlan,
         instance_id: `inst_${randomBytes(6).toString("hex")}`,
-        expires_on: null,
+        expires_on: new Date(Date.now() + MONTHLY_DURATION_MS).toISOString(),
       };
     }
     return {
       ok: false,
-      error: {
-        message:
-          "Unrecognized license key. In preview mode, try ALPHASHIELD-PRO-2026 (in production, keys validate against api.kelviq.com).",
-      },
+      status: 400,
+      error: { message: "Invalid sandbox license key." },
     };
   }
 
   async reportScanUsage(customerId, featureId = "contract-scans") {
     await this.init();
-    if (!this.client) return;
+    if (!this.client || !customerId) return;
     try {
       await this.client.reporting.reportUsage({
         customerId,
@@ -318,30 +513,69 @@ export class KelviqBillingBridge {
     if (!this.webhookSecret) {
       throw new Error("KELVIQ_WEBHOOK_SECRET is not configured.");
     }
-    if (this.sdk?.validateEvent) {
-      return this.sdk.validateEvent(rawBodyBuffer, headers, this.webhookSecret);
-    }
 
-    // Exact Kelviq v1 HMAC-SHA256 verification fallback
     const lower = {};
     for (const [k, v] of Object.entries(headers || {})) {
       lower[k.toLowerCase()] = Array.isArray(v) ? v[0] : v;
     }
-    const id = lower["webhook-id"];
-    const ts = lower["webhook-timestamp"];
-    const sig = lower["webhook-signature"];
-    if (!id || !ts || !sig || !String(sig).startsWith("v1,")) {
-      throw new Error("Missing or malformed Kelviq webhook signature headers.");
+    const id = String(lower["webhook-id"] || "").trim();
+    const ts = String(lower["webhook-timestamp"] || "").trim();
+    const sigHeader = String(lower["webhook-signature"] || "").trim();
+    if (!id || !ts || !sigHeader) {
+      throw new Error("Missing Kelviq webhook signature headers.");
     }
+
+    const tsNum = Number(ts);
+    const ageSec = Math.abs(Math.floor(Date.now() / 1000) - tsNum);
+    if (!Number.isFinite(ageSec) || ageSec > 300) {
+      throw new Error("Kelviq webhook timestamp outside 5-minute tolerance.");
+    }
+
+    if (this.sdk?.validateEvent && /^v1,[0-9a-fA-F]{64}$/.test(sigHeader)) {
+      const event = this.sdk.validateEvent(rawBodyBuffer, headers, this.webhookSecret);
+      return { event, webhookId: id };
+    }
+
     const body = rawBodyBuffer.toString("utf8");
-    const computed = createHmac("sha256", this.webhookSecret)
+    const utf8Digest = createHmac("sha256", Buffer.from(this.webhookSecret, "utf8"))
       .update(`${id}.${ts}.${body}`, "utf8")
-      .digest("hex");
-    const a = Buffer.from(computed, "hex");
-    const b = Buffer.from(String(sig).slice(3), "hex");
-    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      .digest();
+    const expectedBuffers = [
+      Buffer.from(utf8Digest.toString("hex"), "utf8"),
+      Buffer.from(utf8Digest.toString("base64"), "utf8"),
+    ];
+    if (this.webhookSecret.startsWith("whsec_")) {
+      const decodedSecret = Buffer.from(this.webhookSecret.slice("whsec_".length), "base64");
+      const b64KeyDigest = createHmac("sha256", decodedSecret)
+        .update(`${id}.${ts}.${body}`, "utf8")
+        .digest();
+      expectedBuffers.push(
+        Buffer.from(b64KeyDigest.toString("base64"), "utf8"),
+        Buffer.from(b64KeyDigest.toString("hex"), "utf8"),
+      );
+    }
+
+    const candidates = sigHeader
+      .split(/\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.startsWith("v1,"))
+      .map((s) => s.slice(3));
+
+    if (candidates.length === 0) {
+      throw new Error("Malformed Kelviq webhook-signature header.");
+    }
+
+    const matched = candidates.some((cand) => {
+      const candBuf = Buffer.from(cand, "utf8");
+      return expectedBuffers.some(
+        (expBuf) => candBuf.length === expBuf.length && timingSafeEqual(candBuf, expBuf),
+      );
+    });
+
+    if (!matched) {
       throw new Error("Kelviq webhook signature mismatch.");
     }
-    return JSON.parse(body);
+
+    return { event: JSON.parse(body), webhookId: id };
   }
 }

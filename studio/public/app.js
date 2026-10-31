@@ -1,31 +1,21 @@
-function safeGetStorage(key) {
+function purgeLegacyBrowserSessionTokens() {
   try {
-    return window.localStorage ? window.localStorage.getItem(key) || "" : "";
-  } catch {
-    return "";
-  }
-}
-
-function safeSetStorage(key, value) {
-  try {
-    if (window.localStorage) window.localStorage.setItem(key, value);
-  } catch {
-    // Cross-origin iframe with third-party storage blocked; keep in-memory state.sessionToken
-  }
-}
-
-function safeRemoveStorage(key) {
-  try {
-    if (window.localStorage) window.localStorage.removeItem(key);
+    if (window.localStorage) {
+      window.localStorage.removeItem("rea_studio_session");
+    }
   } catch {
     // Ignore storage block in restricted iframes
   }
 }
 
+purgeLegacyBrowserSessionTokens();
+
 const state = {
   bootstrap: null,
   tenant: null,
-  sessionToken: safeGetStorage("rea_studio_session"),
+  authenticated: false,
+  csrfToken: "",
+  lastIssuedApiSecret: "",
   activeTab: "xray",
   currentXray: null,
   currentShipgate: null,
@@ -57,12 +47,24 @@ function toast(msg) {
 }
 
 function renderTenantTopbar(tenant) {
-  if (!tenant) return;
-  state.tenant = tenant;
+  state.tenant = tenant || null;
   const planEl = document.getElementById("stat-tenant-plan");
   const quotaEl = document.getElementById("stat-quota");
   const accBtn = document.getElementById("btn-open-account");
   const subEl = document.getElementById("account-modal-sub");
+
+  if (!tenant) {
+    if (planEl) planEl.textContent = "Guest";
+    if (quotaEl) {
+      quotaEl.textContent = "Sign In";
+      quotaEl.style.color = "var(--amber)";
+    }
+    if (accBtn) accBtn.textContent = "Sign In / Sign Up";
+    if (subEl) subEl.textContent = "Not signed in — create or sign in to an isolated workspace";
+    document.getElementById("stat-sealed").textContent = "0";
+    document.getElementById("evidence-count-badge").textContent = "0";
+    return;
+  }
 
   if (planEl) planEl.textContent = `${tenant.plan_badge}`;
   if (quotaEl) {
@@ -73,6 +75,28 @@ function renderTenantTopbar(tenant) {
   }
   if (accBtn) accBtn.textContent = tenant.org_name;
   if (subEl) subEl.textContent = `Active: ${tenant.org_name} (${tenant.email}) · ${tenant.plan_name}`;
+}
+
+function renderUnauthenticatedPrompt(areaId) {
+  const area = document.getElementById(areaId);
+  if (!area) return;
+  area.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <h2>Isolated Workspace Authentication Required</h2>
+        <span class="pill pill-amber">Tenant-Isolated Security</span>
+      </div>
+      <p class="muted-sm" style="margin-top:0;">
+        Sign in or create a free isolated workspace (5 free monthly scans) to inspect artifacts, retain SHA-256 Evidence envelopes, and launch private AgentEnv sandboxes.
+      </p>
+      <button class="btn btn-primary btn-sm" type="button" data-open-auth-prompt="1">
+        Create Free Workspace or Sign In
+      </button>
+    </div>
+  `;
+  area.querySelector("[data-open-auth-prompt]")?.addEventListener("click", () => {
+    document.getElementById("account-modal").classList.remove("hidden");
+  });
 }
 
 function openBillingModal(reasonText = null) {
@@ -97,7 +121,7 @@ async function startPlanCheckout(planId) {
     return;
   }
 
-  // Sandbox Checkout Confirmation UI when STRIPE_SECRET_KEY is not configured yet
+  // Sandbox Checkout Confirmation UI (only returned when ALLOW_SANDBOX_BILLING=true in non-prod)
   const slot = document.getElementById("sandbox-checkout-slot");
   openBillingModal();
   slot.innerHTML = `
@@ -107,7 +131,7 @@ async function startPlanCheckout(planId) {
         <span class="pill pill-cyan">Session ${esc(shortHash(res.session_id, 18))}</span>
       </div>
       <div class="finding-detail">
-        <code>STRIPE_SECRET_KEY</code> is not set in environment variables yet, so Studio is running in interactive Sandbox Checkout mode (set <code>STRIPE_SECRET_KEY</code> &amp; <code>STRIPE_WEBHOOK_SECRET</code> in production for live card billing).
+        Explicit local sandbox billing mode is enabled. Confirm below to test plan provisioning.
       </div>
       <button class="btn btn-emerald btn-sm" id="btn-confirm-sandbox-pay" type="button">
         Simulate Successful Stripe Payment &amp; Provision ${esc(res.plan.name)}
@@ -124,50 +148,83 @@ async function startPlanCheckout(planId) {
       document.getElementById("billing-modal").classList.add("hidden");
       toast(`Upgraded to ${confirmRes.tenant.plan_name}! Quotas unlocked.`);
       if (state.activeTab === "commercial") await loadCommercialTab();
+    } else {
+      toast(confirmRes.error?.message || "Sandbox provisioning disabled");
     }
   });
 }
 
 async function api(path, options = {}) {
-  const sessionHeaders = state.sessionToken ? { "x-studio-session": state.sessionToken } : {};
+  const method = String(options.method || "GET").toUpperCase();
+  const csrfHeaders =
+    method !== "GET" && method !== "HEAD" && state.csrfToken
+      ? { "x-csrf-token": state.csrfToken }
+      : {};
   const res = await fetch(path, {
+    credentials: "same-origin",
+    ...options,
     headers: {
       "content-type": "application/json",
-      ...sessionHeaders,
+      ...csrfHeaders,
       ...(options.headers || {}),
     },
-    ...options,
   });
   const data = await res.json();
-  if (data?.tenant) renderTenantTopbar(data.tenant);
-  if (res.status === 402) {
+  if (typeof data?.csrf_token === "string" && data.csrf_token) {
+    state.csrfToken = data.csrf_token;
+  }
+  if (data?.tenant) {
+    state.authenticated = true;
+    renderTenantTopbar(data.tenant);
+  }
+  if (res.status === 401 && path !== "/api/auth/login") {
+    state.authenticated = false;
+    state.csrfToken = "";
+    state.tenant = null;
+    renderTenantTopbar(null);
+    document.getElementById("account-modal")?.classList.remove("hidden");
+  } else if (res.status === 402) {
     openBillingModal(data?.error?.message || "Plan quota reached. Upgrade to continue.");
   }
-  await refreshLedgerCounter();
+  if (state.authenticated && path !== "/api/evidence" && path !== "/api/bootstrap") {
+    await refreshLedgerCounter();
+  }
   return data;
 }
 
 async function uploadFile(file) {
+  if (!state.authenticated) {
+    document.getElementById("account-modal")?.classList.remove("hidden");
+    throw new Error("Sign in to your workspace before uploading artifacts.");
+  }
   const buf = await file.arrayBuffer();
   const res = await fetch("/api/upload", {
     method: "POST",
+    credentials: "same-origin",
     headers: {
       "content-type": "application/octet-stream",
       "x-filename": file.name,
-      ...(state.sessionToken ? { "x-studio-session": state.sessionToken } : {}),
+      ...(state.csrfToken ? { "x-csrf-token": state.csrfToken } : {}),
     },
     body: buf,
   });
   const data = await res.json();
+  if (res.status === 401) {
+    state.authenticated = false;
+    state.csrfToken = "";
+    document.getElementById("account-modal")?.classList.remove("hidden");
+  }
   if (!data.ok) throw new Error(data.error?.message || "Upload failed");
   return data;
 }
 
 async function refreshLedgerCounter() {
+  if (!state.authenticated) return;
   try {
     const res = await fetch("/api/evidence", {
-      headers: state.sessionToken ? { "x-studio-session": state.sessionToken } : {},
+      credentials: "same-origin",
     });
+    if (!res.ok) return;
     const data = await res.json();
     if (data.ok) {
       if (data.tenant) renderTenantTopbar(data.tenant);
@@ -198,16 +255,11 @@ function setupTabs() {
         p.classList.toggle("active", p.id === `panel-${tab}`);
       });
 
-      if (!state.loadedTabs.has(tab)) {
-        state.loadedTabs.add(tab);
-        if (tab === "shipgate" && state.bootstrap?.samples?.binary?.[0]) {
-          await runShipGateSample(state.bootstrap.samples.binary[0].id);
-        } else if (tab === "rl" && state.bootstrap?.samples?.har?.[0]) {
-          await runRlSample(state.bootstrap.samples.har[0].id);
-        }
-      }
-      if (tab === "commercial") {
+      if (tab === "commercial" && state.authenticated) {
         await loadCommercialTab();
+      } else if (tab === "commercial" && !state.authenticated) {
+        renderApiKeys();
+        renderEvidenceTable([]);
       }
     });
   });
@@ -978,7 +1030,7 @@ function renderRlStudio(res) {
         <div class="kpi-box">
           <div class="kpi-label">Confirmed CRUD Writes</div>
           <div class="kpi-val" style="color:var(--cyan)">${cov.writes?.served?.length ?? 0}</div>
-          <div class="kpi-sub">${(cov.writes?.served || []).map((w) => `${w.tool} (${w.effect})`).join(", ") || "none"}</div>
+          <div class="kpi-sub">${(cov.writes?.served || []).map((w) => `${esc(w.tool)} (${esc(w.effect)})`).join(", ") || "none"}</div>
         </div>
         <div class="kpi-box">
           <div class="kpi-label">Withheld Unconfirmed Writes</div>
@@ -1190,6 +1242,11 @@ function setupRevenueSimulator() {
 }
 
 async function loadCommercialTab() {
+  if (!state.authenticated) {
+    renderApiKeys();
+    renderEvidenceTable([]);
+    return;
+  }
   const boot = await api("/api/bootstrap");
   if (boot.ok) {
     state.apiKeys = boot.api_keys || [];
@@ -1199,10 +1256,35 @@ async function loadCommercialTab() {
   if (ev.ok) renderEvidenceTable(ev.records);
 }
 
+function renderOneTimeKeyBanner() {
+  const slot = document.getElementById("one-time-key-banner");
+  if (!slot) return;
+  if (!state.lastIssuedApiSecret) {
+    slot.innerHTML = "";
+    return;
+  }
+  slot.innerHTML = `
+    <div class="finding-card finding-PASS" style="margin-bottom:10px;">
+      <div class="finding-head">
+        <span class="finding-title">Copy Your Secret API Key Now (Shown Once Only)</span>
+        <span class="pill pill-emerald">SHA-256 Hashed at Rest</span>
+      </div>
+      <div class="finding-detail mono" style="word-break:break-all;"><code>${esc(state.lastIssuedApiSecret)}</code></div>
+      <div class="finding-rem">For security, the server stores only the SHA-256 digest and never returns this plaintext token again.</div>
+    </div>
+  `;
+}
+
 function renderApiKeys() {
   const wrap = document.getElementById("api-keys-table-wrap");
-  const activeKey = state.apiKeys[state.apiKeys.length - 1]?.token || "rea_sk_live_demo";
+  const bearerInput = document.getElementById("v1-bearer-input");
+  if (bearerInput && state.lastIssuedApiSecret && !bearerInput.value) {
+    bearerInput.value = state.lastIssuedApiSecret;
+  }
+  const activeKey = bearerInput?.value.trim() || state.lastIssuedApiSecret || "<YOUR_REA_API_KEY>";
   const origin = window.location.origin;
+
+  renderOneTimeKeyBanner();
 
   document.getElementById("curl-snippet-box").textContent =
     `curl -sS -X POST "${origin}/api/v1/xray" \\\n` +
@@ -1219,12 +1301,17 @@ function renderApiKeys() {
       `  node /tmp/shipgate-cli.mjs xray ./dist/app.asar`;
   }
 
+  if (!state.authenticated) {
+    wrap.innerHTML = `<div class="muted-sm">Sign in to view or issue workspace API keys.</div>`;
+    return;
+  }
+
   wrap.innerHTML = `
     <table class="data-table">
       <thead>
         <tr>
           <th>Key Label</th>
-          <th>Secret Token</th>
+          <th>Key Prefix (Hashed)</th>
           <th>Plan</th>
           <th>Metered Calls</th>
           <th>Action</th>
@@ -1236,7 +1323,7 @@ function renderApiKeys() {
             (k) => `
           <tr>
             <td><strong>${esc(k.name)}</strong></td>
-            <td class="mono"><code>${esc(k.token)}</code></td>
+            <td class="mono"><code>${esc(k.prefix || "rea_sk_****")}</code></td>
             <td><span class="pill pill-amber">${esc(state.tenant?.plan_name || "Trial")}</span></td>
             <td class="mono">${k.calls}</td>
             <td><button class="btn btn-sm btn-outline" data-revoke-key="${esc(k.id)}">Revoke</button></td>
@@ -1265,7 +1352,7 @@ function renderApiKeys() {
 function renderEvidenceTable(records) {
   const wrap = document.getElementById("evidence-ledger-wrap");
   if (!records.length) {
-    wrap.innerHTML = `<div class="muted-sm">No Evidence sealed yet. Run any scan in Tabs 1–3.</div>`;
+    wrap.innerHTML = `<div class="muted-sm">No Evidence sealed in this workspace yet. Sign in and run a scan in Tabs 1–3.</div>`;
     return;
   }
   wrap.innerHTML = `
@@ -1307,7 +1394,7 @@ async function openEvidenceModal(evidenceId) {
   if (!evidenceId) return;
   const res = await api(`/api/evidence/${encodeURIComponent(evidenceId)}`);
   if (!res.ok) {
-    toast("Evidence envelope not found");
+    toast(res.error?.message || "Evidence envelope not found");
     return;
   }
   const modal = document.getElementById("evidence-modal");
@@ -1319,12 +1406,56 @@ async function openEvidenceModal(evidenceId) {
   modal.classList.remove("hidden");
 }
 
+function wireAuthenticatedDownloads() {
+  document.addEventListener("click", async (e) => {
+    const anchor = e.target.closest("a[href]");
+    if (!anchor) return;
+    const href = anchor.getAttribute("href") || "";
+    const isProtectedReport = href.startsWith("/api/evidence/") && href.includes("/report");
+    const isProtectedZip = href.startsWith("/api/rl/download/");
+    if (!isProtectedReport && !isProtectedZip) return;
+
+    e.preventDefault();
+    if (!state.authenticated) {
+      document.getElementById("account-modal")?.classList.remove("hidden");
+      toast("Sign in to download workspace Evidence and AgentEnv bundles.");
+      return;
+    }
+    try {
+      const resp = await fetch(href, {
+        credentials: "same-origin",
+      });
+      if (!resp.ok) {
+        toast("Authorized artifact not found or session expired.");
+        return;
+      }
+      const blob = await resp.blob();
+      const disp = resp.headers.get("content-disposition") || "";
+      const match = disp.match(/filename="([^"]+)"/);
+      const fallbackName = isProtectedZip ? "agentenv.zip" : href.includes("format=json") ? "evidence.json" : "audit.md";
+      const url = URL.createObjectURL(blob);
+      const dl = document.createElement("a");
+      dl.href = url;
+      dl.download = match?.[1] || fallbackName;
+      document.body.appendChild(dl);
+      dl.click();
+      setTimeout(() => {
+        dl.remove();
+        URL.revokeObjectURL(url);
+      }, 500);
+    } catch {
+      toast("Download failed");
+    }
+  });
+}
+
 // ============================================================================
 // Bootstrap & Event Wiring
 // ============================================================================
 async function init() {
   setupTabs();
   setupRevenueSimulator();
+  wireAuthenticatedDownloads();
 
   document.getElementById("modal-close-btn").addEventListener("click", () => {
     document.getElementById("evidence-modal").classList.add("hidden");
@@ -1351,6 +1482,8 @@ async function init() {
     btn.addEventListener("click", () => startPlanCheckout(btn.dataset.checkoutPlan));
   });
 
+  document.getElementById("v1-bearer-input")?.addEventListener("input", () => renderApiKeys());
+
   document.getElementById("register-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const res = await api("/api/auth/register", {
@@ -1365,13 +1498,19 @@ async function init() {
       toast(res.error?.message || "Registration failed");
       return;
     }
-    state.sessionToken = res.session_token;
-    safeSetStorage("rea_studio_session", res.session_token);
+    state.authenticated = true;
+    state.csrfToken = res.csrf_token || state.csrfToken;
+    if (res.starter_api_key?.secret_token) {
+      state.lastIssuedApiSecret = res.starter_api_key.secret_token;
+      const bearerInput = document.getElementById("v1-bearer-input");
+      if (bearerInput) bearerInput.value = state.lastIssuedApiSecret;
+    }
     state.apiKeys = res.api_keys || [];
     renderTenantTopbar(res.tenant);
     renderApiKeys();
     document.getElementById("account-modal").classList.add("hidden");
-    toast(`Created workspace ${res.tenant.org_name} (5 free scans provisioned)`);
+    toast(`Created isolated workspace ${res.tenant.org_name}`);
+    await runXraySample("acme-desktop-v1");
   });
 
   document.getElementById("login-form").addEventListener("submit", async (e) => {
@@ -1387,26 +1526,36 @@ async function init() {
       toast(res.error?.message || "Sign-in failed");
       return;
     }
-    state.sessionToken = res.session_token;
-    safeSetStorage("rea_studio_session", res.session_token);
+    state.authenticated = true;
+    state.csrfToken = res.csrf_token || state.csrfToken;
+    state.lastIssuedApiSecret = "";
     state.apiKeys = res.api_keys || [];
     renderTenantTopbar(res.tenant);
     renderApiKeys();
     document.getElementById("account-modal").classList.add("hidden");
     toast(`Signed in to ${res.tenant.org_name}`);
+    await runXraySample("acme-desktop-v1");
   });
 
-  document.getElementById("btn-reset-demo-sess").addEventListener("click", async () => {
-    state.sessionToken = "";
-    safeRemoveStorage("rea_studio_session");
-    const boot = await api("/api/bootstrap");
-    if (boot.ok) {
-      state.apiKeys = boot.api_keys || [];
-      renderTenantTopbar(boot.tenant);
-      renderApiKeys();
+  document.getElementById("btn-logout-sess").addEventListener("click", async () => {
+    if (state.authenticated) {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: state.csrfToken ? { "x-csrf-token": state.csrfToken } : {},
+      }).catch(() => {});
     }
+    state.authenticated = false;
+    state.csrfToken = "";
+    state.tenant = null;
+    state.lastIssuedApiSecret = "";
+    state.apiKeys = [];
+    renderTenantTopbar(null);
+    renderApiKeys();
+    renderEvidenceTable([]);
+    renderUnauthenticatedPrompt("xray-results-area");
     document.getElementById("account-modal").classList.add("hidden");
-    toast("Switched back to Default Demo Workspace");
+    toast("Signed out and revoked workspace session");
   });
 
   document.getElementById("xray-trace-form").addEventListener("submit", (e) => {
@@ -1419,19 +1568,31 @@ async function init() {
   document.getElementById("btn-create-key").addEventListener("click", async () => {
     const res = await api("/api/keys/create", {
       method: "POST",
-      body: JSON.stringify({ name: `Enterprise Key #${state.apiKeys.length + 1}`, plan: "AI Lab Enterprise ($1,499/mo)" }),
+      body: JSON.stringify({ name: `CI Key #${state.apiKeys.length + 1}` }),
     });
     if (res.ok) {
+      if (res.key?.secret_token) {
+        state.lastIssuedApiSecret = res.key.secret_token;
+        const bearerInput = document.getElementById("v1-bearer-input");
+        if (bearerInput) bearerInput.value = state.lastIssuedApiSecret;
+      }
       state.apiKeys = res.api_keys;
       renderApiKeys();
-      toast("Issued new live API key");
+      toast("Issued new API key — copy secret token now (shown once)");
+    } else if (res.error?.message) {
+      toast(res.error.message);
     }
   });
 
   document.querySelectorAll("[data-v1-test]").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const kind = btn.dataset.v1Test;
-      const activeKey = state.apiKeys[state.apiKeys.length - 1]?.token || "";
+      const bearerInput = document.getElementById("v1-bearer-input");
+      const activeKey = bearerInput?.value.trim() || state.lastIssuedApiSecret || "";
+      if (!activeKey) {
+        toast("Issue a new API key or paste your rea_sk_live_... secret token first.");
+        return;
+      }
       const url = `/api/v1/${kind}`;
       const res = await fetch(url, {
         method: kind === "status" ? "GET" : "POST",
@@ -1444,69 +1605,92 @@ async function init() {
       const json = await res.json();
       document.getElementById("v1-response-box").textContent = JSON.stringify(json, null, 2).slice(0, 3500);
       await loadCommercialTab();
-      toast(`Authenticated ${url} executed`);
+      toast(`${res.ok ? "Authenticated" : "Rejected"} ${url} (${res.status})`);
     });
   });
 
   // Upload handlers across all 3 suites
   wireDropzone("xray-dropzone", "xray-file-input", "xray-browse-btn", async (file) => {
-    toast(`Uploading ${file.name}…`);
-    const up = await uploadFile(file);
-    const res = await api("/api/xray/scan", {
-      method: "POST",
-      body: JSON.stringify({ saved_path: up.saved_path }),
-    });
-    if (res.ok) {
-      state.currentXray = res;
-      renderXrayResult(res);
-      toast(`Scanned ${file.name}`);
-    } else {
-      toast(res.error?.message || "Failed to analyze uploaded JS/ASAR");
+    try {
+      toast(`Uploading ${file.name}…`);
+      const up = await uploadFile(file);
+      const res = await api("/api/xray/scan", {
+        method: "POST",
+        body: JSON.stringify({ saved_path: up.saved_path }),
+      });
+      if (res.ok) {
+        state.currentXray = res;
+        renderXrayResult(res);
+        toast(`Scanned ${file.name}`);
+      } else {
+        toast(res.error?.message || "Failed to analyze uploaded JS/ASAR");
+      }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Upload failed");
     }
   });
 
   wireDropzone("shipgate-dropzone", "shipgate-file-input", "shipgate-browse-btn", async (file) => {
-    toast(`Uploading ${file.name}…`);
-    const up = await uploadFile(file);
-    const res = await api("/api/shipgate/inspect", {
-      method: "POST",
-      body: JSON.stringify({ saved_path: up.saved_path }),
-    });
-    if (res.ok) {
-      state.currentShipgate = res;
-      renderShipGateResult(res);
-      toast(`Inspected ${file.name}`);
-    } else {
-      toast(res.error?.message || "Inspection failed");
+    try {
+      toast(`Uploading ${file.name}…`);
+      const up = await uploadFile(file);
+      const res = await api("/api/shipgate/inspect", {
+        method: "POST",
+        body: JSON.stringify({ saved_path: up.saved_path }),
+      });
+      if (res.ok) {
+        state.currentShipgate = res;
+        renderShipGateResult(res);
+        toast(`Inspected ${file.name}`);
+      } else {
+        toast(res.error?.message || "Inspection failed");
+      }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Upload failed");
     }
   });
 
   wireDropzone("rl-dropzone", "rl-file-input", "rl-browse-btn", async (file) => {
-    toast(`Uploading ${file.name}…`);
-    const up = await uploadFile(file);
-    const res = await api("/api/rl/build", {
-      method: "POST",
-      body: JSON.stringify({ saved_path: up.saved_path }),
-    });
-    if (res.ok) {
-      state.currentRl = res;
-      renderRlStudio(res);
-      toast(`Built & launched live AgentEnv from ${file.name}`);
-    } else {
-      toast(res.error?.message || "HAR build failed");
+    try {
+      toast(`Uploading ${file.name}…`);
+      const up = await uploadFile(file);
+      const res = await api("/api/rl/build", {
+        method: "POST",
+        body: JSON.stringify({ saved_path: up.saved_path }),
+      });
+      if (res.ok) {
+        state.currentRl = res;
+        renderRlStudio(res);
+        toast(`Built & launched live AgentEnv from ${file.name}`);
+      } else {
+        toast(res.error?.message || "HAR build failed");
+      }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Upload failed");
     }
   });
 
-  // Initial bootstrap + run first Electron X-Ray scan immediately
+  // Initial bootstrap (safe read-only; only runs scan if valid workspace session exists)
   const boot = await api("/api/bootstrap");
   if (boot.ok) {
     state.bootstrap = boot;
-    state.apiKeys = boot.api_keys || [];
-    if (boot.tenant) renderTenantTopbar(boot.tenant);
     renderXraySampleList("acme-desktop-v1");
     renderShipgateSampleList("libvault-elf");
     renderRlSampleList("helpdesk-crm");
-    await runXraySample("acme-desktop-v1");
+
+    if (boot.authenticated && boot.tenant) {
+      state.authenticated = true;
+      state.csrfToken = boot.csrf_token || state.csrfToken;
+      state.apiKeys = boot.api_keys || [];
+      renderTenantTopbar(boot.tenant);
+      renderApiKeys();
+      await refreshLedgerCounter();
+    } else {
+      state.authenticated = false;
+      state.csrfToken = "";
+      renderTenantTopbar(null);
+      renderUnauthenticatedPrompt("xray-results-area");
+    }
   }
 }
 

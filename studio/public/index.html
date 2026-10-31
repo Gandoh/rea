@@ -320,9 +320,14 @@
                 <h2>Live B2B REST API Keys &amp; Metered Endpoint Tester</h2>
                 <button class="btn btn-sm btn-primary" id="btn-create-key">+ Issue New API Key</button>
               </div>
+              <div id="one-time-key-banner"></div>
               <div id="api-keys-table-wrap"></div>
 
               <div class="divider"></div>
+              <div style="margin-bottom:8px;">
+                <label class="field-label" for="v1-bearer-input">Bearer API Key for Live Tester (shown once at key creation)</label>
+                <input id="v1-bearer-input" class="input mono" type="password" placeholder="Paste rea_sk_live_... secret token to test /api/v1/*" autocomplete="off" />
+              </div>
               <div class="row-between">
                 <h3>Test Live Authenticated Endpoint (<code>/api/v1/*</code>)</h3>
                 <div class="btn-group">
@@ -386,8 +391,8 @@
       <div class="modal-window" style="width:min(540px, 95vw);">
         <div class="modal-header">
           <div>
-            <h3>Workspace Account &amp; Tenant Switcher</h3>
-            <div class="muted-sm" id="account-modal-sub">Active: Acme AppSec Workspace</div>
+            <h3>Workspace Account &amp; Session Security</h3>
+            <div class="muted-sm" id="account-modal-sub">Not signed in — create or sign in to an isolated workspace</div>
           </div>
           <button class="btn btn-sm btn-outline" id="account-close-btn" type="button">Close</button>
         </div>
@@ -404,8 +409,8 @@
                 <input id="reg-email" type="email" class="input" placeholder="sec@hyperion.ai" required />
               </div>
               <div>
-                <label class="field-label">Password (min 6 chars)</label>
-                <input id="reg-pass" type="password" class="input" placeholder="••••••••" required />
+                <label class="field-label">Password (min 8 chars)</label>
+                <input id="reg-pass" type="password" class="input" minlength="8" placeholder="••••••••" required />
               </div>
               <button type="submit" class="btn btn-primary btn-block">Sign Up (5 Free Scans)</button>
             </form>
@@ -414,14 +419,14 @@
               <h3 style="margin:0;font-size:14px;">Sign In Existing</h3>
               <div>
                 <label class="field-label">Work Email</label>
-                <input id="login-email" type="email" class="input" value="founder@acme-security.dev" required />
+                <input id="login-email" type="email" class="input" placeholder="you@company.com" required />
               </div>
               <div>
                 <label class="field-label">Password</label>
-                <input id="login-pass" type="password" class="input" value="demo-password-123" required />
+                <input id="login-pass" type="password" class="input" placeholder="••••••••" required />
               </div>
               <button type="submit" class="btn btn-outline btn-block">Sign In</button>
-              <button type="button" class="btn btn-sm btn-secondary btn-block" id="btn-reset-demo-sess">Use Default Demo Tenant</button>
+              <button type="button" class="btn btn-sm btn-secondary btn-block" id="btn-logout-sess">Sign Out of Workspace</button>
             </form>
           </div>
         </div>
