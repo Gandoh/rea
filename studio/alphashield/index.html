@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="theme-color" content="#060913" />
+  <title>AlphaShield by Gandoh Bah Ai — Live Crypto Terminal &amp; Contract Rug-Scanner</title>
+  <style>
+    :root {
+      --bg: #060913;
+      --panel: #0d1324;
+      --panel-2: #131c33;
+      --border: rgba(148, 163, 184, 0.16);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --emerald: #10b981;
+      --emerald-dim: rgba(16, 185, 129, 0.14);
+      --indigo: #6366f1;
+      --indigo-dim: rgba(99, 102, 241, 0.16);
+      --amber: #f59e0b;
+      --amber-dim: rgba(245, 158, 11, 0.15);
+      --danger: #ef4444;
+      --danger-dim: rgba(239, 68, 68, 0.15);
+      --radius: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top right, rgba(99,102,241,0.13), transparent 42%),
+                  radial-gradient(circle at top left, rgba(16,185,129,0.10), transparent 38%),
+                  var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #818cf8; text-decoration: none; }
+    button, input, select, textarea { font-family: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 16px;
+      background: rgba(6, 9, 19, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #6366f1);
+      display: grid; place-items: center; font-weight: 900; font-size: 15px; color: #fff;
+      flex-shrink: 0; box-shadow: 0 6px 18px rgba(16, 185, 129, 0.28);
+    }
+    .brand-title {
+      font-weight: 800; font-size: 15px; letter-spacing: -0.02em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .brand-sub { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .dot-live {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--emerald); box-shadow: 0 0 8px var(--emerald); display: inline-block;
+    }
+    .top-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .quota-pill {
+      font-size: 11.5px; font-weight: 700; padding: 6px 10px; border-radius: 999px;
+      background: var(--panel-2); border: 1px solid var(--border); color: #cbd5e1; cursor: pointer;
+    }
+    .quota-pill.pro {
+      background: var(--emerald-dim); border-color: rgba(16, 185, 129, 0.45); color: #34d399;
+    }
+    .btn {
+      border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+      padding: 8px 13px; border-radius: 10px; font-size: 12.5px; font-weight: 700;
+      cursor: pointer; transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.15s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: rgba(16, 185, 129, 0.5); color: #022c22; font-weight: 800;
+    }
+    .btn-indigo {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-color: rgba(99, 102, 241, 0.6); color: #fff;
+    }
+    .btn-amber { background: var(--amber-dim); border-color: rgba(245, 158, 11, 0.45); color: #fbbf24; }
+    .btn-sm { padding: 5px 9px; font-size: 11.5px; border-radius: 8px; }
+
+    .container { max-width: 1180px; margin: 0 auto; padding: 14px 14px 92px; }
+    .hero-strip {
+      background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(99,102,241,0.14));
+      border: 1px solid rgba(99, 102, 241, 0.28); border-radius: var(--radius);
+      padding: 14px 16px; margin-bottom: 14px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .hero-strip h1 { margin: 0 0 4px; font-size: 17px; letter-spacing: -0.02em; }
+    .hero-strip p { margin: 0; font-size: 12.5px; color: #cbd5e1; line-height: 1.45; }
+
+    .nav-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .tab-btn {
+      padding: 10px 8px; border-radius: 11px; border: 1px solid var(--border);
+      background: var(--panel); color: var(--muted); font-size: 12.5px; font-weight: 700;
+      cursor: pointer; text-align: center;
+    }
+    .tab-btn.active { background: var(--indigo-dim); border-color: rgba(99, 102, 241, 0.65); color: #fff; }
+
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+
+    .grid-2 { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 14px; }
+    @media (max-width: 860px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .nav-tabs { display: none; }
+    }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 15px; margin-bottom: 14px;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px;
+    }
+    .card-title { font-size: 14px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 7px; }
+    .badge {
+      font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .badge-green { background: var(--emerald-dim); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
+    .badge-amber { background: var(--amber-dim); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); }
+    .badge-red { background: var(--danger-dim); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+    .badge-indigo { background: var(--indigo-dim); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); }
+
+    .ticker-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 9px; margin-bottom: 14px;
+    }
+    .ticker-card {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px;
+      padding: 10px 11px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .ticker-top { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 800; }
+    .ticker-price { font-family: var(--mono); font-size: 15px; font-weight: 800; }
+    .up { color: #34d399; }
+    .down { color: #f87171; }
+
+    .input-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .input, select.input, textarea.input {
+      background: #070b16; border: 1px solid var(--border); color: var(--text);
+      border-radius: 10px; padding: 10px 12px; font-size: 13px; outline: none; flex: 1; min-width: 150px;
+    }
+    .input:focus { border-color: var(--indigo); }
+    textarea.input {
+      width: 100%; min-height: 76px; font-family: var(--mono); font-size: 11.5px; resize: vertical;
+    }
+
+    .pair-list { display: flex; flex-direction: column; gap: 9px; }
+    .pair-item {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px;
+      padding: 11px 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .pair-meta { min-width: 170px; flex: 1; }
+    .pair-symbol { font-weight: 800; font-size: 13.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .pair-sub { font-size: 11.5px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+    .pair-stats { display: flex; align-items: center; gap: 12px; font-size: 12px; font-family: var(--mono); }
+
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .chip {
+      font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--panel-2); color: #cbd5e1; cursor: pointer;
+    }
+    .chip:hover { border-color: var(--emerald); color: #fff; }
+    .chip.danger { border-color: rgba(239,68,68,0.45); color: #fca5a5; }
+
+    .score-box {
+      display: flex; align-items: center; gap: 16px; padding: 14px; border-radius: 12px;
+      background: #080d1a; border: 1px solid var(--border); margin-bottom: 12px;
+    }
+    .score-circle {
+      width: 78px; height: 78px; border-radius: 50%; display: grid; place-items: center;
+      font-family: var(--mono); font-weight: 900; font-size: 22px; flex-shrink: 0; border: 4px solid var(--emerald);
+    }
+    .finding-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .finding {
+      padding: 10px 12px; border-radius: 10px; background: var(--panel-2);
+      border-left: 3px solid var(--indigo); font-size: 12.5px;
+    }
+    .finding.crit { border-left-color: var(--danger); background: rgba(239,68,68,0.08); }
+    .finding.warn { border-left-color: var(--amber); background: rgba(245,158,11,0.08); }
+    .finding.safe { border-left-color: var(--emerald); background: rgba(16,185,129,0.07); }
+    .finding-title { font-weight: 800; margin-bottom: 2px; }
+    .finding-desc { color: #cbd5e1; font-size: 11.8px; line-height: 1.4; }
+
+    .viral-box {
+      margin-top: 12px; padding: 12px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(99,102,241,0.12));
+      border: 1px dashed rgba(99,102,241,0.5);
+    }
+    .dropzone {
+      border: 2px dashed rgba(99, 102, 241, 0.45); border-radius: 13px; padding: 24px 16px;
+      text-align: center; background: rgba(13, 19, 36, 0.65); cursor: pointer; margin-bottom: 12px; display: block;
+    }
+    .dropzone:hover { border-color: var(--emerald); }
+
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 14px; margin-top: 12px; }
+    .price-card {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 14px;
+      padding: 18px; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .price-card.featured {
+      border-color: var(--emerald);
+      box-shadow: 0 0 0 1px rgba(16,185,129,0.35), 0 14px 34px rgba(16,185,129,0.12);
+    }
+    .price-big { font-size: 30px; font-weight: 900; font-family: var(--mono); margin: 8px 0 4px; }
+    .feat-list {
+      list-style: none; padding: 0; margin: 12px 0 16px; font-size: 12.5px;
+      color: #cbd5e1; display: flex; flex-direction: column; gap: 7px;
+    }
+
+    .bottom-nav {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 45;
+      background: rgba(8, 12, 24, 0.95); backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border); grid-template-columns: repeat(4, 1fr);
+      padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    }
+    @media (max-width: 860px) { .bottom-nav { display: grid; } }
+    .bnav-btn {
+      background: none; border: none; color: var(--muted); padding: 6px 4px; font-size: 11px;
+      font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
+    }
+    .bnav-btn.active { color: var(--emerald); }
+
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 80;
+      background: rgba(2, 6, 23, 0.82); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--panel); border: 1px solid rgba(99, 102, 241, 0.45); border-radius: 16px;
+      max-width: 520px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto;
+    }
+    .mono { font-family: var(--mono); }
+    .muted { color: var(--muted); }
+    .step-box {
+      padding: 11px 13px; border-radius: 10px; background: #080d1a;
+      border: 1px solid var(--border); margin-bottom: 9px; font-size: 12.5px; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">AS</div>
+      <div>
+        <div class="brand-title">AlphaShield <span style="color:#818cf8;font-weight:700;">by Gandoh Bah Ai</span></div>
+        <div class="brand-sub">
+          <span class="dot-live"></span>
+          <span id="connectionBadge">Live On-Chain RPC + DEX Feed</span>
+        </div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button id="alphaAuthBtn" class="btn btn-sm" type="button" data-action="open-auth">Sign In</button>
+      <button id="quotaBadgeBtn" class="quota-pill" type="button" data-action="switch-tab" data-tab="pricing">3/3 Free Scans</button>
+      <button class="btn btn-primary btn-sm" type="button" data-action="switch-tab" data-tab="pricing">Upgrade Pro</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero-strip">
+      <div>
+        <h1>Spot Breakout Tokens &amp; Catch Honeypot Rug-Pulls Before You Buy</h1>
+        <p>Live multi-chain market radar + real EVM bytecode trap scanner (<span class="mono">mint</span>, <span class="mono">blacklist</span>, hidden 99% sell-tax, proxy <span class="mono">DELEGATECALL</span>) + APK wallet-drainer guard.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-indigo" type="button" data-action="switch-tab" data-tab="rugcheck">Scan a Token Now</button>
+        <button class="btn btn-amber" type="button" data-action="open-playbook">Founder Money Guide</button>
+      </div>
+    </section>
+
+    <nav class="nav-tabs">
+      <button class="tab-btn active" type="button" data-action="switch-tab" data-tab="markets">1. Live Markets &amp; DEX</button>
+      <button class="tab-btn" type="button" data-action="switch-tab" data-tab="rugcheck">2. Contract Rug-Scanner</button>
+      <button class="tab-btn" type="button" data-action="switch-tab" data-tab="apkguard">3. APK &amp; Wallet Guard</button>
+      <button class="tab-btn" type="button" data-action="switch-tab" data-tab="pricing">4. Pro Plans (Kelviq)</button>
+    </nav>
+
+    <!-- TAB 1: LIVE MARKETS & DEX MOMENTUM RADAR -->
+    <section id="view-markets" class="view-panel active">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Global Crypto Pulse <span id="marketSourceBadge" class="badge badge-green">LIVE</span></h2>
+          <button class="btn btn-sm" type="button" data-action="refresh-tickers">Refresh Prices</button>
+        </div>
+        <div id="globalTickerGrid" class="ticker-grid">
+          <div class="ticker-card"><span class="muted">Loading live market feed...</span></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Live DexScreener Pair &amp; Liquidity Radar</h2>
+            <span class="badge badge-indigo">1-Tap Rug Audit</span>
+          </div>
+          <div class="input-row">
+            <input id="dexSearchInput" class="input" type="text" value="PEPE" placeholder="Search ticker or token address (e.g. PEPE, AERO, SOL, BRETT, VIRTUAL)..." />
+            <button class="btn btn-indigo" type="button" data-action="search-dex">Search DEX</button>
+          </div>
+          <div class="chip-row">
+            <button class="chip" type="button" data-action="quick-dex" data-query="PEPE">🔥 PEPE</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="AERO">⚡ AERO (Base)</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="BRETT">🟦 BRETT</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="UNI">🦄 UNI</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="CAKE">🥞 CAKE (BSC)</button>
+            <button class="chip" type="button" data-action="quick-dex" data-query="AAVE">👻 AAVE</button>
+          </div>
+          <div id="dexResultsList" class="pair-list">
+            <div class="muted" style="font-size:12.5px;">Searching live DEX liquidity pools...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Alpha Watchlist &amp; Signals</h2>
+            <span id="watchlistCountBadge" class="badge badge-green">0 Saved</span>
+          </div>
+          <p class="muted" style="font-size:12px;margin-top:0;">Save tokens from the DEX radar to track liquidity &amp; instant re-audit before buying dips.</p>
+          <div id="watchlistContainer" class="pair-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: ON-CHAIN SMART CONTRACT RUG & HONEYPOT SCANNER -->
+    <section id="view-rugcheck" class="view-panel">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">EVM Smart Contract Bytecode Rug-Checker</h2>
+            <span class="badge badge-green">Live eth_getCode</span>
+          </div>
+          <p class="muted" style="font-size:12px;margin-top:0;">
+            Fetches live deployed contract bytecode directly from Ethereum, Base, BNB Chain, Arbitrum, or Polygon RPC nodes and audits 14 high-risk opcode &amp; function selector traps.
+          </p>
+
+          <div class="chip-row">
+            <button class="chip" type="button" data-action="preset-contract" data-chain="ethereum" data-addr="0x6982508145454Ce325dDbE47a25d4ec3d2311933" data-label="PEPE Token">Test: PEPE (ETH)</button>
+            <button class="chip" type="button" data-action="preset-contract" data-chain="base" data-addr="0x940181a94A35A4569E4529A3CDfB74e38FD98631" data-label="Aerodrome AERO">Test: AERO (Base)</button>
+            <button class="chip" type="button" data-action="preset-contract" data-chain="ethereum" data-addr="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" data-label="USDC Proxy">Test: USDC Proxy</button>
+            <button class="chip danger" type="button" data-action="preset-honeypot">⚠️ Test: Honeypot Rug Trap</button>
+          </div>
+
+          <div class="input-row">
+            <select id="chainSelect" class="input" style="max-width:165px;">
+              <option value="ethereum">Ethereum Mainnet</option>
+              <option value="base">Base Mainnet</option>
+              <option value="bsc">BNB Smart Chain</option>
+              <option value="arbitrum">Arbitrum One</option>
+              <option value="polygon">Polygon POS</option>
+            </select>
+            <input id="contractAddressInput" class="input mono" type="text" value="0x6982508145454Ce325dDbE47a25d4ec3d2311933" placeholder="0x... Contract Address" />
+          </div>
+
+          <details style="margin-bottom:12px;">
+            <summary class="muted" style="font-size:11.5px;cursor:pointer;">Optional: Paste raw 0x EVM bytecode directly (offline / unverified deploy)</summary>
+            <textarea id="rawBytecodeInput" class="input" style="margin-top:8px;" placeholder="0x6080604052... (leave blank to fetch live from blockchain RPC)"></textarea>
+          </details>
+
+          <button id="runContractScanBtn" class="btn btn-primary" type="button" style="width:100%;padding:12px;" data-action="run-contract-audit">
+            Run Deep On-Chain Rug &amp; Honeypot Audit
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Security Verdict &amp; Shareable Alert</h2>
+            <span id="auditChainBadge" class="badge badge-indigo">READY</span>
+          </div>
+          <div id="contractAuditOutput">
+            <div class="muted" style="font-size:13px;padding:18px 0;text-align:center;">
+              Select a token preset or paste any <span class="mono">0x...</span> contract address and tap <strong>Run Deep On-Chain Rug &amp; Honeypot Audit</strong>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SAFEAPK & CRYPTO WALLET DRAINER SCANNER -->
+    <section id="view-apkguard" class="view-panel">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">SafeAPK &amp; Wallet Drainer File Gate</h2>
+            <span class="badge badge-amber">Zero-Upload Privacy</span>
+          </div>
+          <p class="muted" style="font-size:12px;margin-top:0;">
+            Fake "Trading Bot APKs", modded WhatsApp/Telegram apps, and rogue Chrome extensions steal seed phrases via clipboard &amp; accessibility hooks. Inspect any file locally with SHA-256 + 64-block Shannon Entropy + signature heuristics.
+          </p>
+
+          <label class="dropzone" for="apkFileInput">
+            <div style="font-weight:800;font-size:14px;margin-bottom:4px;">Tap to Drop or Select APK / ZIP Extension / JS Script</div>
+            <div class="muted" style="font-size:12px;">Audits Android <span class="mono">.apk</span>, Chrome Wallet <span class="mono">.zip/.crx</span>, <span class="mono">.js</span> scripts &amp; <span class="mono">.dex</span> binaries</div>
+            <input id="apkFileInput" type="file" style="display:none;" />
+          </label>
+
+          <div class="chip-row">
+            <button class="chip danger" type="button" data-action="synthetic-apk" data-kind="drainer_apk">⚠️ Demo: Fake "SniperBot.apk" Seed Stealer</button>
+            <button class="chip" type="button" data-action="synthetic-apk" data-kind="clean_app">✅ Demo: Clean Signed Utility Package</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Binary &amp; Drainer Inspection Report</h2>
+            <span id="apkStatusBadge" class="badge badge-indigo">IDLE</span>
+          </div>
+          <div id="apkAuditOutput">
+            <div class="muted" style="font-size:13px;padding:18px 0;text-align:center;">
+              Drop any suspicious file or tap a 1-click Demo sample on the left to inspect its entropy &amp; drainer indicators.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: PRO PLANS, KELVIQ CHECKOUT & LICENSE ACTIVATION -->
+    <section id="view-pricing" class="view-panel">
+      <div class="card">
+        <div class="card-header" style="flex-wrap:wrap;">
+          <div>
+            <h2 class="card-title" style="font-size:17px;">Upgrade AlphaShield Pro — Powered by Kelviq</h2>
+            <div class="muted" style="font-size:12px;margin-top:2px;">Merchant-of-Record global checkout for <strong>Gandoh Bah Ai</strong> · Instant license unlock across phone &amp; desktop</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button id="periodMonthlyBtn" class="btn btn-indigo btn-sm" type="button" data-action="set-period" data-period="MONTHLY">Monthly</button>
+            <button id="periodYearlyBtn" class="btn btn-sm" type="button" data-action="set-period" data-period="YEARLY">Yearly (Save 30%)</button>
+          </div>
+        </div>
+
+        <div class="pricing-grid">
+          <div class="price-card">
+            <div>
+              <span class="badge badge-indigo">Starter</span>
+              <h3 style="margin:8px 0 2px;">Free Scout</h3>
+              <div class="price-big">$0 <span class="muted" style="font-size:13px;font-weight:500;">/ forever</span></div>
+              <ul class="feat-list">
+                <li>✓ Live Global Crypto &amp; DEX Radar</li>
+                <li>✓ <strong>3 Free Rug / APK Scans per day</strong></li>
+                <li>✓ Basic Honeypot &amp; Mint Detection</li>
+                <li>✓ Public Shareable X / WhatsApp Alerts</li>
+              </ul>
+            </div>
+            <button class="btn" type="button" style="width:100%;" data-action="switch-tab" data-tab="rugcheck">Current Free Tier</button>
+          </div>
+
+          <div class="price-card featured">
+            <div>
+              <span class="badge badge-green">Most Popular · Best Margin</span>
+              <h3 style="margin:8px 0 2px;">AlphaShield Pro Trader</h3>
+              <div class="price-big" id="proPriceLabel">$19 <span class="muted" style="font-size:13px;font-weight:500;">/ month</span></div>
+              <ul class="feat-list">
+                <li>✓ <strong>Unlimited</strong> Multi-Chain Contract Rug Scans</li>
+                <li>✓ <strong>Unlimited</strong> APK &amp; Wallet Extension Audits</li>
+                <li>✓ Full 14-Selector Trap Decompilation &amp; Tax Check</li>
+                <li>✓ Unlimited Saved Watchlist + Whale Liquidity Alerts</li>
+                <li>✓ Instant Kelviq License Key for Mobile + Desktop</li>
+              </ul>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <button class="btn btn-primary" type="button" style="width:100%;padding:11px;" data-action="start-kelviq" data-plan="alphashield_pro">
+                Subscribe via Kelviq Checkout →
+              </button>
+              <button class="btn btn-sm" type="button" style="width:100%;" data-action="open-usdt" data-plan="alphashield_pro" data-usd="19">
+                Or Pay USDT (Bound Payment Intent)
+              </button>
+            </div>
+          </div>
+
+          <div class="price-card">
+            <div>
+              <span class="badge badge-amber">Signal Groups &amp; Teams</span>
+              <h3 style="margin:8px 0 2px;">Whale &amp; Alpha Group</h3>
+              <div class="price-big" id="whalePriceLabel">$49 <span class="muted" style="font-size:13px;font-weight:500;">/ month</span></div>
+              <ul class="feat-list">
+                <li>✓ Everything in Pro Trader Unlimited</li>
+                <li>✓ White-Label Alert Cards (Your Telegram/X Handle)</li>
+                <li>✓ REST API Access (<span class="mono">2,500 scans/mo</span>)</li>
+                <li>✓ Deep REA WASM Bytecode &amp; Android DEX Audit</li>
+                <li>✓ Priority Kelviq Customer Billing Portal</li>
+              </ul>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <button class="btn btn-indigo" type="button" style="width:100%;padding:11px;" data-action="start-kelviq" data-plan="alphashield_whale">
+                Subscribe via Kelviq Checkout →
+              </button>
+              <button class="btn btn-sm" type="button" style="width:100%;" data-action="open-usdt" data-plan="alphashield_whale" data-usd="49">
+                Or Pay USDT (Bound Payment Intent)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Already Purchased? Activate Kelviq License Key</h2>
+            <span id="licenseStatusBadge" class="badge badge-indigo">LOCKED</span>
+          </div>
+          <p class="muted" style="font-size:12px;margin-top:0;">
+            Sign in and enter the license key from your Kelviq receipt email to verify and bind your subscription server-side.
+          </p>
+          <div class="input-row">
+            <input id="licenseKeyInput" class="input mono" type="text" placeholder="Enter your Kelviq license key" />
+            <button class="btn btn-primary" type="button" data-action="activate-license">Activate Key</button>
+          </div>
+          <div id="licenseFeedback" class="muted" style="font-size:12px;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Kelviq Merchant-of-Record Status</h2>
+            <span id="kelviqModeBadge" class="badge badge-amber">CHECKING</span>
+          </div>
+          <p id="kelviqStatusText" class="muted" style="font-size:12px;margin-top:0;line-height:1.5;">
+            Checking connection to <span class="mono">@kelviq/node-sdk</span> billing server...
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-sm" type="button" data-action="open-portal">Customer Billing Portal</button>
+            <button class="btn btn-amber btn-sm" type="button" data-action="open-playbook">Open 3-Step Revenue Setup</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer style="margin-top:22px;padding:16px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--muted);line-height:1.6;">
+      <div><strong>AlphaShield by Gandoh Bah Ai</strong> — Automated Software Bytecode &amp; Malware Security Scanner SaaS</div>
+      <div style="font-size:11px;margin:4px 0 8px;">
+        AlphaShield provides automated static software &amp; smart-contract code analysis tools only. We do not hold funds, execute trades, or provide financial advice.
+      </div>
+      <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
+        <a href="#terms" data-action="open-legal" data-section="terms">Terms of Service</a>
+        <a href="#privacy" data-action="open-legal" data-section="privacy">Privacy Policy</a>
+        <a href="#refunds" data-action="open-legal" data-section="refunds">Refund &amp; Cancellation Policy</a>
+        <a href="#pricing" data-action="switch-tab" data-tab="pricing">Pricing ($19/mo · $49/mo)</a>
+      </div>
+    </footer>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="bnav-btn active" type="button" data-action="switch-tab" data-tab="markets">
+      <span>📈</span><span>Markets</span>
+    </button>
+    <button class="bnav-btn" type="button" data-action="switch-tab" data-tab="rugcheck">
+      <span>🛡️</span><span>Rug-Scan</span>
+    </button>
+    <button class="bnav-btn" type="button" data-action="switch-tab" data-tab="apkguard">
+      <span>📱</span><span>APK Guard</span>
+    </button>
+    <button class="bnav-btn" type="button" data-action="switch-tab" data-tab="pricing">
+      <span>💎</span><span>Go Pro</span>
+    </button>
+  </nav>
+
+  <!-- Paywall Modal -->
+  <div id="paywallModal" class="modal-backdrop" data-modal-backdrop="paywallModal">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="badge badge-amber">Daily Free Limit Reached (3/3 Scans)</span>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="paywallModal">✕</button>
+      </div>
+      <h2 style="margin:4px 0 8px;font-size:19px;">Don't Ape Blind — Unlock Unlimited Rug Scans</h2>
+      <p class="muted" style="font-size:13px;line-height:1.5;margin-top:0;">
+        Avoiding just <strong>one</strong> $50 honeypot token pays for nearly 3 months of <strong>AlphaShield Pro ($19/mo)</strong>. Get unlimited Ethereum, Base, BNB &amp; Arbitrum contract audits + APK wallet drainer protection.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:9px;margin:14px 0;">
+        <button class="btn btn-primary" type="button" style="padding:12px;width:100%;" data-action="paywall-kelviq">
+          Unlock Pro via Kelviq Checkout →
+        </button>
+        <button class="btn btn-indigo" type="button" style="padding:11px;width:100%;" data-action="paywall-pricing">
+          Other Payment Options / Enter License Key
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Founder Billing Configuration Guide -->
+  <div id="playbookModal" class="modal-backdrop" data-modal-backdrop="playbookModal">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="badge badge-green">Gandoh Bah Ai · Server Billing Setup</span>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="playbookModal">✕</button>
+      </div>
+      <h2 style="margin:4px 0 8px;font-size:18px;">Hardened Server-Side Billing Configuration</h2>
+      <div class="step-box">
+        <strong>1. Card &amp; License Billing (<span class="mono">KELVIQ_SERVER_API_KEY</span> + <span class="mono">KELVIQ_WEBHOOK_SECRET</span>):</strong><br/>
+        Configure <span class="mono">KELVIQ_SERVER_API_KEY</span>, <span class="mono">KELVIQ_PRO_PLAN_ID</span>, <span class="mono">KELVIQ_WHALE_PLAN_ID</span>, <span class="mono">PUBLIC_BASE_URL</span>, and <span class="mono">KELVIQ_WEBHOOK_SECRET</span> on the server so entitlements unlock only after signed webhook or customer-bound license verification.
+      </div>
+      <div class="step-box">
+        <strong>2. Optional Tenant-Bound Direct USDT (<span class="mono">ALPHASHIELD_ENABLE_DIRECT_USDT=true</span>):</strong><br/>
+        When explicitly enabled alongside <span class="mono">ALPHASHIELD_MERCHANT_WALLET</span>, each checkout creates an authenticated payment intent bound to the user's sender wallet and a unique sub-cent atomic USDT tag, preventing mempool front-running and permanent unexpiring upgrades.
+      </div>
+    </div>
+  </div>
+
+  <!-- Workspace Authentication Modal -->
+  <div id="alphaAuthModal" class="modal-backdrop" data-modal-backdrop="alphaAuthModal">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="badge badge-indigo">AlphaShield Account Security</span>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="alphaAuthModal">✕</button>
+      </div>
+      <h2 style="margin:4px 0 8px;font-size:18px;">Sign In or Create Account</h2>
+      <p class="muted" style="font-size:12px;margin-top:0;">
+        Sessions use <span class="mono">HttpOnly; SameSite=Lax</span> cookies with synchronizer CSRF protection.
+      </p>
+      <div class="step-box">
+        <div style="font-weight:700;margin-bottom:6px;">Sign In</div>
+        <div class="input-row" style="margin-bottom:6px;">
+          <input id="alphaLoginEmail" class="input" type="email" placeholder="you@example.com" />
+          <input id="alphaLoginPass" class="input" type="password" placeholder="Password" />
+        </div>
+        <button class="btn btn-indigo btn-sm" type="button" style="width:100%;" data-action="alpha-signin">Sign In</button>
+      </div>
+      <div class="step-box">
+        <div style="font-weight:700;margin-bottom:6px;">New User? Create Account</div>
+        <div class="input-row" style="margin-bottom:6px;">
+          <input id="alphaRegOrg" class="input" type="text" placeholder="Handle / Organization" />
+          <input id="alphaRegEmail" class="input" type="email" placeholder="you@example.com" />
+        </div>
+        <div class="input-row" style="margin-bottom:6px;">
+          <input id="alphaRegPass" class="input" type="password" placeholder="Password (min 8 chars)" />
+          <button class="btn btn-primary btn-sm" type="button" data-action="alpha-register">Create Account</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div id="alphaAuthFeedback" class="mono" style="font-size:11.5px;color:#fbbf24;"></div>
+        <button class="btn btn-sm" type="button" data-action="alpha-signout">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tenant-Bound On-Chain USDT Payment Intent Modal -->
+  <div id="usdtCheckoutModal" class="modal-backdrop" data-modal-backdrop="usdtCheckoutModal">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="badge badge-green">Tenant-Bound Payment Intent</span>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="usdtCheckoutModal">✕</button>
+      </div>
+      <h2 id="usdtModalTitle" style="margin:4px 0 6px;font-size:18px;">Unlock AlphaShield Pro — Bound USDT Intent</h2>
+      <p class="muted" style="font-size:12.5px;margin-top:0;line-height:1.45;">
+        Enter your sender wallet address to reserve a unique sub-cent payment intent bound to your account and wallet.
+      </p>
+
+      <div class="step-box">
+        <div style="font-size:11.5px;color:#fbbf24;font-weight:700;margin-bottom:6px;">
+          1. Select Chain &amp; Bind Your Payer Wallet
+        </div>
+        <div class="input-row" style="margin-bottom:8px;">
+          <select id="payChainSelect" class="input">
+            <option value="bsc">BNB Smart Chain (BEP-20) — USDT</option>
+            <option value="ethereum">Ethereum (ERC-20) — USDT</option>
+          </select>
+        </div>
+        <div class="input-row" style="margin-bottom:8px;">
+          <input id="payerWalletInput" class="input mono" type="text" placeholder="0x... Your sender wallet address" />
+          <button class="btn btn-indigo btn-sm" type="button" data-action="create-payment-intent">Create Intent</button>
+        </div>
+        <div id="intentSummaryBox" class="mono" style="font-size:11.5px;color:#34d399;word-break:break-all;"></div>
+        <button class="btn btn-indigo" type="button" style="width:100%;margin-top:9px;" data-action="pay-web3-wallet">
+          ⚡ Pay Exact Bound Intent in Browser Wallet
+        </button>
+      </div>
+
+      <div class="step-box" style="margin-bottom:0;">
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:6px;">2. Paste Confirmed Transaction Hash (<span class="mono">0x...</span>):</div>
+        <div class="input-row" style="margin-bottom:6px;">
+          <input id="txHashInput" class="input mono" type="text" placeholder="0x... transaction hash" />
+          <button class="btn btn-primary" type="button" data-action="verify-payment-tx">Verify &amp; Unlock</button>
+        </div>
+        <div id="txVerifyFeedback" style="font-size:12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legal / MoR Compliance Modal -->
+  <div id="legalModal" class="modal-backdrop" data-modal-backdrop="legalModal">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="badge badge-indigo">Gandoh Bah Ai · Legal &amp; Policies</span>
+        <button class="btn btn-sm" type="button" data-action="close-modal" data-modal="legalModal">✕</button>
+      </div>
+      <div id="legalModalContent" style="font-size:12.5px;line-height:1.55;color:#cbd5e1;"></div>
+    </div>
+  </div>
+
+  <script src="/alphashield/app.js" defer></script>
+</body>
+</html>

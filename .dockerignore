@@ -1,0 +1,65 @@
+# Git, CI & local agent tooling
+.git
+.github
+.husky
+.codex
+.devin
+.factory
+codedb.snapshot
+
+# Dependencies & build outputs (rebuilt deterministically inside builder stage)
+node_modules
+**/node_modules
+dist
+build
+.turbo
+.cache
+coverage
+htmlcov
+.coverage
+.pytest_cache
+.vitest
+.vitest-reports
+.stryker-tmp
+reports
+test-results.xml
+test-timings.json
+
+# Local secrets, environment files & runtime SQLite/upload state
+.env
+.env.*
+!.env.example
+studio/.env
+studio/.env.*
+!studio/.env.example
+studio/data
+studio/.test-data-*
+studio/*.sqlite
+studio/*.sqlite-*
+studio/tenant-store.json*
+/tmp
+skills
+
+# Tests, docs, website build artifacts & unmounted legacy side-apps
+tests
+studio/tests
+docs
+experiments
+_reference
+website/_site
+website/.wrangler
+website/.venv
+studio/solidcraft
+studio/canvix
+studio/alphashield/ad.html
+studio/alphashield/*.mp4
+studio/index.html
+
+# OS & editor scratch files
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+*.swp
+*.swo
+*~
