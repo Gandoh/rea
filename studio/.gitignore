@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.*
+!.env.example
+promo/
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+.rea-studio-runtime/
+.test-data-*/

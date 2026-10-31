@@ -1,0 +1,1219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="theme-color" content="#05030a" />
+  <title>Bespoke 3D Jewel &amp; SolidCraft Studio — Gandoh Bah Ai</title>
+  <style>
+    :root {
+      --bg: #05030a;
+      --panel: rgba(16, 13, 24, 0.88);
+      --panel-2: rgba(26, 21, 38, 0.92);
+      --border: rgba(245, 208, 169, 0.22);
+      --gold: #f6d397;
+      --rose: #f7b5c4;
+      --emerald: #10b981;
+      --text: #fcfaf7;
+      --muted: #a69fb5;
+      --serif: Georgia, "Times New Roman", "Playfair Display", serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(214, 48, 92, 0.16), transparent 48%),
+        radial-gradient(circle at 80% 80%, rgba(246, 211, 151, 0.10), transparent 45%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    button, input, select, textarea { font-family: inherit; }
+
+    /* Velvet Seal Intro Overlay (Gift Mode Unveil) */
+    .veil {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(158, 22, 58, 0.28), rgba(5, 3, 10, 0.98) 68%),
+        #05030a;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 28px;
+      cursor: pointer;
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .veil.show { display: flex; }
+    .veil.opening {
+      opacity: 0;
+      transform: scale(1.08);
+      pointer-events: none;
+    }
+    .seal-ring {
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(246, 211, 151, 0.65);
+      background: radial-gradient(circle at 35% 30%, #be1845, #4c0519);
+      box-shadow: 0 0 48px rgba(225, 29, 72, 0.45), inset 0 0 18px rgba(246, 211, 151, 0.35);
+      display: grid;
+      place-items: center;
+      font-size: 38px;
+      color: var(--gold);
+      margin-bottom: 24px;
+      animation: pulseSeal 2.4s ease-in-out infinite;
+    }
+    @keyframes pulseSeal {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 42px rgba(225, 29, 72, 0.42); }
+      50% { transform: scale(1.06); box-shadow: 0 0 68px rgba(246, 211, 151, 0.55); }
+    }
+    .veil-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .veil-name {
+      font-family: var(--serif);
+      font-size: 42px;
+      font-weight: 700;
+      margin: 0 0 14px;
+      background: linear-gradient(135deg, #ffffff, #f6d397, #f9a8d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .veil-tap {
+      margin-top: 12px;
+      padding: 11px 26px;
+      border-radius: 999px;
+      border: 1px solid rgba(246, 211, 151, 0.55);
+      background: rgba(246, 211, 151, 0.12);
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    /* Top Header */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 16px;
+      background: rgba(5, 3, 10, 0.78);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-gem {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #f6d397, #be1845);
+      color: #fff;
+      font-size: 15px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 16px rgba(190, 24, 69, 0.45);
+    }
+    .brand-title { font-weight: 800; font-size: 14px; letter-spacing: 0.01em; }
+    .brand-sub { font-size: 11px; color: var(--muted); }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.12s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-gold {
+      background: linear-gradient(135deg, #fce3b4, #d99b43);
+      color: #211304;
+      border-color: rgba(252, 227, 180, 0.8);
+      font-weight: 800;
+    }
+    .btn-emerald {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #022c22;
+      border-color: rgba(16, 185, 129, 0.65);
+      font-weight: 800;
+    }
+    .btn-sm { padding: 6px 11px; font-size: 11.5px; }
+
+    /* Main Grid */
+    .layout {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 14px 14px 56px;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 880px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    body.gift-mode .studio-only { display: none !important; }
+    body.gift-mode .layout {
+      max-width: 520px;
+      grid-template-columns: 1fr;
+      padding-top: 8px;
+    }
+    .gift-only { display: none; }
+    body.gift-mode .gift-only { display: block; }
+
+    /* Raymarched 3D Viewport */
+    .stage-wrap {
+      position: relative;
+      border-radius: 26px;
+      overflow: hidden;
+      background: #06030c;
+      border: 1px solid rgba(246, 211, 151, 0.32);
+      box-shadow: 0 26px 70px rgba(0, 0, 0, 0.78), 0 0 40px rgba(190, 24, 69, 0.16);
+    }
+    #rayCanvas {
+      display: block;
+      width: 100%;
+      height: 490px;
+      touch-action: none;
+      cursor: grab;
+    }
+    body.gift-mode #rayCanvas {
+      height: 520px;
+    }
+    #sparkleCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .stage-hud-top {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .hud-pill {
+      pointer-events: auto;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(8, 5, 16, 0.65);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(246, 211, 151, 0.28);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .finish-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .fin-btn {
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(9, 6, 18, 0.75);
+      backdrop-filter: blur(10px);
+      color: #f1f5f9;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .fin-btn.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 16px rgba(246, 211, 151, 0.35);
+    }
+    .dot-swatch { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+    /* Romantic Luxury Dedication Card */
+    .dedication-card {
+      margin-top: 14px;
+      padding: 22px 20px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(25, 17, 36, 0.90), rgba(11, 8, 19, 0.95));
+      border: 1px solid rgba(246, 211, 151, 0.30);
+      text-align: center;
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+    }
+    .ded-eyebrow {
+      font-size: 10.5px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .ded-heading {
+      font-family: var(--serif);
+      font-size: 30px;
+      margin: 0 0 10px;
+      background: linear-gradient(135deg, #ffffff, #f6d397, #fbcfe8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .ded-quote {
+      font-family: var(--serif);
+      font-size: 15px;
+      line-height: 1.65;
+      color: #ede8f5;
+      font-style: italic;
+      margin: 0 auto 16px;
+      max-width: 420px;
+    }
+
+    /* Studio Controls */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      margin: 0 0 12px;
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .field { margin-bottom: 12px; }
+    .lbl {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .input, textarea.input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: #080610;
+      color: var(--text);
+      font-size: 13.5px;
+      outline: none;
+    }
+    .input:focus { border-color: var(--gold); }
+    input[type="range"] { width: 100%; accent-color: #f6d397; }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(3, 2, 8, 0.85);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #120e1c;
+      border: 1px solid rgba(246, 211, 151, 0.42);
+      border-radius: 20px;
+      max-width: 460px;
+      width: 100%;
+      padding: 20px;
+    }
+    .mono { font-family: var(--mono); }
+  </style>
+</head>
+<body>
+
+  <!-- Stage 1: Velvet & 24K Gold Unveil Screen (Shown when Angelique opens her link!) -->
+  <div id="giftVeil" class="veil" onclick="unveilGift()">
+    <div class="seal-ring">✦</div>
+    <div class="veil-eyebrow">A Private 3D Jewel Sculpted For</div>
+    <h1 class="veil-name" id="veilNameTitle">Angelique</h1>
+    <div style="font-size:13.5px;color:#d6d0e3;max-width:300px;line-height:1.5;">
+      Turn your sound up slightly &amp; tap below to unveil your custom 3D sculpture
+    </div>
+    <div class="veil-tap">✦ Tap to Unveil ✦</div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-gem">✦</div>
+      <div>
+        <div class="brand-title" id="headerTitle">Maison SolidCraft 3D</div>
+        <div class="brand-sub" id="headerSub">Raymarched 3D Jewelry &amp; Parametric STL Studio</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-gold btn-sm studio-only" onclick="previewGiftExperience()">
+        ✨ Test Angelique's Reveal
+      </button>
+      <button class="btn btn-sm gift-only" onclick="switchToStudio()">
+        🛠️ Customize
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT: Per-Pixel GLSL Raymarched 3D Jewel + Orbiting Gold Rings + Touch Sparkles -->
+    <div>
+      <div class="stage-wrap">
+        <canvas id="rayCanvas"></canvas>
+        <canvas id="sparkleCanvas"></canvas>
+
+        <div class="stage-hud-top">
+          <span class="hud-pill">↻ Touch &amp; drag to spin 360°</span>
+          <button class="hud-pill" style="cursor:pointer;" onclick="triggerCelebrationBurst()">✦ Sparkle</button>
+        </div>
+
+        <div class="finish-bar">
+          <button class="fin-btn active" data-fin="ruby_gold" onclick="setFinish('ruby_gold')">
+            <span class="dot-swatch" style="background:linear-gradient(135deg,#e11d48,#f6d397)"></span>Cartier Ruby &amp; Gold
+          </button>
+          <button class="fin-btn" data-fin="rosegold" onclick="setFinish('rosegold')">
+            <span class="dot-swatch" style="background:linear-gradient(135deg,#ffd6e0,#d48c78)"></span>18K Rose Gold
+          </button>
+          <button class="fin-btn" data-fin="onyx_gold" onclick="setFinish('onyx_gold')">
+            <span class="dot-swatch" style="background:linear-gradient(135deg,#1e1b2e,#f6d397)"></span>Obsidian &amp; 24K
+          </button>
+          <button class="fin-btn" data-fin="sapphire" onclick="setFinish('sapphire')">
+            <span class="dot-swatch" style="background:linear-gradient(135deg,#2563eb,#e2e8f0)"></span>Royal Sapphire
+          </button>
+        </div>
+      </div>
+
+      <!-- Gift Mode Dedication Plaque -->
+      <div class="dedication-card gift-only">
+        <div class="ded-eyebrow">One-of-One 3D Sculpture</div>
+        <h2 class="ded-heading" id="dedHeading">For Angelique</h2>
+        <p class="ded-quote" id="dedQuote">
+          "Anyone can send a text — I wanted to sculpt your name in ruby and 24K gold light. Drag the jewel with your finger to catch every reflection."
+        </p>
+        <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-gold" onclick="playCelestialChord();triggerCelebrationBurst()">
+            ✨ Chime &amp; Starlight
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Studio Customizer + Gift Link Generator + Real 3D .STL Store -->
+    <div class="studio-only">
+      <div class="card">
+        <div class="card-title">
+          <span>1. Engrave &amp; Sculpt in Real-Time 3D</span>
+          <span style="font-size:11px;color:var(--gold);">Zero-Jaggy Raymarch</span>
+        </div>
+
+        <div class="field">
+          <div class="lbl">
+            <span>24K Gold Inlay Name</span>
+            <span class="mono" style="font-size:11px;">1024px Laser Inlay</span>
+          </div>
+          <input id="nameInput" class="input" type="text" maxlength="14" value="Angelique" placeholder="Type name (e.g. Angelique)" oninput="updateEngravingTexture()" />
+        </div>
+
+        <div class="field">
+          <div class="lbl">
+            <span>Personal Note Shown Below the 3D Jewel</span>
+          </div>
+          <textarea id="noteInput" class="input" rows="3" oninput="syncNoteText()">Anyone can send a text — I wanted to sculpt your name in ruby and 24K gold light. Drag the jewel with your finger to catch every reflection.</textarea>
+        </div>
+
+        <div class="field">
+          <div class="lbl">
+            <span>3D Cushion Plumpness</span>
+            <span id="plumpLbl" class="mono">Luxury Pillow</span>
+          </div>
+          <input id="plumpSlider" type="range" min="0.14" max="0.30" step="0.01" value="0.22" oninput="uPlump=Number(this.value)" />
+        </div>
+
+        <div class="field">
+          <div class="lbl">
+            <span>24K Orbital Halo Rings</span>
+            <span id="ringLbl" class="mono">Active</span>
+          </div>
+          <input id="ringSlider" type="range" min="0" max="1" step="1" value="1" oninput="uShowRings=Number(this.value);document.getElementById('ringLbl').textContent=uShowRings?'Active':'Hidden'" />
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+          <button class="btn btn-gold" style="flex:1;padding:12px;" onclick="copyGiftLink()">
+            💌 Copy Angelique's Private Link
+          </button>
+          <button class="btn" style="padding:12px;" onclick="sendWhatsAppGift()">
+            WhatsApp Her
+          </button>
+        </div>
+        <div id="copyFeedback" class="mono" style="font-size:11px;color:#34d399;margin-top:8px;word-break:break-all;"></div>
+      </div>
+
+      <!-- Commercial 3D-Print STL Export Store ($9 USDT to Gandoh's Binance!) -->
+      <div class="card">
+        <div class="card-title">
+          <span>2. Export 3D-Printable .STL Pendant</span>
+          <span id="stlQuotaBadge" style="font-size:11px;color:#34d399;">1 Free STL Export</span>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:0;line-height:1.5;">
+          Generate a real watertight binary <span class="mono">.STL</span> jewelry CAD file of this exact heart pendant for 3D printing or casting — or sell custom 3D links &amp; STL files to buyers!
+        </p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="btn btn-emerald" style="width:100%;padding:11px;" onclick="exportHeartSTL()">
+            ⬇️ Download 3D-Printable .STL Pendant
+          </button>
+          <button class="btn" style="width:100%;padding:10px;" onclick="openStlPayModal()">
+            💎 Unlock Commercial Unlimited Pass ($9 USDT)
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Binance BEP-20 USDT Commercial Pass Modal -->
+  <div id="stlPayModal" class="modal-backdrop" onclick="if(event.target===this)closeStlPayModal()">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;">SolidCraft Commercial Pass</span>
+        <button class="btn btn-sm" onclick="closeStlPayModal()">✕</button>
+      </div>
+      <h3 style="margin:0 0 6px;font-size:18px;">Unlimited Custom 3D .STL Exports — $9 USDT</h3>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:0;">
+        Send <strong>9 USDT</strong> on <strong>BNB Smart Chain (BEP-20)</strong> and paste your TxHash for instant on-chain unlock:
+      </p>
+      <div style="background:#07050d;border:1px solid rgba(16,185,129,0.45);padding:10px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;">
+        <span class="mono" style="font-size:11.5px;color:#34d399;word-break:break-all;">0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394</span>
+        <button class="btn btn-sm" onclick="navigator.clipboard?.writeText('0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394');document.getElementById('payMsg').textContent='✓ Address copied!'">Copy</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input id="txInput" class="input mono" type="text" placeholder="0x... BEP-20 TxHash" />
+        <button class="btn btn-emerald" onclick="verifyBscPayment()">Verify</button>
+      </div>
+      <div id="payMsg" style="font-size:12px;color:#34d399;margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // Safe Storage (Brave Shields Compatible)
+    // =========================================================================
+    const mem = new Map();
+    function sGet(k, fb = null) {
+      try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : fb; }
+      catch { return mem.has(k) ? mem.get(k) : fb; }
+    }
+    function sSet(k, v) {
+      mem.set(k, v);
+      try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
+    }
+
+    const MERCHANT_WALLET = "0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394";
+    const BSC_USDT = "0x55d398326f99059ff775485246999027b3197955";
+
+    const FINISHES = {
+      ruby_gold: {
+        body: [0.68, 0.055, 0.17],
+        inlay: [1.00, 0.84, 0.58],
+        aura: [0.55, 0.06, 0.18],
+      },
+      rosegold: {
+        body: [0.92, 0.56, 0.50],
+        inlay: [1.00, 0.96, 0.92],
+        aura: [0.48, 0.22, 0.24],
+      },
+      onyx_gold: {
+        body: [0.06, 0.05, 0.09],
+        inlay: [1.00, 0.82, 0.46],
+        aura: [0.38, 0.26, 0.08],
+      },
+      sapphire: {
+        body: [0.07, 0.20, 0.62],
+        inlay: [0.95, 0.97, 1.00],
+        aura: [0.08, 0.22, 0.55],
+      },
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentFinish = FINISHES[urlParams.get("fin")] ? urlParams.get("fin") : "ruby_gold";
+    let uPlump = 0.22;
+    let uShowRings = 1.0;
+
+    // =========================================================================
+    // Soft Celestial WebAudio Harp / Rhodes Chime (Zero Harsh Beeps!)
+    // =========================================================================
+    let audioCtx = null;
+    function playCelestialChord() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        // Warm Fmaj9 / Dbmaj9 romantic harp arpeggio
+        const freqs = [349.23, 440.00, 523.25, 659.25, 783.99, 1046.50];
+        const now = audioCtx.currentTime;
+        freqs.forEach((f, idx) => {
+          const osc = audioCtx.createOscillator();
+          const osc2 = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc2.type = "triangle";
+          osc.frequency.value = f;
+          osc2.frequency.value = f * 2.0;
+
+          const t0 = now + idx * 0.095;
+          gain.gain.setValueAtTime(0.0001, t0);
+          gain.gain.linearRampToValueAtTime(0.065 / (1 + idx * 0.15), t0 + 0.025);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.4);
+
+          const g2 = audioCtx.createGain();
+          g2.gain.value = 0.12;
+          osc2.connect(g2);
+          g2.connect(gain);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t0);
+          osc2.start(t0);
+          osc.stop(t0 + 2.5);
+          osc2.stop(t0 + 2.5);
+        });
+      } catch {}
+    }
+
+    // =========================================================================
+    // High-DPI 1024x512 Laser Calligraphy Texture Generator
+    // =========================================================================
+    const engraveCanvas = document.createElement("canvas");
+    engraveCanvas.width = 1024;
+    engraveCanvas.height = 512;
+    const eCtx = engraveCanvas.getContext("2d");
+
+    // =========================================================================
+    // Per-Pixel GLSL Raymarched 3D Heart + Gold Bail + Dual Orbital Rings
+    // =========================================================================
+    const rayCanvas = document.getElementById("rayCanvas");
+    const gl = rayCanvas.getContext("webgl", { antialias: false, powerPreference: "high-performance" });
+
+    const VS = `
+      attribute vec2 aQuad;
+      varying vec2 vUv;
+      void main() {
+        vUv = aQuad;
+        gl_Position = vec4(aQuad, 0.0, 1.0);
+      }
+    `;
+
+    const FS = `
+      precision highp float;
+      varying vec2 vUv;
+      uniform vec2 uRes;
+      uniform float uTime;
+      uniform vec2 uRot;
+      uniform float uZoom;
+      uniform float uPlump;
+      uniform float uShowRings;
+      uniform vec3 uBodyCol;
+      uniform vec3 uInlayCol;
+      uniform vec3 uAuraCol;
+      uniform sampler2D uEngraveTex;
+
+      float dot2(vec2 v) { return dot(v, v); }
+
+      // Inigo Quilez Exact 2D Euclidean Heart SDF (Zero dents, infinite smoothness!)
+      float sdHeart2D(vec2 p) {
+        float s = 1.36;
+        vec2 q = vec2(abs(p.x / s), p.y / s + 0.50);
+        if (q.y + q.x > 1.0) {
+          return (sqrt(dot2(q - vec2(0.25, 0.75))) - 0.35355339) * s;
+        }
+        float m = 0.5 * max(q.x + q.y, 0.0);
+        float d = sqrt(min(dot2(q - vec2(0.0, 1.0)), dot2(q - vec2(m)))) * sign(q.x - q.y);
+        return d * s;
+      }
+
+      vec3 rotateInv(vec3 p, vec2 r) {
+        float cx = cos(r.x), sx = sin(r.x);
+        float cy = cos(r.y), sy = sin(r.y);
+        vec3 p1 = vec3(p.x, p.y * cx - p.z * sx, p.y * sx + p.z * cx);
+        return vec3(p1.x * cy + p1.z * sy, p1.y, -p1.x * sy + p1.z * cy);
+      }
+
+      vec3 rotateFwd(vec3 p, vec2 r) {
+        float cx = cos(r.x), sx = sin(r.x);
+        float cy = cos(r.y), sy = sin(r.y);
+        vec3 p1 = vec3(p.x * cy - p.z * sy, p.y, p.x * sy + p.z * cy);
+        return vec3(p1.x, p1.y * cx + p1.z * sx, -p1.y * sx + p1.z * cx);
+      }
+
+      float sdTorusTilted(vec3 p, float R, float rTube, float ax, float az) {
+        float c1 = cos(ax), s1 = sin(ax);
+        vec3 q1 = vec3(p.x, p.y * c1 - p.z * s1, p.y * s1 + p.z * c1);
+        float c2 = cos(az), s2 = sin(az);
+        vec3 q2 = vec3(q1.x * c2 - q1.y * s2, q1.x * s2 + q1.y * c2, q1.z);
+        vec2 w = vec2(length(q2.xz) - R, q2.y);
+        return length(w) - rTube;
+      }
+
+      // Returns vec3(totalDist, partId: 0=heart / 1=gold, ringOnlyDist)
+      vec3 mapScene(vec3 worldP) {
+        vec3 p = rotateInv(worldP, uRot);
+
+        float d2 = sdHeart2D(p.xy);
+        float dome = 0.065 + uPlump * smoothstep(0.0, 0.38, -d2);
+        float rBev = 0.078;
+        vec2 w = vec2(d2 + rBev, abs(p.z) - dome);
+        float dHeart = min(max(w.x, w.y), 0.0) + length(max(w, 0.0)) - rBev;
+
+        // Top 24K Gold Necklace Bail Eyelet
+        vec2 bq = vec2(length(vec2(p.x, p.y - 0.49)) - 0.105, p.z);
+        float dGold = length(bq) - 0.025;
+        float dRings = 99.0;
+
+        if (uShowRings > 0.5) {
+          float spin = uTime * 0.35;
+          float dr1 = sdTorusTilted(p, 1.07, 0.013, 1.14 + 0.08 * sin(spin), 0.36);
+          float dr2 = sdTorusTilted(p, 1.21, 0.0095, -0.98, -0.44 + 0.08 * cos(spin));
+          dRings = min(dr1, dr2);
+          dGold = min(dGold, dRings);
+        }
+
+        if (dGold < dHeart) return vec3(dGold, 1.0, dRings);
+        return vec3(dHeart, 0.0, dRings);
+      }
+
+      vec3 calcNormal(vec3 p) {
+        vec2 e = vec2(0.0022, 0.0);
+        return normalize(vec3(
+          mapScene(p + e.xyy).x - mapScene(p - e.xyy).x,
+          mapScene(p + e.yxy).x - mapScene(p - e.yxy).x,
+          mapScene(p + e.yyx).x - mapScene(p - e.yyx).x
+        ));
+      }
+
+      // Twinkling background starfield
+      float stars(vec2 uv) {
+        vec2 gv = fract(uv * 9.0) - 0.5;
+        vec2 id = floor(uv * 9.0);
+        float h = fract(sin(dot(id, vec2(127.1, 311.7))) * 43758.5453);
+        if (h < 0.78) return 0.0;
+        vec2 offset = (vec2(fract(h * 13.7), fract(h * 29.3)) - 0.5) * 0.6;
+        float d = length(gv - offset);
+        float twinkle = 0.55 + 0.45 * sin(uTime * (2.0 + h * 4.0) + h * 40.0);
+        return (0.0018 / (d * d + 0.0008)) * twinkle * (h - 0.75) * 3.2;
+      }
+
+      void main() {
+        vec2 uv = vec2(vUv.x * (uRes.x / uRes.y), vUv.y);
+
+        // Deep velvet background + breathing jewel aura + twinkling stardust
+        float rad = length(uv);
+        vec3 bg = vec3(0.02, 0.012, 0.038)
+                + uAuraCol * exp(-rad * 1.55) * (0.85 + 0.12 * sin(uTime * 1.4));
+        bg += uInlayCol * stars(uv + vec2(uTime * 0.012, uTime * 0.008)) * 0.45;
+
+        vec3 ro = vec3(0.0, 0.02, uZoom);
+        vec3 rd = normalize(vec3(uv, -1.78));
+
+        float t = 1.0;
+        float ringGlow = 0.0;
+        vec3 res = vec3(99.0, 0.0, 99.0);
+
+        for (int i = 0; i < 62; i++) {
+          vec3 p = ro + rd * t;
+          res = mapScene(p);
+          if (uShowRings > 0.5) {
+            ringGlow += 0.0065 / (0.025 + res.z * res.z * 26.0);
+          }
+          if (res.x < 0.003 || t > 4.6) break;
+          t += res.x * 0.84;
+        }
+
+        vec3 col = bg + uInlayCol * ringGlow * 0.22;
+
+        if (res.x < 0.006) {
+          vec3 pos = ro + rd * t;
+          vec3 N = calcNormal(pos);
+          vec3 localP = rotateInv(pos, uRot);
+
+          // Sample crisp 1024x512 laser calligraphy on BOTH front & back faces of the 3D jewel!
+          float engrave = 0.0;
+          if (res.y < 0.5 && abs(localP.z) > 0.02) {
+            float faceSign = localP.z >= 0.0 ? 1.0 : -1.0;
+            vec2 tuv = vec2(faceSign * localP.x * 0.66 + 0.5, 0.48 - (localP.y - 0.06) * 0.94);
+            if (tuv.x > 0.02 && tuv.x < 0.98 && tuv.y > 0.02 && tuv.y < 0.98) {
+              engrave = texture2D(uEngraveTex, tuv).a;
+              float ex = texture2D(uEngraveTex, tuv + vec2(0.0022, 0.0)).a - engrave;
+              float ey = texture2D(uEngraveTex, tuv + vec2(0.0, 0.0040)).a - engrave;
+              N = normalize(N + rotateFwd(vec3(-faceSign * ex * 0.72, ey * 0.72, 0.0), uRot));
+            }
+          }
+
+          vec3 V = -rd;
+          vec3 L1 = normalize(vec3(0.48, 0.72, 0.55));
+          vec3 L2 = normalize(vec3(-0.68, -0.28, 0.68));
+
+          float diff1 = max(dot(N, L1), 0.0);
+          float diff2 = max(dot(N, L2), 0.0) * 0.40;
+
+          vec3 H1 = normalize(L1 + V);
+          float nh = max(dot(N, H1), 0.0001);
+          float spec1 = pow(nh, 68.0);
+          float specBroad = pow(nh, 14.0) * 0.25;
+          float fresnel = pow(clamp(1.0 - max(dot(N, V), 0.0), 0.0001, 1.0), 3.2);
+
+          // Studio softbox luxury reflection sweep (NaN-proof square!)
+          vec3 R = reflect(-V, N);
+          float sweep = sin(uTime * 0.9) * 0.14;
+          float sbTerm = R.x * 0.65 + R.y * 0.45 - 0.20 + sweep;
+          float softbox = exp(-(sbTerm * sbTerm) * 11.0);
+          float sky = pow(clamp(R.y * 0.5 + 0.5, 0.0001, 1.0), 1.5);
+          float env = sky * 0.55 + softbox * 0.88;
+
+          float goldMask = (res.y > 0.5) ? 1.0 : clamp(engrave * 1.35, 0.0, 1.0);
+          vec3 base = mix(uBodyCol, uInlayCol, goldMask);
+
+          vec3 lit = base * (0.20 + diff1 * 0.68 + diff2 + env * 0.58)
+                   + mix(vec3(1.0, 0.94, 0.96), uInlayCol, goldMask * 0.6) * (spec1 * 1.30 + specBroad)
+                   + mix(uBodyCol * 1.4 + vec3(0.25), uInlayCol, 0.55) * fresnel * 0.75;
+
+          col = lit + uInlayCol * ringGlow * 0.12;
+        }
+
+        // Smooth filmic ACES-style tone mapping
+        col = (col * (2.51 * col + vec3(0.03))) / (col * (2.43 * col + vec3(0.59)) + vec3(0.14));
+        gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+      }
+    `;
+
+    let prog, texObj, uLoc = {};
+    if (gl) {
+      function mkShader(tp, src) {
+        const s = gl.createShader(tp);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          console.error("Shader compile error:", gl.getShaderInfoLog(s));
+        }
+        return s;
+      }
+      prog = gl.createProgram();
+      gl.attachShader(prog, mkShader(gl.VERTEX_SHADER, VS));
+      gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, FS));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+
+      const qb = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, qb);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+      const aQuad = gl.getAttribLocation(prog, "aQuad");
+      gl.enableVertexAttribArray(aQuad);
+      gl.vertexAttribPointer(aQuad, 2, gl.FLOAT, false, 0, 0);
+
+      texObj = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, texObj);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+      for (const name of ["uRes","uTime","uRot","uZoom","uPlump","uShowRings","uBodyCol","uInlayCol","uAuraCol","uEngraveTex"]) {
+        uLoc[name] = gl.getUniformLocation(prog, name);
+      }
+    }
+
+    function updateEngravingTexture() {
+      const raw = document.getElementById("nameInput").value.trim() || "Angelique";
+      // Preserve natural title-case elegance (e.g. "Angelique")
+      eCtx.clearRect(0, 0, 1024, 512);
+      eCtx.fillStyle = "#ffffff";
+      eCtx.textAlign = "center";
+      eCtx.textBaseline = "middle";
+
+      // Crisp 4-point diamond star crest above the name
+      const sx = 512, sy = 152;
+      eCtx.beginPath();
+      eCtx.moveTo(sx, sy - 28);
+      eCtx.quadraticCurveTo(sx + 3, sy - 3, sx + 28, sy);
+      eCtx.quadraticCurveTo(sx + 3, sy + 3, sx, sy + 28);
+      eCtx.quadraticCurveTo(sx - 3, sy + 3, sx - 28, sy);
+      eCtx.quadraticCurveTo(sx - 3, sy - 3, sx, sy - 28);
+      eCtx.fill();
+
+      let fSize = 114;
+      while (fSize > 42) {
+        eCtx.font = `700 ${fSize}px Georgia, "Times New Roman", serif`;
+        if (eCtx.measureText(raw).width <= 760) break;
+        fSize -= 4;
+      }
+      eCtx.fillText(raw, 512, 278);
+
+      if (gl && texObj) {
+        gl.bindTexture(gl.TEXTURE_2D, texObj);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, engraveCanvas);
+      }
+
+      document.getElementById("dedHeading").textContent = "For " + raw;
+      document.getElementById("veilNameTitle").textContent = raw;
+    }
+
+    // =========================================================================
+    // Touch Sparkle Particle System + Smooth 360° Inertia Orbit
+    // =========================================================================
+    const spCanvas = document.getElementById("sparkleCanvas");
+    const spCtx = spCanvas.getContext("2d");
+    const sparkles = [];
+
+    function spawnSparkles(x, y, count = 4) {
+      for (let i = 0; i < count; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const spd = 0.6 + Math.random() * 2.6;
+        sparkles.push({
+          x, y,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - 0.9,
+          life: 1.0,
+          size: 3 + Math.random() * 6,
+        });
+      }
+    }
+
+    function triggerCelebrationBurst() {
+      const r = spCanvas.getBoundingClientRect();
+      spawnSparkles(r.width * 0.5, r.height * 0.46, 36);
+      velY = 0.085;
+    }
+
+    let rotX = 0.10, rotY = -0.22;
+    let velX = 0.0, velY = 0.008;
+    let uZoom = 2.82;
+    let dragging = false, lx = 0, ly = 0;
+
+    rayCanvas.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      lx = e.clientX;
+      ly = e.clientY;
+      rayCanvas.setPointerCapture(e.pointerId);
+      const rect = rayCanvas.getBoundingClientRect();
+      spawnSparkles(e.clientX - rect.left, e.clientY - rect.top, 6);
+    });
+    rayCanvas.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lx;
+      const dy = e.clientY - ly;
+      lx = e.clientX;
+      ly = e.clientY;
+      velY = dx * 0.011;
+      velX = dy * 0.011;
+      rotY += velY;
+      rotX = Math.max(-1.1, Math.min(1.1, rotX + velX));
+      const rect = rayCanvas.getBoundingClientRect();
+      spawnSparkles(e.clientX - rect.left, e.clientY - rect.top, 2);
+    });
+    rayCanvas.addEventListener("pointerup", () => { dragging = false; });
+
+    const tStart = performance.now();
+    function frame(now) {
+      requestAnimationFrame(frame);
+      const sec = (now - tStart) * 0.001;
+
+      if (!dragging) {
+        rotY += velY;
+        rotX += velX;
+        velY = velY * 0.96 + 0.0055 * 0.04;
+        velX *= 0.92;
+      }
+
+      if (gl) {
+        // Cap internal shader DPR at 1.5x so phones stay silky 60fps while razor-sharp!
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        const w = Math.floor(rayCanvas.clientWidth * dpr);
+        const h = Math.floor(rayCanvas.clientHeight * dpr);
+        if (rayCanvas.width !== w || rayCanvas.height !== h) {
+          rayCanvas.width = w;
+          rayCanvas.height = h;
+        }
+        gl.viewport(0, 0, w, h);
+        gl.useProgram(prog);
+
+        const fin = FINISHES[currentFinish] || FINISHES.ruby_gold;
+        gl.uniform2f(uLoc.uRes, w, h);
+        gl.uniform1f(uLoc.uTime, sec);
+        gl.uniform2f(uLoc.uRot, rotX, rotY);
+        gl.uniform1f(uLoc.uZoom, uZoom);
+        gl.uniform1f(uLoc.uPlump, uPlump);
+        gl.uniform1f(uLoc.uShowRings, uShowRings);
+        gl.uniform3fv(uLoc.uBodyCol, fin.body);
+        gl.uniform3fv(uLoc.uInlayCol, fin.inlay);
+        gl.uniform3fv(uLoc.uAuraCol, fin.aura);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texObj);
+        gl.uniform1i(uLoc.uEngraveTex, 0);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      }
+
+      // Render 2D floating golden touch sparkles
+      const cw = spCanvas.clientWidth, ch = spCanvas.clientHeight;
+      if (spCanvas.width !== cw || spCanvas.height !== ch) {
+        spCanvas.width = cw;
+        spCanvas.height = ch;
+      }
+      spCtx.clearRect(0, 0, cw, ch);
+      for (let i = sparkles.length - 1; i >= 0; i--) {
+        const p = sparkles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.024;
+        if (p.life <= 0) { sparkles.splice(i, 1); continue; }
+        spCtx.save();
+        spCtx.translate(p.x, p.y);
+        spCtx.globalAlpha = p.life;
+        spCtx.fillStyle = "#fde68a";
+        const s = p.size * p.life;
+        spCtx.beginPath();
+        spCtx.moveTo(0, -s);
+        spCtx.lineTo(s * 0.28, -s * 0.28);
+        spCtx.lineTo(s, 0);
+        spCtx.lineTo(s * 0.28, s * 0.28);
+        spCtx.lineTo(0, s);
+        spCtx.lineTo(-s * 0.28, s * 0.28);
+        spCtx.lineTo(-s, 0);
+        spCtx.lineTo(-s * 0.28, -s * 0.28);
+        spCtx.closePath();
+        spCtx.fill();
+        spCtx.restore();
+      }
+    }
+
+    // =========================================================================
+    // Finishes, Gift Unveil Flow & Real Watertight .STL Pendant Exporter
+    // =========================================================================
+    function setFinish(key) {
+      currentFinish = FINISHES[key] ? key : "ruby_gold";
+      document.querySelectorAll(".fin-btn").forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-fin") === currentFinish);
+      });
+    }
+
+    function syncNoteText() {
+      const v = document.getElementById("noteInput").value.trim();
+      if (v) document.getElementById("dedQuote").textContent = `"${v}"`;
+    }
+
+    function previewGiftExperience() {
+      syncNoteText();
+      document.body.classList.add("gift-mode");
+      document.getElementById("headerTitle").textContent = "Private 3D Keepsake";
+      document.getElementById("headerSub").textContent = "Touch & drag jewel to explore";
+      const veil = document.getElementById("giftVeil");
+      veil.classList.remove("opening");
+      veil.classList.add("show");
+    }
+
+    function unveilGift() {
+      playCelestialChord();
+      const veil = document.getElementById("giftVeil");
+      veil.classList.add("opening");
+      uZoom = 3.55;
+      const zAnim = setInterval(() => {
+        uZoom += (2.82 - uZoom) * 0.14;
+        if (Math.abs(uZoom - 2.82) < 0.01) { uZoom = 2.82; clearInterval(zAnim); }
+      }, 16);
+      setTimeout(() => {
+        veil.classList.remove("show", "opening");
+        triggerCelebrationBurst();
+      }, 680);
+    }
+
+    function switchToStudio() {
+      document.body.classList.remove("gift-mode");
+      document.getElementById("headerTitle").textContent = "Maison SolidCraft 3D";
+      document.getElementById("headerSub").textContent = "Raymarched 3D Jewelry & Parametric STL Studio";
+    }
+
+    function buildGiftShareUrl() {
+      const u = new URL(window.location.href.split("?")[0]);
+      u.searchParams.set("gift", "1");
+      u.searchParams.set("name", document.getElementById("nameInput").value.trim() || "Angelique");
+      u.searchParams.set("fin", currentFinish);
+      const note = document.getElementById("noteInput").value.trim();
+      if (note) u.searchParams.set("note", note);
+      return u.toString();
+    }
+
+    function copyGiftLink() {
+      const url = buildGiftShareUrl();
+      navigator.clipboard?.writeText(url).catch(() => {});
+      document.getElementById("copyFeedback").textContent = "✓ Copied! Shorten on tinyurl.com or send directly: " + url;
+    }
+
+    function sendWhatsAppGift() {
+      const name = document.getElementById("nameInput").value.trim() || "Angelique";
+      const url = buildGiftShareUrl();
+      const text = `✦ ${name}, I made something in 3D for you — open this and tap to unveil:\n${url}`;
+      window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+    }
+
+    // Watertight Binary .STL Exporter using the exact IQ Heart SDF!
+    function sdHeart2DJs(px, py) {
+      const s = 32.0; // 64mm physical jewelry pendant
+      const qx = Math.abs(px / s);
+      const qy = py / s + 0.50;
+      if (qy + qx > 1.0) {
+        return (Math.hypot(qx - 0.25, qy - 0.75) - 0.35355339) * s;
+      }
+      const m = 0.5 * Math.max(qx + qy, 0.0);
+      const d = Math.sqrt(Math.min(qx * qx + (qy - 1.0) ** 2, (qx - m) ** 2 + (qy - m) ** 2)) * (qx < qy ? -1 : 1);
+      return d * s;
+    }
+
+    function exportHeartSTL() {
+      const pro = sGet("sc_pro_v2", false);
+      const used = Number(sGet("sc_stl_used_v2", 0));
+      if (!pro && used >= 1) {
+        openStlPayModal();
+        return;
+      }
+      sSet("sc_stl_used_v2", used + 1);
+      updateQuotaUI();
+
+      const NX = 140, NY = 140, half = 36;
+      const step = (half * 2) / NX;
+      const imgData = eCtx.getImageData(0, 0, 1024, 512).data;
+      const zTop = new Float32Array((NX + 1) * (NY + 1));
+      const mask = new Uint8Array((NX + 1) * (NY + 1));
+
+      for (let j = 0; j <= NY; j++) {
+        const y = -half + j * step;
+        for (let i = 0; i <= NX; i++) {
+          const x = -half + i * step;
+          const d = sdHeart2DJs(x, y);
+          const idx = j * (NX + 1) + i;
+          if (d <= 0) {
+            mask[idx] = 1;
+            const u = Math.min(1, Math.max(0, (-d) / 10.0));
+            const dome = 2.0 + 4.5 * (u * u * (3 - 2 * u));
+            const tx = Math.min(1023, Math.max(0, Math.floor(((x / 32.0) * 0.66 + 0.5) * 1023)));
+            const ty = Math.min(511, Math.max(0, Math.floor((0.46 - ((y / 32.0 - 0.05) * 0.94)) * 511)));
+            const eng = imgData[(ty * 1024 + tx) * 4 + 3] / 255.0;
+            zTop[idx] = dome + eng * 1.4;
+          }
+        }
+      }
+
+      const tris = [];
+      function addTri(ax,ay,az, bx,by,bz, cx,cy,cz) { tris.push([ax,ay,az, bx,by,bz, cx,cy,cz]); }
+      for (let j = 0; j < NY; j++) {
+        const y0 = -half + j * step, y1 = y0 + step;
+        for (let i = 0; i < NX; i++) {
+          const i00 = j*(NX+1)+i, i10 = i00+1, i01 = i00+(NX+1), i11 = i01+1;
+          if (!(mask[i00] && mask[i10] && mask[i01] && mask[i11])) continue;
+          const x0 = -half + i * step, x1 = x0 + step;
+          addTri(x0,y0,zTop[i00], x1,y0,zTop[i10], x1,y1,zTop[i11]);
+          addTri(x0,y0,zTop[i00], x1,y1,zTop[i11], x0,y1,zTop[i01]);
+          addTri(x0,y0,0, x1,y1,0, x1,y0,0);
+          addTri(x0,y0,0, x0,y1,0, x1,y1,0);
+        }
+      }
+
+      const buf = new ArrayBuffer(84 + tris.length * 50);
+      const dv = new DataView(buf);
+      dv.setUint32(80, tris.length, true);
+      let off = 84;
+      for (const t of tris) {
+        for (let k = 0; k < 9; k++) dv.setFloat32(off + 12 + k * 4, t[k], true);
+        off += 50;
+      }
+      const blob = new Blob([buf], { type: "application/octet-stream" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      const slug = (document.getElementById("nameInput").value.trim() || "Jewel").replace(/[^a-zA-Z0-9]/g, "_");
+      a.download = `SolidCraft_${slug}_Heart.stl`;
+      a.click();
+    }
+
+    function updateQuotaUI() {
+      const pro = sGet("sc_pro_v2", false);
+      const used = Number(sGet("sc_stl_used_v2", 0));
+      const el = document.getElementById("stlQuotaBadge");
+      el.textContent = pro ? "💎 UNLIMITED PRO" : `${Math.max(0, 1 - used)}/1 Free STL Left`;
+    }
+    function openStlPayModal() { document.getElementById("stlPayModal").classList.add("open"); }
+    function closeStlPayModal() { document.getElementById("stlPayModal").classList.remove("open"); }
+
+    async function verifyBscPayment() {
+      const tx = document.getElementById("txInput").value.trim();
+      const msg = document.getElementById("payMsg");
+      if (!/^0x[0-9a-fA-F]{64}$/.test(tx)) { msg.textContent = "Enter a valid 66-char 0x TxHash."; return; }
+      msg.textContent = "Checking BNB Smart Chain receipt...";
+      try {
+        const r = await fetch("https://bsc-rpc.publicnode.com", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getTransactionReceipt", params: [tx] }),
+        });
+        const j = await r.json();
+        const rec = j.result;
+        if (!rec || rec.status !== "0x1") { msg.textContent = "Not confirmed yet — retry in 5s."; return; }
+        const TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+        const ok = (rec.logs || []).some((l) =>
+          String(l.address).toLowerCase() === BSC_USDT &&
+          String(l.topics?.[0]).toLowerCase() === TOPIC &&
+          String(l.topics?.[2]).toLowerCase().endsWith(MERCHANT_WALLET.slice(2)) &&
+          BigInt(l.data || "0x0") >= 8n * (10n ** 18n)
+        );
+        if (!ok) { msg.textContent = "No >= $9 BEP-20 USDT transfer found in that TxHash."; return; }
+        sSet("sc_pro_v2", true);
+        updateQuotaUI();
+        msg.textContent = "✓ Verified! Unlimited Commercial .STL Exports Unlocked!";
+      } catch {
+        msg.textContent = "RPC busy — tap Verify again.";
+      }
+    }
+
+    // Boot
+    if (urlParams.get("name")) document.getElementById("nameInput").value = urlParams.get("name").slice(0, 14);
+    if (urlParams.get("note")) document.getElementById("noteInput").value = urlParams.get("note");
+    setFinish(currentFinish);
+    syncNoteText();
+    updateEngravingTexture();
+    updateQuotaUI();
+    if (urlParams.get("gift") === "1") {
+      previewGiftExperience();
+    }
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

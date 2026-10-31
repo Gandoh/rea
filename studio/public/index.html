@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>REA Cloud Studio — AppScope · ShipGate · RL Factory</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- Top Navigation Bar -->
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 28 28" fill="none">
+              <rect x="2" y="2" width="24" height="24" rx="6" stroke="currentColor" stroke-width="2" />
+              <path d="M9 19V9h5.2a3.3 3.3 0 0 1 0 6.6H9m5.2 0L19 19" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <div class="brand-title">
+              REA Cloud Studio
+              <span class="version-pill" id="rea-version-pill">REA v6.8.0</span>
+            </div>
+            <div class="brand-subtitle">Cryptographic Reverse-Engineering, Binary Gate &amp; RL Environment SaaS</div>
+          </div>
+        </div>
+
+        <nav class="main-tabs" role="tablist" aria-label="Product Suites">
+          <button class="tab-btn active" data-tab="xray" role="tab" aria-selected="true">
+            <span class="tab-dot dot-cyan"></span>
+            1. AppScope X-Ray
+            <span class="tab-tag">Electron / JS</span>
+          </button>
+          <button class="tab-btn" data-tab="shipgate" role="tab" aria-selected="false">
+            <span class="tab-dot dot-emerald"></span>
+            2. ShipGate
+            <span class="tab-tag">Binaries · Models · EVM</span>
+          </button>
+          <button class="tab-btn" data-tab="rl" role="tab" aria-selected="false">
+            <span class="tab-dot dot-violet"></span>
+            3. RL Factory
+            <span class="tab-tag">HAR → AgentEnv</span>
+          </button>
+          <button class="tab-btn" data-tab="commercial" role="tab" aria-selected="false">
+            <span class="tab-dot dot-amber"></span>
+            4. Evidence &amp; API Billing
+            <span class="tab-tag" id="evidence-count-badge">0</span>
+          </button>
+        </nav>
+
+        <div class="topbar-stats">
+          <div class="stat-chip">
+            <span class="stat-label">Workspace Plan</span>
+            <span class="stat-val" id="stat-tenant-plan">Trial</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-label">Monthly Quota</span>
+            <span class="stat-val" id="stat-quota">0 / 5</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-label">Sealed Evidence</span>
+            <span class="stat-val" id="stat-sealed">0</span>
+          </div>
+          <button class="btn btn-sm btn-outline" id="btn-open-account" type="button">Account</button>
+          <button class="btn btn-sm btn-emerald" id="btn-open-upgrade" type="button">Upgrade Plan</button>
+        </div>
+      </header>
+
+      <!-- Main Workspace -->
+      <main class="workspace">
+        <!-- ===============================================================
+             TAB 1: APPSCOPE — ELECTRON & JS ATTACK-SURFACE X-RAY
+             =============================================================== -->
+        <section id="panel-xray" class="tab-panel active">
+          <div class="hero-strip">
+            <div>
+              <h1>AppScope — Electron &amp; JavaScript Attack-Surface X-Ray</h1>
+              <p>
+                Static AST + semantic graph reconstruction for desktop <code>.asar</code> bundles and JS apps. Automatically surfaces unvalidated
+                <code>ipcMain</code> handlers, <code>BrowserWindow</code> sandbox weaknesses, <code>contextBridge</code> APIs, and cross-version security diffs.
+              </p>
+            </div>
+            <div class="hero-actions">
+              <button class="btn btn-secondary" id="btn-compare-versions">
+                Compare v1.4 (Vulnerable) vs v2.0 (Hardened)
+              </button>
+            </div>
+          </div>
+
+          <div class="grid-sidebar">
+            <!-- Left Column: Targets & Upload -->
+            <aside class="card sidebar-card">
+              <div class="card-header">
+                <h2>Select Target or Upload</h2>
+                <span class="pill pill-cyan">Zero Execution</span>
+              </div>
+              <div id="xray-samples-list" class="sample-list"></div>
+
+              <div class="upload-zone" id="xray-dropzone">
+                <input type="file" id="xray-file-input" accept=".asar,.zip,.js,.mjs,.cjs" hidden />
+                <div class="upload-title">Drop <code>.asar</code>, <code>.zip</code>, or <code>.js</code></div>
+                <div class="upload-sub">Unpacks &amp; reconstructs AST + IPC graph locally</div>
+                <button class="btn btn-sm btn-outline" id="xray-browse-btn" type="button">Choose File</button>
+              </div>
+
+              <div class="divider"></div>
+              <div class="card-header">
+                <h3>Cross-Boundary Feature Tracer</h3>
+              </div>
+              <p class="muted-sm">Trace any IPC channel, exposed preload member, or module across REA's authenticated graph.</p>
+              <form id="xray-trace-form" class="stack-sm">
+                <div class="row-2">
+                  <div>
+                    <label class="field-label">Seed Kind</label>
+                    <select id="trace-seed-kind" class="input">
+                      <option value="channel">IPC Channel</option>
+                      <option value="api">Exposed API</option>
+                      <option value="module">Module Path</option>
+                      <option value="native-export">Native Addon</option>
+                      <option value="string">String Literal</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label">Direction</label>
+                    <select id="trace-direction" class="input">
+                      <option value="both">Both Directions</option>
+                      <option value="outgoing">Outgoing</option>
+                      <option value="incoming">Incoming</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label class="field-label">Seed Value</label>
+                  <input id="trace-seed-value" class="input mono" placeholder="e.g. shell:open-diagnostic" value="shell:open-diagnostic" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="btn-run-trace">Trace Feature Reachability</button>
+              </form>
+            </aside>
+
+            <!-- Right Column: X-Ray Findings & Interactive Graph -->
+            <div class="content-stack" id="xray-results-area">
+              <div class="empty-state">Loading initial Electron security scan…</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             TAB 2: SHIPGATE — BINARY, AI MODEL, EVM & BYTECODE GATE
+             =============================================================== -->
+        <section id="panel-shipgate" class="tab-panel">
+          <div class="hero-strip">
+            <div>
+              <h1>ShipGate — Post-Build Binary, AI Model &amp; Smart Contract Gate</h1>
+              <p>
+                Verify what actually ships inside compiled binaries, AI weight headers, Python bytecode, and unverified smart contracts—with block-level Shannon
+                entropy, x86-64 disassembly, tensor storage verification, and EVM selector recovery.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid-sidebar">
+            <aside class="card sidebar-card">
+              <div class="card-header">
+                <h2>Built-In Live Artifacts</h2>
+                <span class="pill pill-emerald">Multi-Format</span>
+              </div>
+              <div id="shipgate-samples-list" class="sample-list"></div>
+
+              <div class="upload-zone" id="shipgate-dropzone">
+                <input type="file" id="shipgate-file-input" hidden />
+                <div class="upload-title">Drop Any Binary / Model / Contract</div>
+                <div class="upload-sub">ELF · PE (<code>.exe</code>/<code>.dll</code>) · <code>.apk</code> · <code>.safetensors</code> · <code>.gguf</code> · <code>.hex</code> · <code>.pyc</code></div>
+                <button class="btn btn-sm btn-outline" id="shipgate-browse-btn" type="button">Upload Artifact</button>
+              </div>
+            </aside>
+
+            <div class="content-stack" id="shipgate-results-area">
+              <div class="empty-state">Select a binary, AI model, EVM contract, or bytecode target on the left to inspect.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             TAB 3: RL FACTORY — HAR-TO-AGENTENV STUDIO
+             =============================================================== -->
+        <section id="panel-rl" class="tab-panel">
+          <div class="hero-strip">
+            <div>
+              <h1>RL Factory — Turn Web Session Captures into Stateful AgentEnv Sandboxes</h1>
+              <p>
+                Upload a recorded <code>.har</code> session: REA infers callable MCP API tools, synthesizes local CRUD state where read-after-write evidence confirms
+                effects, launches a live testable sandbox server, grades custom RL reward verifiers, and exports a Dockerized <code>AgentEnv</code> training bundle.
+              </p>
+            </div>
+            <div class="hero-actions" id="rl-download-slot"></div>
+          </div>
+
+          <div class="grid-sidebar">
+            <aside class="card sidebar-card">
+              <div class="card-header">
+                <h2>Recorded Web Sessions</h2>
+                <span class="pill pill-violet">AgentEnv Ready</span>
+              </div>
+              <div id="rl-samples-list" class="sample-list"></div>
+
+              <div class="upload-zone" id="rl-dropzone">
+                <input type="file" id="rl-file-input" accept=".har,.json" hidden />
+                <div class="upload-title">Upload Custom <code>.har</code> Capture</div>
+                <div class="upload-sub">Chrome DevTools / Fiddler / mitmproxy HAR 1.2</div>
+                <button class="btn btn-sm btn-outline" id="rl-browse-btn" type="button">Select .har File</button>
+              </div>
+            </aside>
+
+            <div class="content-stack" id="rl-results-area">
+              <div class="empty-state">Select a recorded session or upload a <code>.har</code> file to build and launch a live stateful AgentEnv server.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             TAB 4: EVIDENCE LEDGER, REST API & MONETIZATION CONSOLE
+             =============================================================== -->
+        <section id="panel-commercial" class="tab-panel">
+          <div class="hero-strip">
+            <div>
+              <h1>Cryptographic Evidence Vault, Developer API &amp; SaaS Revenue Engine</h1>
+              <p>
+                Every inspection seals a deterministic SHA-256 <code>ev_…</code> Evidence envelope. Monetize via self-serve AppSec subscriptions, CI/CD release-gate
+                API credits, and high-ticket custom RL environment packs.
+              </p>
+            </div>
+          </div>
+
+          <div class="commercial-grid">
+            <!-- Revenue & Pricing Tiers -->
+            <div class="card">
+              <div class="card-header">
+                <h2>SaaS Packaging &amp; Revenue Simulator</h2>
+                <span class="pill pill-amber">MIT Commercial Ready</span>
+              </div>
+              <div class="pricing-cards">
+                <div class="price-tier">
+                  <div>
+                    <div class="tier-name">Researcher / Indie</div>
+                    <div class="tier-price">$49<span>/mo</span></div>
+                    <ul class="tier-list">
+                      <li>50 Electron &amp; APK attack-surface scans/mo</li>
+                      <li>5 HAR → <code>AgentEnv</code> builds/mo</li>
+                      <li>Signed Markdown &amp; JSON Evidence exports</li>
+                    </ul>
+                  </div>
+                  <div class="stack-sm">
+                    <button class="btn btn-sm btn-outline btn-block" data-checkout-plan="indie" type="button">Subscribe — $49/mo</button>
+                    <div class="slider-row">
+                      <label>Customers: <strong id="sim-c1-val">40</strong></label>
+                      <input type="range" id="sim-c1" min="0" max="500" value="40" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="price-tier featured">
+                  <div>
+                    <div class="tier-name">ShipGate Team CI/CD</div>
+                    <div class="tier-price">$299<span>/mo</span></div>
+                    <ul class="tier-list">
+                      <li>Unlimited GitHub Actions binary &amp; ASAR diffs</li>
+                      <li>15 HAR → <code>AgentEnv</code> builds/mo + 20 API keys</li>
+                      <li>AI Model (<code>GGUF</code>/<code>safetensors</code>) attestation</li>
+                    </ul>
+                  </div>
+                  <div class="stack-sm">
+                    <button class="btn btn-sm btn-primary btn-block" data-checkout-plan="team" type="button">Subscribe — $299/mo</button>
+                    <div class="slider-row">
+                      <label>Teams: <strong id="sim-c2-val">25</strong></label>
+                      <input type="range" id="sim-c2" min="0" max="250" value="25" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="price-tier">
+                  <div>
+                    <div class="tier-name">AI Lab RL Factory</div>
+                    <div class="tier-price">$1,499<span>/mo</span></div>
+                    <ul class="tier-list">
+                      <li>Unlimited HAR → stateful <code>AgentEnv</code> builds</li>
+                      <li>Custom reward verifiers &amp; trajectory probes</li>
+                      <li>100 API keys &amp; dedicated Docker bundle exports</li>
+                    </ul>
+                  </div>
+                  <div class="stack-sm">
+                    <button class="btn btn-sm btn-emerald btn-block" data-checkout-plan="ai_lab" type="button">Subscribe — $1,499/mo</button>
+                    <div class="slider-row">
+                      <label>AI Labs: <strong id="sim-c3-val">8</strong></label>
+                      <input type="range" id="sim-c3" min="0" max="100" value="8" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="arr-banner">
+                <div>
+                  <div class="arr-label">Projected Monthly Recurring Revenue (MRR)</div>
+                  <div class="arr-value" id="sim-mrr">$21,427 / mo</div>
+                </div>
+                <div>
+                  <div class="arr-label">Projected Annual Run Rate (ARR)</div>
+                  <div class="arr-value accent-emerald" id="sim-arr">$257,124 / yr</div>
+                </div>
+                <div>
+                  <div class="arr-label">Gross Margin Profile</div>
+                  <div class="arr-value">~91% <span class="muted-sm">(CPU-only local parsers)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live B2B REST API Console -->
+            <div class="card">
+              <div class="card-header">
+                <h2>Live B2B REST API Keys &amp; Metered Endpoint Tester</h2>
+                <button class="btn btn-sm btn-primary" id="btn-create-key">+ Issue New API Key</button>
+              </div>
+              <div id="one-time-key-banner"></div>
+              <div id="api-keys-table-wrap"></div>
+
+              <div class="divider"></div>
+              <div style="margin-bottom:8px;">
+                <label class="field-label" for="v1-bearer-input">Bearer API Key for Live Tester (shown once at key creation)</label>
+                <input id="v1-bearer-input" class="input mono" type="password" placeholder="Paste rea_sk_live_... secret token to test /api/v1/*" autocomplete="off" />
+              </div>
+              <div class="row-between">
+                <h3>Test Live Authenticated Endpoint (<code>/api/v1/*</code>)</h3>
+                <div class="btn-group">
+                  <button class="btn btn-sm btn-outline" data-v1-test="status">GET /api/v1/status</button>
+                  <button class="btn btn-sm btn-outline" data-v1-test="xray">POST /api/v1/xray</button>
+                  <button class="btn btn-sm btn-outline" data-v1-test="shipgate">POST /api/v1/shipgate</button>
+                </div>
+              </div>
+              <pre class="code-block mono" id="curl-snippet-box"></pre>
+              <pre class="code-block mono" id="v1-response-box">Click any endpoint button above to execute a real authenticated API call…</pre>
+            </div>
+
+            <!-- GitHub Actions CI/CD Release Gate Integration Card -->
+            <div class="card full-span">
+              <div class="card-header">
+                <h2>GitHub Actions CI/CD Release Gate &amp; Cloud Deployment Kit</h2>
+                <div class="btn-group">
+                  <a class="btn btn-sm btn-secondary" href="/api/ci/github-action.yml" target="_blank" rel="noopener">Download .github/workflows/rea-shipgate.yml</a>
+                  <a class="btn btn-sm btn-outline" href="/api/ci/shipgate-cli.mjs" target="_blank" rel="noopener">Download shipgate-cli.mjs</a>
+                </div>
+              </div>
+              <p class="muted-sm" style="margin-top:0;">
+                Paying teams drop this zero-dependency GitHub Actions workflow into any repository. Every Pull Request automatically uploads built <code>.asar</code> apps, native binaries, or AI models to your Studio API, posts a signed SHA-256 Audit Dossier to the PR Summary, and exits <code>1</code> when <code>release_gate === "BLOCKED"</code>.
+              </p>
+              <pre class="code-block mono" id="ci-snippet-box"></pre>
+            </div>
+
+            <!-- Cryptographic Evidence Ledger -->
+            <div class="card full-span">
+              <div class="card-header">
+                <h2>Cryptographic Evidence Ledger (Session-Retained <code>ev_…</code> Envelopes)</h2>
+                <button class="btn btn-sm btn-outline" id="btn-refresh-evidence">Refresh Ledger</button>
+              </div>
+              <div id="evidence-ledger-wrap"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Modal for inspecting raw REA Evidence JSON -->
+    <div class="modal-backdrop hidden" id="evidence-modal">
+      <div class="modal-window">
+        <div class="modal-header">
+          <div>
+            <h3 id="modal-title">Evidence Envelope</h3>
+            <div class="mono muted-sm" id="modal-subtitle"></div>
+          </div>
+          <div class="btn-group">
+            <a id="modal-dl-md" class="btn btn-sm btn-secondary" href="#" target="_blank" rel="noopener">Download Audit .md</a>
+            <a id="modal-dl-json" class="btn btn-sm btn-outline" href="#" target="_blank" rel="noopener">Download .evidence.json</a>
+            <button class="btn btn-sm btn-outline" id="modal-close-btn">Close</button>
+          </div>
+        </div>
+        <pre class="modal-body mono" id="modal-json-body"></pre>
+      </div>
+    </div>
+
+    <!-- Modal for Multi-Tenant Workspace Sign Up / Login -->
+    <div class="modal-backdrop hidden" id="account-modal">
+      <div class="modal-window" style="width:min(540px, 95vw);">
+        <div class="modal-header">
+          <div>
+            <h3>Workspace Account &amp; Session Security</h3>
+            <div class="muted-sm" id="account-modal-sub">Not signed in — create or sign in to an isolated workspace</div>
+          </div>
+          <button class="btn btn-sm btn-outline" id="account-close-btn" type="button">Close</button>
+        </div>
+        <div style="padding:18px;" class="stack-sm">
+          <div class="row-2">
+            <form id="register-form" class="card stack-sm" style="margin:0;">
+              <h3 style="margin:0;font-size:14px;">Create New Workspace</h3>
+              <div>
+                <label class="field-label">Organization Name</label>
+                <input id="reg-org" class="input" placeholder="e.g. Hyperion AI Lab" required />
+              </div>
+              <div>
+                <label class="field-label">Work Email</label>
+                <input id="reg-email" type="email" class="input" placeholder="sec@hyperion.ai" required />
+              </div>
+              <div>
+                <label class="field-label">Password (min 8 chars)</label>
+                <input id="reg-pass" type="password" class="input" minlength="8" placeholder="••••••••" required />
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Sign Up (5 Free Scans)</button>
+            </form>
+
+            <form id="login-form" class="card stack-sm" style="margin:0;">
+              <h3 style="margin:0;font-size:14px;">Sign In Existing</h3>
+              <div>
+                <label class="field-label">Work Email</label>
+                <input id="login-email" type="email" class="input" placeholder="you@company.com" required />
+              </div>
+              <div>
+                <label class="field-label">Password</label>
+                <input id="login-pass" type="password" class="input" placeholder="••••••••" required />
+              </div>
+              <button type="submit" class="btn btn-outline btn-block">Sign In</button>
+              <button type="button" class="btn btn-sm btn-secondary btn-block" id="btn-logout-sess">Sign Out of Workspace</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for Stripe Plan Upgrade & Quota Paywall -->
+    <div class="modal-backdrop hidden" id="billing-modal">
+      <div class="modal-window" style="width:min(680px, 95vw);">
+        <div class="modal-header">
+          <div>
+            <h3 id="billing-modal-title">Upgrade Workspace Subscription</h3>
+            <div class="muted-sm" id="billing-modal-reason">Unlock higher monthly scan quotas, CI/CD PR gates, and RL Factory builds.</div>
+          </div>
+          <button class="btn btn-sm btn-outline" id="billing-close-btn" type="button">Close</button>
+        </div>
+        <div style="padding:18px;" class="stack-sm">
+          <div class="pricing-cards" style="margin-bottom:8px;">
+            <div class="price-tier">
+              <div>
+                <div class="tier-name">Indie</div>
+                <div class="tier-price">$49<span>/mo</span></div>
+                <div class="muted-sm" style="margin-bottom:10px;">50 scans/mo · 5 RL builds · 5 API keys</div>
+              </div>
+              <button class="btn btn-sm btn-outline btn-block" data-checkout-plan="indie" type="button">Select $49/mo</button>
+            </div>
+            <div class="price-tier featured">
+              <div>
+                <div class="tier-name">ShipGate Team</div>
+                <div class="tier-price">$299<span>/mo</span></div>
+                <div class="muted-sm" style="margin-bottom:10px;">Unlimited CI scans · 15 RL builds · 20 keys</div>
+              </div>
+              <button class="btn btn-sm btn-primary btn-block" data-checkout-plan="team" type="button">Select $299/mo</button>
+            </div>
+            <div class="price-tier">
+              <div>
+                <div class="tier-name">AI Lab</div>
+                <div class="tier-price">$1,499<span>/mo</span></div>
+                <div class="muted-sm" style="margin-bottom:10px;">Unlimited scans &amp; RL AgentEnvs · 100 keys</div>
+              </div>
+              <button class="btn btn-sm btn-emerald btn-block" data-checkout-plan="ai_lab" type="button">Select $1,499/mo</button>
+            </div>
+          </div>
+          <div id="sandbox-checkout-slot"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

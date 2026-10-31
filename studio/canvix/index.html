@@ -1,0 +1,1220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="theme-color" content="#07070d" />
+  <title>Canvix × Graphite Studio — Open-Source Design &amp; Motion Engine</title>
+  <style>
+    :root {
+      --bg: #07070d;
+      --panel: #11111b;
+      --panel-2: #191927;
+      --border: rgba(255, 255, 255, 0.11);
+      --gold: #f5d08a;
+      --emerald: #10b981;
+      --accent: #8b5cf6;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 18% 0%, rgba(139, 92, 246, 0.16), transparent 42%),
+                  radial-gradient(circle at 85% 90%, rgba(16, 185, 129, 0.12), transparent 42%),
+                  var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    button, input, select, textarea { font-family: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(7, 7, 13, 0.86);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 9px; }
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899, #f59e0b);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 15px;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+    }
+    .brand-name { font-size: 13.5px; font-weight: 800; letter-spacing: -0.01em; }
+    .brand-sub { font-size: 10.5px; color: var(--muted); }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: transform 0.12s ease;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary {
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      border-color: rgba(236, 72, 153, 0.5);
+      color: #fff;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #fbe2b0, #d99b43);
+      border-color: rgba(251, 226, 176, 0.7);
+      color: #1f1203;
+      font-weight: 800;
+    }
+    .btn-emerald {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: rgba(16, 185, 129, 0.55);
+      color: #022c22;
+      font-weight: 800;
+    }
+    .btn-sm { padding: 6px 10px; font-size: 11px; }
+
+    /* Template Ribbon */
+    .tpl-ribbon {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(14, 14, 24, 0.7);
+      scrollbar-width: none;
+    }
+    .tpl-ribbon::-webkit-scrollbar { display: none; }
+    .tpl-chip {
+      flex: 0 0 auto;
+      padding: 8px 13px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .tpl-chip.active {
+      border-color: var(--gold);
+      background: rgba(245, 208, 138, 0.12);
+      color: var(--gold);
+      box-shadow: 0 0 18px rgba(245, 208, 138, 0.16);
+    }
+
+    /* Main Workspace */
+    .workspace {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 14px 56px;
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 880px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+
+    .stage-box {
+      background: #0b0b13;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+    }
+    .stage-toolbar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .canvas-holder {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border-radius: 14px;
+      background: repeating-conic-gradient(#12121e 0% 25%, #0d0d17 0% 50%) 50% / 20px 20px;
+      padding: 8px;
+    }
+    #designCanvas {
+      max-width: 100%;
+      max-height: 520px;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.78);
+      touch-action: none;
+      cursor: move;
+    }
+    .stage-hint {
+      margin-top: 9px;
+      font-size: 11.5px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Right Inspector */
+    .card {
+      background: rgba(17, 17, 27, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 15px;
+      margin-bottom: 12px;
+    }
+    .card-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 11px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .field { margin-bottom: 11px; }
+    .lbl {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .input, select.input, textarea.input {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #090910;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .input:focus { border-color: var(--gold); }
+    input[type="range"] { width: 100%; accent-color: #f5d08a; }
+
+    .swatch-row { display: flex; gap: 7px; flex-wrap: wrap; }
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+    }
+    .swatch.active { border-color: #fff; transform: scale(1.12); }
+
+    .layer-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .layer-pill {
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: #0c0c16;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+    .layer-pill.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(245, 208, 138, 0.14);
+    }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(4, 4, 10, 0.84);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #131320;
+      border: 1px solid rgba(245, 208, 138, 0.4);
+      border-radius: 20px;
+      max-width: 450px;
+      width: 100%;
+      padding: 20px;
+    }
+    .mono { font-family: var(--mono); }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">✦</div>
+      <div>
+        <div class="brand-name">Canvix × Graphite Studio</div>
+        <div class="brand-sub">Built from your <span class="mono">Gandoh/canvix</span> + <span class="mono">doory</span> + <span class="mono">Graphite</span> forks</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <button id="motionBtn" class="btn btn-primary btn-sm" onclick="toggleMotion()">▶ Play Motion</button>
+      <button class="btn btn-gold btn-sm" onclick="exportUltraPng()">⬇️ HD PNG</button>
+    </div>
+  </header>
+
+  <!-- 6 Agency Starter Templates -->
+  <nav class="tpl-ribbon" id="tplRibbon">
+    <button class="tpl-chip active" data-tpl="alphashield" onclick="loadTemplate('alphashield')">🛡️ AlphaShield Viral Ad</button>
+    <button class="tpl-chip" data-tpl="maison" onclick="loadTemplate('maison')">💎 Maison Luxury Card</button>
+    <button class="tpl-chip" data-tpl="rooftop" onclick="loadTemplate('rooftop')">🔥 VIP Event Flyer</button>
+    <button class="tpl-chip" data-tpl="thumbnail" onclick="loadTemplate('thumbnail')">▶️ YouTube / Reel Cover</button>
+    <button class="tpl-chip" data-tpl="clientpromo" onclick="loadTemplate('clientpromo')">🍽️ Client Promo ($15 Gig)</button>
+    <button class="tpl-chip" data-tpl="pitchdeck" onclick="loadTemplate('pitchdeck')">📊 Presenton AI Slide</button>
+  </nav>
+
+  <main class="workspace">
+    <!-- LEFT: Interactive Multi-Layer Retina Canvas -->
+    <div class="stage-box">
+      <div class="stage-toolbar">
+        <span id="sizeTag" class="mono" style="font-size:11px;color:var(--gold);">1080 × 1350 px · Retina</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm" onclick="document.getElementById('photoInput').click()">📷 Add Photo</button>
+          <input id="photoInput" type="file" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)" />
+          <button class="btn btn-sm" onclick="addTextLayer()">＋ Text</button>
+          <button id="recBtn" class="btn btn-emerald btn-sm" onclick="recordMotionClip()">🎥 Save 5s Video</button>
+        </div>
+      </div>
+
+      <div class="canvas-holder">
+        <canvas id="designCanvas" width="1080" height="1350"></canvas>
+      </div>
+
+      <div class="stage-hint">
+        👆 <strong>Tap any text, badge, photo, or QR code</strong> on the poster and drag it with your finger!
+      </div>
+    </div>
+
+    <!-- RIGHT: Live Layer Inspector + Mood Palettes + Export -->
+    <div>
+      <!-- Layer Picker & Selected Element Editor -->
+      <div class="card">
+        <div class="card-hdr">
+          <span>1. Tap Layer to Edit</span>
+          <button class="btn btn-sm" onclick="deleteSelectedLayer()" style="color:#fda4af;">🗑 Remove</button>
+        </div>
+
+        <div id="layerPills" class="layer-pills"></div>
+
+        <div id="textControls">
+          <div class="field">
+            <div class="lbl"><span>Layer Text / QR Link</span><span id="layerKindBadge" class="mono">TEXT</span></div>
+            <textarea id="layerTextInput" class="input" rows="2" oninput="onLayerTextChange()"></textarea>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="field">
+              <div class="lbl"><span>Typography</span></div>
+              <select id="fontSelect" class="input" onchange="onFontChange()">
+                <option value="sans">Swiss Bold Sans</option>
+                <option value="serif">Maison Luxury Serif</option>
+                <option value="impact">Poster Impact</option>
+                <option value="mono">Cyber Tech Mono</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="lbl"><span>Size / Scale</span><span id="sizeVal" class="mono">84</span></div>
+              <input id="sizeSlider" type="range" min="22" max="210" value="84" oninput="onSizeChange()" />
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="lbl"><span>Element Color / Foil</span></div>
+            <div class="swatch-row">
+              <button class="swatch" style="background:#ffffff" onclick="setLayerColor('#ffffff')" title="Pure White"></button>
+              <button class="swatch" style="background:linear-gradient(135deg,#fff3c4,#d99b43)" onclick="setLayerColor('GOLD')" title="24K Gold Foil"></button>
+              <button class="swatch" style="background:#34d399" onclick="setLayerColor('#34d399')" title="Cyber Emerald"></button>
+              <button class="swatch" style="background:#fb7185" onclick="setLayerColor('#fb7185')" title="Cartier Rose"></button>
+              <button class="swatch" style="background:#38bdf8" onclick="setLayerColor('#38bdf8')" title="Electric Cyan"></button>
+              <button class="swatch" style="background:#facc15" onclick="setLayerColor('#facc15')" title="Solar Amber"></button>
+              <button class="swatch" style="background:#09090b" onclick="setLayerColor('#09090b')" title="Obsidian Ink"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Procedural Mesh Lighting Theme (Graphite Shader Engine Spirit) -->
+      <div class="card">
+        <div class="card-hdr">
+          <span>2. Procedural Studio Lighting</span>
+          <span class="mono" style="font-size:11px;color:var(--muted);">No Watermark</span>
+        </div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <button class="btn btn-sm" onclick="setPalette('emerald')">🟢 Cyber Emerald</button>
+          <button class="btn btn-sm" onclick="setPalette('ruby')">🌹 Cartier Ruby &amp; Gold</button>
+          <button class="btn btn-sm" onclick="setPalette('boiler')">🔥 Sunset Boiler</button>
+          <button class="btn btn-sm" onclick="setPalette('espresso')">☕ Luxury Espresso</button>
+          <button class="btn btn-sm" onclick="setPalette('royal')">🌌 Midnight Sapphire</button>
+        </div>
+      </div>
+
+      <!-- Export & Agency Monetization -->
+      <div class="card">
+        <div class="card-hdr">
+          <span>3. Export &amp; Client Monetization</span>
+          <span style="font-size:11px;color:#34d399;">Zero Watermark</span>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-top:0;line-height:1.5;">
+          Create posters, thumbnails, QR flyers, or 5-second motion reels for local businesses &amp; WhatsApp clients in 60 seconds — or let buyers unlock Agency Batch Mode via your Binance USDT wallet.
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="btn btn-gold" style="padding:11px;" onclick="exportUltraPng()">⬇️ Download HD PNG</button>
+          <button class="btn btn-emerald" style="padding:11px;" onclick="recordMotionClip()">🎥 Export 5s Video</button>
+        </div>
+        <button class="btn" style="width:100%;margin-top:8px;padding:10px;" onclick="document.getElementById('agencyModal').classList.add('open')">
+          💎 Agency Commercial Pass ($9 USDT Checkout)
+        </button>
+        <div id="exportStatus" class="mono" style="font-size:11px;color:#34d399;margin-top:8px;"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Binance BEP-20 USDT Modal -->
+  <div id="agencyModal" class="modal-backdrop" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;">Canvix Agency Commercial Pass</span>
+        <button class="btn btn-sm" onclick="document.getElementById('agencyModal').classList.remove('open')">✕</button>
+      </div>
+      <h3 style="margin:0 0 6px;font-size:18px;">Unlock Unlimited Client Brand Kits — $9 USDT</h3>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:0;">
+        Send <strong>9 USDT</strong> on <strong>BNB Smart Chain (BEP-20)</strong> and paste your TxHash for instant verification:
+      </p>
+      <div style="background:#080810;border:1px solid rgba(16,185,129,0.45);padding:10px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;">
+        <span class="mono" style="font-size:11.5px;color:#34d399;word-break:break-all;">0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394</span>
+        <button class="btn btn-sm" onclick="navigator.clipboard?.writeText('0xa018b546f4e4fbfd7ffd5bcde826d13a66a6e394')">Copy</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input id="txHashIn" class="input mono" type="text" placeholder="0x... BEP-20 TxHash" />
+        <button class="btn btn-emerald" onclick="verifyAgencyTx()">Verify</button>
+      </div>
+      <div id="txMsg" style="font-size:12px;color:#34d399;margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // ISO/IEC 18004 Pure-JS Scannable QR Code Matrix Generator (Offline/Zero-API)
+    // =========================================================================
+    const qrCache = new Map();
+    function makeQrMatrix(rawText) {
+      const text = (rawText || "https://tinyurl.com/y9zptyn4").trim();
+      if (qrCache.has(text)) return qrCache.get(text);
+      const bytes = Array.from(new TextEncoder().encode(text));
+      const VERS = [
+        null,
+        { v: 1, data: 19, ec: 7, align: [] },
+        { v: 2, data: 34, ec: 10, align: [6, 18] },
+        { v: 3, data: 55, ec: 15, align: [6, 22] },
+        { v: 4, data: 80, ec: 20, align: [6, 26] },
+        { v: 5, data: 108, ec: 26, align: [6, 30] },
+      ];
+      const spec = VERS.find((s) => s && bytes.length + 2 <= s.data) || VERS[5];
+      const b = bytes.slice(0, spec.data - 2);
+      const bits = [];
+      const pushBits = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1); };
+      pushBits(0b0100, 4);
+      pushBits(b.length, 8);
+      for (const x of b) pushBits(x, 8);
+      for (let i = 0; i < 4 && bits.length < spec.data * 8; i++) bits.push(0);
+      while (bits.length % 8 !== 0) bits.push(0);
+
+      const dataWords = [];
+      for (let i = 0; i < bits.length; i += 8) {
+        let w = 0;
+        for (let j = 0; j < 8; j++) w = (w << 1) | bits[i + j];
+        dataWords.push(w);
+      }
+      let padT = 0;
+      while (dataWords.length < spec.data) {
+        dataWords.push(padT ? 0x11 : 0xec);
+        padT ^= 1;
+      }
+
+      const EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+      let x = 1;
+      for (let i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11d; }
+      for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+      const gfMul = (a, c) => (a === 0 || c === 0) ? 0 : EXP[LOG[a] + LOG[c]];
+
+      let gen = [1];
+      for (let i = 0; i < spec.ec; i++) {
+        const next = new Array(gen.length + 1).fill(0);
+        for (let j = 0; j < gen.length; j++) {
+          next[j] ^= gen[j];
+          next[j + 1] ^= gfMul(gen[j], EXP[i]);
+        }
+        gen = next;
+      }
+      const rem = new Uint8Array(spec.ec);
+      for (const d of dataWords) {
+        const factor = d ^ rem[0];
+        rem.copyWithin(0, 1);
+        rem[spec.ec - 1] = 0;
+        for (let j = 0; j < spec.ec; j++) rem[j] ^= gfMul(gen[j + 1], factor);
+      }
+
+      const allWords = [...dataWords, ...rem];
+      const size = 17 + spec.v * 4;
+      const grid = Array.from({ length: size }, () => new Int8Array(size));
+      const used = Array.from({ length: size }, () => new Uint8Array(size));
+      const setMod = (r, c, val) => { if (r >= 0 && r < size && c >= 0 && c < size) { grid[r][c] = val ? 1 : 0; used[r][c] = 1; } };
+      const finder = (r0, c0) => {
+        for (let dr = -1; dr <= 7; dr++) for (let dc = -1; dc <= 7; dc++) {
+          const inO = dr >= 0 && dr <= 6 && dc >= 0 && dc <= 6 && (dr === 0 || dr === 6 || dc === 0 || dc === 6);
+          const inI = dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4;
+          setMod(r0 + dr, c0 + dc, inO || inI ? 1 : 0);
+        }
+      };
+      finder(0, 0); finder(0, size - 7); finder(size - 7, 0);
+      for (let i = 8; i < size - 8; i++) { setMod(6, i, i % 2 === 0); setMod(i, 6, i % 2 === 0); }
+      for (const r of spec.align) for (const c of spec.align) {
+        if (used[r][c]) continue;
+        for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+          setMod(r + dr, c + dc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1);
+        }
+      }
+      for (let i = 0; i < 9; i++) { used[8][i] = 1; used[i][8] = 1; }
+      for (let i = 0; i < 8; i++) { used[8][size - 1 - i] = 1; used[size - 1 - i][8] = 1; }
+      setMod(size - 8, 8, 1);
+
+      let bitIdx = 0;
+      for (let right = size - 1; right >= 1; right -= 2) {
+        if (right === 6) right = 5;
+        for (let vert = 0; vert < size; vert++) {
+          const r = ((right + 1) & 2) === 0 ? size - 1 - vert : vert;
+          for (let j = 0; j < 2; j++) {
+            const c = right - j;
+            if (used[r][c]) continue;
+            let bit = 0;
+            if (bitIdx < allWords.length * 8) {
+              bit = (allWords[bitIdx >> 3] >> (7 - (bitIdx & 7))) & 1;
+              bitIdx++;
+            }
+            if ((r + c) % 2 === 0) bit ^= 1;
+            grid[r][c] = bit;
+          }
+        }
+      }
+      const fmt = 0x77c4;
+      for (let i = 0; i < 15; i++) {
+        const bit = (fmt >> i) & 1;
+        if (i < 6) grid[i][8] = bit;
+        else if (i < 8) grid[i + 1][8] = bit;
+        else if (i === 8) grid[8][7] = bit;
+        else grid[8][14 - i] = bit;
+        if (i < 8) grid[8][size - 1 - i] = bit;
+        else grid[size - 15 + i][8] = bit;
+      }
+      qrCache.set(text, grid);
+      return grid;
+    }
+
+    // =========================================================================
+    // Procedural Palettes & 6 World-Class Agency Templates
+    // =========================================================================
+    const PALETTES = {
+      emerald: { bg0: "#030908", bg1: "#07261f", orb1: "rgba(16,185,129,0.48)", orb2: "rgba(56,189,248,0.28)", line: "rgba(52,211,153,0.18)" },
+      ruby:    { bg0: "#090308", bg1: "#2a0716", orb1: "rgba(225,29,72,0.48)",  orb2: "rgba(245,208,138,0.30)", line: "rgba(245,208,138,0.24)" },
+      boiler:  { bg0: "#0b0503", bg1: "#2b0c04", orb1: "rgba(249,115,22,0.55)", orb2: "rgba(239,68,68,0.38)",  line: "rgba(251,146,60,0.22)" },
+      espresso:{ bg0: "#0d0906", bg1: "#261910", orb1: "rgba(217,155,67,0.45)", orb2: "rgba(180,83,9,0.32)",   line: "rgba(245,208,138,0.25)" },
+      royal:   { bg0: "#040714", bg1: "#0d1b42", orb1: "rgba(59,130,246,0.50)", orb2: "rgba(168,85,247,0.35)", line: "rgba(147,197,253,0.20)" },
+    };
+
+    const FONTS = {
+      sans:   `-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif`,
+      serif:  `Georgia, "Times New Roman", "Playfair Display", serif`,
+      impact: `"Arial Black", Impact, system-ui, sans-serif`,
+      mono:   `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`,
+    };
+
+    const TEMPLATES = {
+      alphashield: {
+        w: 1080, h: 1350, palette: "emerald", frameStyle: "swiss",
+        layers: [
+          { id: "badge", kind: "pill", x: 540, y: 128, text: "🛡️ ALPHASHIELD AI SECURITY • ZERO SIGNUP", font: "mono", size: 25, color: "#34d399" },
+          { id: "h1", kind: "text", x: 540, y: 315, text: "PASTE BEFORE\nYOU SIGN.", font: "impact", size: 108, color: "#ffffff" },
+          { id: "sub", kind: "text", x: 540, y: 505, text: "Catch fake crypto tokens, wallet drainers\n& trojan APKs in 3 seconds flat.", font: "sans", size: 36, color: "#cbd5e1" },
+          { id: "hud", kind: "glasscard", x: 540, y: 765, w: 860, h: 270, title: "CRITICAL DRAINER BLOCKED", metric: "98 / 100 RISK", detail: "approve(unlimited) • Hidden Mint Trap Detected", color: "#fb7185" },
+          { id: "qr", kind: "qr", x: 255, y: 1125, size: 190, text: "https://tinyurl.com/y9zptyn4", color: "#34d399" },
+          { id: "cta", kind: "text", x: 645, y: 1125, text: "SCAN TO TEST FREE\ntinyurl.com/y9zptyn4\n$9 LIFETIME PRO", font: "mono", size: 32, color: "GOLD" },
+        ],
+      },
+      maison: {
+        w: 1080, h: 1350, palette: "ruby", frameStyle: "luxury_double",
+        layers: [
+          { id: "seal", kind: "seal", x: 540, y: 245, size: 118, text: "✦ MAISON BESPOKE EDITION • ONE OF ONE • ", font: "serif", color: "GOLD" },
+          { id: "eyebrow", kind: "text", x: 540, y: 470, text: "A PRIVATE SCULPTURE FOR", font: "mono", size: 26, color: "#fbcfe8" },
+          { id: "title", kind: "text", x: 540, y: 615, text: "Angelique", font: "serif", size: 148, color: "GOLD" },
+          { id: "quote", kind: "text", x: 540, y: 815, text: "\"Crafted in ruby light and 24K gold —\nscan below to unveil your interactive\n3D keepsake in Brave Browser.\"", font: "serif", size: 36, color: "#f8fafc" },
+          { id: "qr", kind: "qr", x: 540, y: 1095, size: 195, text: "https://tinyurl.com/y9zptyn4", color: "GOLD" },
+        ],
+      },
+      rooftop: {
+        w: 1080, h: 1350, palette: "boiler", frameStyle: "swiss",
+        layers: [
+          { id: "top", kind: "pill", x: 540, y: 120, text: "🔥 FREETOWN • FRIDAY NIGHT • VIP SESSIONS", font: "mono", size: 26, color: "#facc15" },
+          { id: "main", kind: "text", x: 540, y: 370, text: "MIDNIGHT\nROOFTOP\nVIBES", font: "impact", size: 126, color: "GOLD" },
+          { id: "seal", kind: "seal", x: 865, y: 295, size: 96, text: "• LIMITED VIP TABLES • AFRO HOUSE • ", font: "mono", color: "#ffffff" },
+          { id: "lineup", kind: "glasscard", x: 540, y: 785, w: 880, h: 245, title: "DOORS OPEN 10:00 PM • DRESS CODE: ALL BLACK", metric: "VIP TABLES OPEN", detail: "Afrobeats • Amapiano • Sunset Cocktails • Live Visuals", color: "#facc15" },
+          { id: "qr", kind: "qr", x: 255, y: 1125, size: 185, text: "https://wa.me/", color: "#facc15" },
+          { id: "rsvp", kind: "text", x: 650, y: 1125, text: "SCAN FOR VIP PASS\nRESERVATIONS ON WHATSAPP\n18+ STRICTLY INVITE", font: "sans", size: 32, color: "#ffffff" },
+        ],
+      },
+      thumbnail: {
+        w: 1280, h: 720, palette: "royal", frameStyle: "none",
+        layers: [
+          { id: "warn", kind: "pill", x: 425, y: 125, text: "🚨 GITHUB SCAM EXPOSED", font: "mono", size: 30, color: "#fb7185" },
+          { id: "big", kind: "text", x: 445, y: 355, text: "DON'T CLICK\nTHAT REPO!", font: "impact", size: 116, color: "GOLD" },
+          { id: "sub", kind: "text", x: 445, y: 585, text: "5 KB Fake Code = Wallet Drainer", font: "sans", size: 40, color: "#38bdf8" },
+          { id: "photo", kind: "photo", x: 1025, y: 365, size: 380, text: "TAP 📷 TO ADD PHOTO", color: "GOLD" },
+        ],
+      },
+      clientpromo: {
+        w: 1080, h: 1350, palette: "espresso", frameStyle: "luxury_double",
+        layers: [
+          { id: "tag", kind: "pill", x: 540, y: 130, text: "✨ WEEKEND SIGNATURE SPECIAL • -30% OFF", font: "mono", size: 26, color: "GOLD" },
+          { id: "brand", kind: "text", x: 540, y: 290, text: "ROYAL GRILL\n& LOUNGE", font: "serif", size: 104, color: "GOLD" },
+          { id: "photo", kind: "photo", x: 540, y: 660, size: 420, text: "TAP 📷 PRODUCT PHOTO", color: "GOLD" },
+          { id: "offer", kind: "text", x: 540, y: 970, text: "Platter + 2 Signature Mocktails • Fast Delivery", font: "sans", size: 34, color: "#f8fafc" },
+          { id: "qr", kind: "qr", x: 270, y: 1150, size: 175, text: "https://wa.me/", color: "GOLD" },
+          { id: "order", kind: "text", x: 655, y: 1150, text: "ORDER ON WHATSAPP\nOpen Daily 12PM – 11PM\nFreetown Delivery", font: "sans", size: 32, color: "#ffffff" },
+        ],
+      },
+      pitchdeck: {
+        w: 1920, h: 1080, palette: "royal", frameStyle: "swiss",
+        layers: [
+          { id: "kicker", kind: "pill", x: 350, y: 135, text: "✦ GANDOH AI STUDIO • 2026 ECOSYSTEM", font: "mono", size: 26, color: "#38bdf8" },
+          { id: "title", kind: "text", x: 640, y: 355, text: "Own The Stack.\nKeep 100% Revenue.", font: "sans", size: 106, color: "#ffffff" },
+          { id: "desc", kind: "text", x: 640, y: 585, text: "Security Scanner • 3D Jewelry Raymarcher • Agency Design Suite\nZero Monthly SaaS Fees • Instant Web3 USDT Settlement", font: "sans", size: 34, color: "#cbd5e1" },
+          { id: "card", kind: "glasscard", x: 620, y: 835, w: 1020, h: 210, title: "LIVE INFRASTRUCTURE METRICS", metric: "$0 / MO HOSTING", detail: "24/7 Edge CDN • Direct BEP-20 Wallet Checkout • MIT / Apache-2.0", color: "#34d399" },
+          { id: "qr", kind: "qr", x: 1585, y: 520, size: 320, text: "https://tinyurl.com/y9zptyn4", color: "#38bdf8" },
+        ],
+      },
+    };
+
+    // =========================================================================
+    // Editor State & Canvas Renderer
+    // =========================================================================
+    const canvas = document.getElementById("designCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let activeTplKey = "alphashield";
+    let scene = null;
+    let selectedIdx = 1;
+    let userPhotoImg = null;
+    let isMotion = false;
+    let isRecording = false;
+    let motionStart = performance.now();
+
+    function cloneTpl(key) {
+      const src = TEMPLATES[key];
+      return {
+        w: src.w,
+        h: src.h,
+        palette: src.palette,
+        frameStyle: src.frameStyle,
+        layers: src.layers.map((l) => ({ ...l })),
+      };
+    }
+
+    function loadTemplate(key) {
+      activeTplKey = key;
+      scene = cloneTpl(key);
+      canvas.width = scene.w;
+      canvas.height = scene.h;
+      selectedIdx = Math.min(1, scene.layers.length - 1);
+      motionStart = performance.now();
+
+      document.querySelectorAll(".tpl-chip").forEach((c) => {
+        c.classList.toggle("active", c.getAttribute("data-tpl") === key);
+      });
+      document.getElementById("sizeTag").textContent = `${scene.w} × ${scene.h} px · Retina`;
+      rebuildLayerPills();
+      syncInspector();
+      drawScene(0);
+    }
+
+    function makeFillStyle(colorCode, x, y, span) {
+      if (colorCode === "GOLD") {
+        const g = ctx.createLinearGradient(x - span * 0.5, y - span * 0.3, x + span * 0.5, y + span * 0.3);
+        g.addColorStop(0.0, "#fff6d6");
+        g.addColorStop(0.35, "#f5d08a");
+        g.addColorStop(0.68, "#c98932");
+        g.addColorStop(1.0, "#fce7b2");
+        return g;
+      }
+      return colorCode || "#ffffff";
+    }
+
+    function roundRectPath(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    function drawScene(tSec, hideSelection = false) {
+      if (!scene) return;
+      const W = scene.w, H = scene.h;
+      const pal = PALETTES[scene.palette] || PALETTES.emerald;
+
+      // 1. Deep Studio Gradient Base
+      const bgGrad = ctx.createLinearGradient(0, 0, W * 0.6, H);
+      bgGrad.addColorStop(0, pal.bg1);
+      bgGrad.addColorStop(1, pal.bg0);
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // 2. Volumetric Mesh Spotlights (Animated in Motion Mode!)
+      const driftX = isMotion ? Math.sin(tSec * 1.6) * W * 0.10 : 0;
+      const driftY = isMotion ? Math.cos(tSec * 1.2) * H * 0.07 : 0;
+
+      const g1 = ctx.createRadialGradient(W * 0.5 + driftX, H * 0.25 + driftY, 10, W * 0.5 + driftX, H * 0.25 + driftY, W * 0.68);
+      g1.addColorStop(0, pal.orb1);
+      g1.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g1;
+      ctx.fillRect(0, 0, W, H);
+
+      const g2 = ctx.createRadialGradient(W * 0.82 - driftX, H * 0.80 - driftY, 10, W * 0.82 - driftX, H * 0.80 - driftY, W * 0.58);
+      g2.addColorStop(0, pal.orb2);
+      g2.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g2;
+      ctx.fillRect(0, 0, W, H);
+
+      // 3. Architectural Editorial Frames / Swiss Grid
+      ctx.save();
+      ctx.strokeStyle = pal.line;
+      if (scene.frameStyle === "swiss") {
+        ctx.lineWidth = 1.5;
+        const step = Math.round(W / 8);
+        for (let gx = step; gx < W; gx += step) {
+          ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
+        }
+        for (let gy = step; gy < H; gy += step) {
+          ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+        }
+        ctx.strokeRect(42, 42, W - 84, H - 84);
+      } else if (scene.frameStyle === "luxury_double") {
+        ctx.strokeStyle = makeFillStyle("GOLD", W * 0.5, H * 0.5, W);
+        ctx.globalAlpha = 0.55;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(44, 44, W - 88, H - 88);
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(58, 58, W - 116, H - 116);
+      }
+      ctx.restore();
+
+      // 4. Floating Golden Bokeh Dust in Motion Mode
+      if (isMotion) {
+        ctx.save();
+        for (let i = 0; i < 22; i++) {
+          const px = ((i * 197 + tSec * 38 * (1 + (i % 3) * 0.3)) % W);
+          const py = (H - ((i * 263 + tSec * 52 * (1 + (i % 4) * 0.25)) % H));
+          const r = 2 + (i % 4) * 1.4;
+          ctx.globalAlpha = 0.28 + 0.25 * Math.sin(tSec * 3 + i);
+          ctx.fillStyle = "#fde68a";
+          ctx.beginPath();
+          ctx.arc(px, py, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // 5. Render Interactive Layers + Compute Hit Boxes
+      scene.layers.forEach((layer, idx) => {
+        ctx.save();
+
+        // Subtle kinetic entrance pulse in Motion Mode
+        let yOff = 0;
+        if (isMotion) {
+          yOff = Math.sin(tSec * 2.4 + idx * 0.7) * 5;
+        }
+        const lx = layer.x;
+        const ly = layer.y + yOff;
+
+        if (layer.kind === "pill") {
+          ctx.font = `800 ${layer.size}px ${FONTS[layer.font || "mono"]}`;
+          const tw = ctx.measureText(layer.text).width;
+          const pw = tw + 56, ph = layer.size * 2.15;
+          roundRectPath(lx - pw / 2, ly - ph / 2, pw, ph, ph / 2);
+          ctx.fillStyle = "rgba(10, 10, 18, 0.72)";
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = makeFillStyle(layer.color, lx, ly, pw);
+          ctx.stroke();
+
+          ctx.fillStyle = makeFillStyle(layer.color, lx, ly, pw);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(layer.text, lx, ly + 1);
+          layer._box = { x: lx - pw / 2, y: ly - ph / 2, w: pw, h: ph };
+
+        } else if (layer.kind === "text") {
+          const fam = FONTS[layer.font || "sans"];
+          const weight = layer.font === "serif" ? "700" : "900";
+          ctx.font = `${weight} ${layer.size}px ${fam}`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          const lines = String(layer.text || "").split("\n");
+          const lh = layer.size * 1.14;
+          const totalH = lines.length * lh;
+          let maxW = 120;
+          lines.forEach((ln) => { maxW = Math.max(maxW, ctx.measureText(ln).width); });
+
+          ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
+          ctx.shadowBlur = 24;
+          ctx.shadowOffsetY = 8;
+          ctx.fillStyle = makeFillStyle(layer.color, lx, ly, maxW);
+
+          lines.forEach((ln, i) => {
+            const yy = ly - totalH / 2 + lh * (i + 0.5);
+            ctx.fillText(ln, lx, yy);
+          });
+          layer._box = { x: lx - maxW / 2 - 16, y: ly - totalH / 2 - 12, w: maxW + 32, h: totalH + 24 };
+
+        } else if (layer.kind === "glasscard") {
+          const cw = layer.w || 860, ch = layer.h || 250;
+          const x0 = lx - cw / 2, y0 = ly - ch / 2;
+          roundRectPath(x0, y0, cw, ch, 28);
+          ctx.fillStyle = "rgba(12, 14, 24, 0.76)";
+          ctx.fill();
+          ctx.lineWidth = 2.2;
+          ctx.strokeStyle = makeFillStyle(layer.color, lx, ly, cw);
+          ctx.stroke();
+
+          ctx.textAlign = "left";
+          ctx.fillStyle = "#94a3b8";
+          ctx.font = `700 23px ${FONTS.mono}`;
+          ctx.fillText(layer.title || "STATUS", x0 + 42, y0 + 58);
+
+          ctx.fillStyle = makeFillStyle(layer.color, lx, ly, cw);
+          ctx.font = `900 58px ${FONTS.sans}`;
+          ctx.fillText(layer.metric || layer.text || "LIVE", x0 + 42, y0 + 138);
+
+          ctx.fillStyle = "#e2e8f0";
+          ctx.font = `600 26px ${FONTS.sans}`;
+          ctx.fillText(layer.detail || "", x0 + 42, y0 + 202);
+          layer._box = { x: x0, y: y0, w: cw, h: ch };
+
+        } else if (layer.kind === "seal") {
+          const R = layer.size || 105;
+          const str = String(layer.text || "✦ BESPOKE EDITION • ");
+          const rot = isMotion ? tSec * 0.55 : -0.25;
+          ctx.translate(lx, ly);
+          ctx.rotate(rot);
+
+          ctx.strokeStyle = makeFillStyle(layer.color, 0, 0, R * 2);
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, 0, R + 24, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, R - 22, 0, Math.PI * 2); ctx.stroke();
+
+          ctx.fillStyle = makeFillStyle(layer.color, 0, 0, R * 2);
+          ctx.font = `800 34px ${FONTS.serif}`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("✦", 0, 0);
+
+          ctx.font = `700 20px ${FONTS[layer.font || "mono"]}`;
+          const stepA = (Math.PI * 2) / Math.max(1, str.length);
+          for (let i = 0; i < str.length; i++) {
+            ctx.save();
+            ctx.rotate(i * stepA - Math.PI / 2);
+            ctx.translate(0, -R);
+            ctx.fillText(str[i], 0, 0);
+            ctx.restore();
+          }
+          layer._box = { x: lx - R - 28, y: ly - R - 28, w: (R + 28) * 2, h: (R + 28) * 2 };
+
+        } else if (layer.kind === "photo") {
+          const sz = layer.size || 380;
+          const rad = sz / 2;
+          ctx.beginPath();
+          ctx.arc(lx, ly, rad, 0, Math.PI * 2);
+          ctx.save();
+          ctx.clip();
+          if (userPhotoImg) {
+            const scale = Math.max(sz / userPhotoImg.width, sz / userPhotoImg.height);
+            const dw = userPhotoImg.width * scale, dh = userPhotoImg.height * scale;
+            ctx.drawImage(userPhotoImg, lx - dw / 2, ly - dh / 2, dw, dh);
+          } else {
+            const pg = ctx.createRadialGradient(lx - rad * 0.3, ly - rad * 0.3, 12, lx, ly, rad);
+            pg.addColorStop(0, "rgba(255,255,255,0.18)");
+            pg.addColorStop(1, "rgba(15,15,28,0.92)");
+            ctx.fillStyle = pg;
+            ctx.fillRect(lx - rad, ly - rad, sz, sz);
+            ctx.fillStyle = "#f8fafc";
+            ctx.font = `800 26px ${FONTS.sans}`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(layer.text || "TAP 📷 PHOTO", lx, ly);
+          }
+          ctx.restore();
+
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = makeFillStyle(layer.color || "GOLD", lx, ly, sz);
+          ctx.beginPath();
+          ctx.arc(lx, ly, rad, 0, Math.PI * 2);
+          ctx.stroke();
+          layer._box = { x: lx - rad, y: ly - rad, w: sz, h: sz };
+
+        } else if (layer.kind === "qr") {
+          const qSize = layer.size || 190;
+          const mat = makeQrMatrix(layer.text || "https://tinyurl.com/y9zptyn4");
+          const pad = 18;
+          const boxW = qSize + pad * 2;
+          const x0 = lx - boxW / 2, y0 = ly - boxW / 2;
+
+          roundRectPath(x0, y0, boxW, boxW, 22);
+          ctx.fillStyle = "#ffffff";
+          ctx.fill();
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = makeFillStyle(layer.color || "GOLD", lx, ly, boxW);
+          ctx.stroke();
+
+          const cell = qSize / mat.length;
+          ctx.fillStyle = "#09090f";
+          for (let r = 0; r < mat.length; r++) {
+            for (let c = 0; c < mat.length; c++) {
+              if (mat[r][c]) {
+                ctx.fillRect(x0 + pad + c * cell, y0 + pad + r * cell, Math.ceil(cell), Math.ceil(cell));
+              }
+            }
+          }
+          layer._box = { x: x0, y: y0, w: boxW, h: boxW };
+        }
+        ctx.restore();
+      });
+
+      // 6. Active Selection Handles (Hidden automatically during PNG / Video export!)
+      if (!hideSelection && scene.layers[selectedIdx] && scene.layers[selectedIdx]._box) {
+        const b = scene.layers[selectedIdx]._box;
+        ctx.save();
+        ctx.strokeStyle = "#f5d08a";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([10, 7]);
+        ctx.strokeRect(b.x - 8, b.y - 8, b.w + 16, b.h + 16);
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#f5d08a";
+        for (const [cx, cy] of [[b.x - 8, b.y - 8], [b.x + b.w + 8, b.y - 8], [b.x - 8, b.y + b.h + 8], [b.x + b.w + 8, b.y + b.h + 8]]) {
+          ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    // =========================================================================
+    // Touch Dragging & Layer Selection on Canvas
+    // =========================================================================
+    let dragging = false, dragDx = 0, dragDy = 0;
+
+    function toCanvasCoords(e) {
+      const r = canvas.getBoundingClientRect();
+      return {
+        x: ((e.clientX - r.left) / r.width) * canvas.width,
+        y: ((e.clientY - r.top) / r.height) * canvas.height,
+      };
+    }
+
+    canvas.addEventListener("pointerdown", (e) => {
+      const pt = toCanvasCoords(e);
+      for (let i = scene.layers.length - 1; i >= 0; i--) {
+        const b = scene.layers[i]._box;
+        if (b && pt.x >= b.x - 14 && pt.x <= b.x + b.w + 14 && pt.y >= b.y - 14 && pt.y <= b.y + b.h + 14) {
+          selectedIdx = i;
+          dragging = true;
+          dragDx = pt.x - scene.layers[i].x;
+          dragDy = pt.y - scene.layers[i].y;
+          canvas.setPointerCapture(e.pointerId);
+          rebuildLayerPills();
+          syncInspector();
+          if (scene.layers[i].kind === "photo" && !userPhotoImg) {
+            // Quick convenience hint
+          }
+          drawScene((performance.now() - motionStart) * 0.001);
+          return;
+        }
+      }
+    });
+
+    canvas.addEventListener("pointermove", (e) => {
+      if (!dragging || !scene.layers[selectedIdx]) return;
+      const pt = toCanvasCoords(e);
+      scene.layers[selectedIdx].x = Math.round(pt.x - dragDx);
+      scene.layers[selectedIdx].y = Math.round(pt.y - dragDy);
+      if (!isMotion) drawScene(0);
+    });
+
+    canvas.addEventListener("pointerup", () => { dragging = false; });
+
+    // =========================================================================
+    // Inspector Sync & Controls
+    // =========================================================================
+    function rebuildLayerPills() {
+      const box = document.getElementById("layerPills");
+      box.innerHTML = "";
+      scene.layers.forEach((l, i) => {
+        const btn = document.createElement("button");
+        btn.className = "layer-pill" + (i === selectedIdx ? " active" : "");
+        const label = l.kind === "qr" ? "📱 QR Code" : l.kind === "photo" ? "📷 Photo" : l.kind === "seal" ? "✦ Seal" : l.kind === "glasscard" ? "🪪 Card" : (String(l.text || "Layer").split("\n")[0].slice(0, 14));
+        btn.textContent = label;
+        btn.onclick = () => {
+          selectedIdx = i;
+          rebuildLayerPills();
+          syncInspector();
+          if (!isMotion) drawScene(0);
+        };
+        box.appendChild(btn);
+      });
+    }
+
+    function syncInspector() {
+      const l = scene.layers[selectedIdx];
+      if (!l) return;
+      document.getElementById("layerKindBadge").textContent = l.kind.toUpperCase();
+      document.getElementById("layerTextInput").value = l.kind === "glasscard" ? l.metric : (l.text || "");
+      if (l.font) document.getElementById("fontSelect").value = l.font;
+      const sz = l.size || 84;
+      document.getElementById("sizeSlider").value = sz;
+      document.getElementById("sizeVal").textContent = sz;
+    }
+
+    function onLayerTextChange() {
+      const l = scene.layers[selectedIdx];
+      if (!l) return;
+      const val = document.getElementById("layerTextInput").value;
+      if (l.kind === "glasscard") l.metric = val;
+      else l.text = val;
+      rebuildLayerPills();
+      if (!isMotion) drawScene(0);
+    }
+
+    function onFontChange() {
+      const l = scene.layers[selectedIdx];
+      if (!l) return;
+      l.font = document.getElementById("fontSelect").value;
+      if (!isMotion) drawScene(0);
+    }
+
+    function onSizeChange() {
+      const l = scene.layers[selectedIdx];
+      if (!l) return;
+      const v = Number(document.getElementById("sizeSlider").value);
+      l.size = v;
+      document.getElementById("sizeVal").textContent = v;
+      if (!isMotion) drawScene(0);
+    }
+
+    function setLayerColor(c) {
+      const l = scene.layers[selectedIdx];
+      if (!l) return;
+      l.color = c;
+      if (!isMotion) drawScene(0);
+    }
+
+    function setPalette(pKey) {
+      scene.palette = pKey;
+      if (!isMotion) drawScene(0);
+    }
+
+    function addTextLayer() {
+      scene.layers.push({
+        id: "t_" + Date.now(),
+        kind: "text",
+        x: Math.round(scene.w / 2),
+        y: Math.round(scene.h / 2),
+        text: "NEW HEADLINE",
+        font: "sans",
+        size: 76,
+        color: "GOLD",
+      });
+      selectedIdx = scene.layers.length - 1;
+      rebuildLayerPills();
+      syncInspector();
+      if (!isMotion) drawScene(0);
+    }
+
+    function deleteSelectedLayer() {
+      if (scene.layers.length <= 1) return;
+      scene.layers.splice(selectedIdx, 1);
+      selectedIdx = Math.max(0, selectedIdx - 1);
+      rebuildLayerPills();
+      syncInspector();
+      if (!isMotion) drawScene(0);
+    }
+
+    function handlePhotoUpload(ev) {
+      const f = ev.target.files?.[0];
+      if (!f) return;
+      const img = new Image();
+      img.onload = () => {
+        userPhotoImg = img;
+        let pIdx = scene.layers.findIndex((l) => l.kind === "photo");
+        if (pIdx === -1) {
+          scene.layers.push({
+            id: "ph_" + Date.now(),
+            kind: "photo",
+            x: Math.round(scene.w / 2),
+            y: Math.round(scene.h * 0.52),
+            size: 360,
+            text: "",
+            color: "GOLD",
+          });
+          pIdx = scene.layers.length - 1;
+        }
+        selectedIdx = pIdx;
+        rebuildLayerPills();
+        syncInspector();
+        if (!isMotion) drawScene(0);
+      };
+      img.src = URL.createObjectURL(f);
+    }
+
+    // =========================================================================
+    // 60-FPS Motion Engine & Zero-Watermark PNG / Video Exporters
+    // =========================================================================
+    function toggleMotion() {
+      isMotion = !isMotion;
+      motionStart = performance.now();
+      const b = document.getElementById("motionBtn");
+      b.textContent = isMotion ? "⏸ Pause Motion" : "▶ Play Motion";
+      if (!isMotion) drawScene(0);
+    }
+
+    function animLoop(now) {
+      requestAnimationFrame(animLoop);
+      if (isMotion) {
+        drawScene((now - motionStart) * 0.001, isRecording);
+      }
+    }
+    requestAnimationFrame(animLoop);
+
+    function exportUltraPng() {
+      drawScene((performance.now() - motionStart) * 0.001, true);
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `Canvix_${activeTplKey}_${scene.w}x${scene.h}.png`;
+        a.click();
+        document.getElementById("exportStatus").textContent = `✓ Downloaded Ultra-HD ${scene.w}×${scene.h} PNG (Zero Watermark)!`;
+        drawScene((performance.now() - motionStart) * 0.001, false);
+      }, "image/png");
+    }
+
+    function recordMotionClip() {
+      const status = document.getElementById("exportStatus");
+      if (typeof canvas.captureStream !== "function" || typeof MediaRecorder === "undefined") {
+        exportUltraPng();
+        return;
+      }
+      isRecording = true;
+      isMotion = true;
+      motionStart = performance.now();
+      document.getElementById("motionBtn").textContent = "⏸ Pause Motion";
+      status.textContent = "🔴 Recording clean 5-second Motion Reel (selection box hidden)...";
+      const stream = canvas.captureStream(30);
+      const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6000000 });
+      const chunks = [];
+      rec.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      rec.onstop = () => {
+        isRecording = false;
+        const blob = new Blob(chunks, { type: mime });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `Canvix_Motion_${activeTplKey}.webm`;
+        a.click();
+        status.textContent = "✓ Saved 5s Motion Reel Video (Zero Watermark)!";
+      };
+      rec.start();
+      setTimeout(() => {
+        if (rec.state !== "inactive") rec.stop();
+      }, 5000);
+    }
+
+    async function verifyAgencyTx() {
+      const tx = document.getElementById("txHashIn").value.trim();
+      const msg = document.getElementById("txMsg");
+      if (!/^0x[0-9a-fA-F]{64}$/.test(tx)) { msg.textContent = "Paste a valid 66-character 0x BEP-20 TxHash."; return; }
+      msg.textContent = "Verifying BEP-20 USDT transfer on BNB Smart Chain...";
+      try {
+        const r = await fetch("https://bsc-rpc.publicnode.com", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getTransactionReceipt", params: [tx] }),
+        });
+        const j = await r.json();
+        const rec = j.result;
+        if (!rec || rec.status !== "0x1") { msg.textContent = "Pending confirmation — try again in 5 seconds."; return; }
+        const TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+        const USDT = "0x55d398326f99059ff775485246999027b3197955";
+        const WALLET = "a018b546f4e4fbfd7ffd5bcde826d13a66a6e394";
+        const ok = (rec.logs || []).some((l) =>
+          String(l.address).toLowerCase() === USDT &&
+          String(l.topics?.[0]).toLowerCase() === TOPIC &&
+          String(l.topics?.[2]).toLowerCase().endsWith(WALLET) &&
+          BigInt(l.data || "0x0") >= 8n * (10n ** 18n)
+        );
+        if (!ok) { msg.textContent = "No >= $9 BEP-20 USDT transfer to merchant wallet found."; return; }
+        msg.textContent = "✓ Verified! Agency Commercial Pass Unlocked!";
+      } catch {
+        msg.textContent = "RPC busy — tap Verify again.";
+      }
+    }
+
+    // Boot default template
+    loadTemplate("alphashield");
+  </script>
+</body>
+</html>
