@@ -323,6 +323,7 @@ export class ReaStudioEngine {
     this.distMod = null;
     this.parsedConfig = null;
     this.toolCount = 0;
+    this.persistenceStore = options.persistenceStore || null;
 
     /** @type {Map<string, object>} per-tenant bounded & auto-rotating MCP BinarySession pool */
     this.tenantSessions = new Map();
@@ -346,6 +347,10 @@ export class ReaStudioEngine {
       api_requests: 0,
       started_at: new Date().toISOString(),
     };
+  }
+
+  attachPersistenceStore(store) {
+    this.persistenceStore = store || null;
   }
 
   async init() {
@@ -652,6 +657,15 @@ export class ReaStudioEngine {
     if (evictedCount > 0) {
       this.metrics.evidence_evicted += evictedCount;
     }
+    if (this.persistenceStore && typeof this.persistenceStore.saveEvidenceRecord === "function") {
+      try {
+        this.persistenceStore.saveEvidenceRecord(tenantId, entry, {
+          maxPerTenant: this.maxEvidencePerTenant,
+        });
+      } catch {
+        // Non-fatal fallback to in-memory bounded ledger
+      }
+    }
     return entry;
   }
 
@@ -759,6 +773,19 @@ export class ReaStudioEngine {
       this.maxJsScans,
       this.maxJsScansPerTenant,
     );
+    if (
+      this.persistenceStore &&
+      typeof this.persistenceStore.updateEvidenceScanArtifacts === "function"
+    ) {
+      try {
+        this.persistenceStore.updateEvidenceScanArtifacts(tenantId, evidence.evidence_id, {
+          posture,
+          scanSummary: summaryPayload,
+        });
+      } catch {
+        // Non-fatal fallback to in-memory bounded map
+      }
+    }
     return summaryPayload;
   }
 
@@ -1636,14 +1663,32 @@ export class ReaStudioEngine {
 
   listEvidence(tenantId) {
     if (!tenantId || typeof tenantId !== "string") return [];
-    return [...this.evidenceLedger.values()]
+    const byId = new Map();
+    const inMemory = [...this.evidenceLedger.values()]
       .filter((entry) => entry.tenant_id === tenantId)
-      .reverse()
-      .map(({ evidence: _ev, posture, tenant_id: _tid, ...meta }) => ({
+      .reverse();
+    for (const item of inMemory) {
+      const { evidence: _ev, posture, tenant_id: _tid, ...meta } = item;
+      byId.set(item.evidence_id, {
         ...meta,
         score: posture?.score ?? null,
         grade: posture?.grade ?? null,
-      }));
+      });
+    }
+    if (this.persistenceStore && typeof this.persistenceStore.listEvidenceSummaries === "function") {
+      const persisted = this.persistenceStore.listEvidenceSummaries(
+        tenantId,
+        this.maxEvidencePerTenant,
+      );
+      for (const row of persisted) {
+        if (!byId.has(row.evidence_id)) {
+          byId.set(row.evidence_id, row);
+        }
+      }
+    }
+    return [...byId.values()]
+      .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")))
+      .slice(0, this.maxEvidencePerTenant);
   }
 
   getEvidenceRecord(tenantId, evidenceId) {
@@ -1652,8 +1697,54 @@ export class ReaStudioEngine {
     if (direct) return direct;
     const mappedId = this.evidenceIdAliases.get(this.ledgerKey(tenantId, evidenceId));
     if (mappedId) {
-      return getBoundedMap(this.evidenceLedger, this.ledgerKey(tenantId, mappedId)) ?? null;
+      const aliased = getBoundedMap(this.evidenceLedger, this.ledgerKey(tenantId, mappedId));
+      if (aliased) return aliased;
     }
+
+    if (this.persistenceStore && typeof this.persistenceStore.getEvidenceRecord === "function") {
+      const hydrated = this.persistenceStore.getEvidenceRecord(tenantId, evidenceId);
+      if (hydrated?.entry?.evidence) {
+        if (this.initialized && this.distMod) {
+          try {
+            const expectedId = this.computeAuthenticatedEvidenceId(hydrated.entry.evidence);
+            if (expectedId !== hydrated.entry.evidence_id) {
+              return null;
+            }
+          } catch {
+            return null;
+          }
+        }
+        const key = this.ledgerKey(tenantId, hydrated.entry.evidence_id);
+        setTenantFairBoundedMap(
+          this.evidenceLedger,
+          tenantId,
+          key,
+          hydrated.entry,
+          this.maxEvidenceEntries,
+          this.maxEvidencePerTenant,
+        );
+        if (hydrated.entry.original_evidence_id) {
+          setBoundedMap(
+            this.evidenceIdAliases,
+            this.ledgerKey(tenantId, hydrated.entry.original_evidence_id),
+            hydrated.entry.evidence_id,
+            this.maxEvidenceEntries * 2,
+          );
+        }
+        if (hydrated.scanSummary) {
+          setTenantFairBoundedMap(
+            this.jsScansByTarget,
+            tenantId,
+            key,
+            hydrated.scanSummary,
+            this.maxJsScans,
+            this.maxJsScansPerTenant,
+          );
+        }
+        return hydrated.entry;
+      }
+    }
+
     return null;
   }
 

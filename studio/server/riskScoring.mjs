@@ -46,10 +46,11 @@ export function evaluateJavaScriptSecurityPosture(evidence) {
       n.observations?.some((o) => o.properties?.preference !== undefined || o.label?.includes("sandbox")),
   );
 
-  // Check explicit sandbox / nodeIntegration / contextIsolation properties across all nodes
+  // Check explicit sandbox / nodeIntegration / contextIsolation / webSecurity properties across all nodes
   let sandboxDisabled = false;
   let nodeIntegrationEnabled = false;
   let contextIsolationDisabled = false;
+  let webSecurityDisabled = false;
   const exposedApis = [];
   const ipcChannels = [];
   const ipcHandlers = [];
@@ -60,6 +61,38 @@ export function evaluateJavaScriptSecurityPosture(evidence) {
     const obs = node.observations?.[0];
     const props = obs?.properties ?? {};
     const label = obs?.label ?? node.node_id;
+
+    if (node.kind === "browser-window" && Array.isArray(props.web_preferences)) {
+      for (const pref of props.web_preferences) {
+        if (!pref || typeof pref !== "object") continue;
+        const prefName = String(pref.name || "");
+        const valObj = pref.value;
+        const litVal =
+          valObj && typeof valObj === "object" && valObj.status === "literal"
+            ? valObj.value
+            : undefined;
+        if (prefName === "sandbox" && litVal === false) {
+          sandboxDisabled = true;
+        }
+        if (
+          (prefName === "nodeIntegration" ||
+            prefName === "nodeIntegrationInWorker" ||
+            prefName === "nodeIntegrationInSubFrames") &&
+          litVal === true
+        ) {
+          nodeIntegrationEnabled = true;
+        }
+        if (prefName === "contextIsolation" && litVal === false) {
+          contextIsolationDisabled = true;
+        }
+        if (
+          (prefName === "webSecurity" && litVal === false) ||
+          (prefName === "allowRunningInsecureContent" && litVal === true)
+        ) {
+          webSecurityDisabled = true;
+        }
+      }
+    }
 
     if (
       (props.preference === "sandbox" && props.value === false) ||
@@ -79,6 +112,12 @@ export function evaluateJavaScriptSecurityPosture(evidence) {
       props.contextIsolation === false
     ) {
       contextIsolationDisabled = true;
+    }
+    if (
+      (props.preference === "webSecurity" && props.value === false) ||
+      props.webSecurity === false
+    ) {
+      webSecurityDisabled = true;
     }
 
     if (node.kind === "javascript-expression" && props.step_kind === "exposure") {
@@ -200,6 +239,21 @@ export function evaluateJavaScriptSecurityPosture(evidence) {
     });
   }
 
+  if (webSecurityDisabled) {
+    score -= 22;
+    findings.push({
+      id: "REA-EL-007",
+      severity: "HIGH",
+      title: "BrowserWindow Same-Origin Web Security Disabled (webSecurity: false / allowRunningInsecureContent)",
+      authority: "shipped-artifact",
+      detail:
+        "BrowserWindow webPreferences disables Chromium Same-Origin Policy or permits mixed insecure content execution inside the renderer.",
+      remediation:
+        "Keep webPreferences.webSecurity = true and allowRunningInsecureContent = false on all BrowserWindow instances.",
+      bounty_tier: "$2,500 – $15,000 (Cross-Origin Renderer Escalation)",
+    });
+  }
+
   // Risk Rule 3: Unpaired IPC transmissions
   if ((ipc.unpaired_literal_renderer_transmissions ?? 0) > 0) {
     score -= 8;
@@ -260,6 +314,9 @@ export function evaluateJavaScriptSecurityPosture(evidence) {
       node_count: nodes.length,
       has_child_process: hasChildProcess,
       sandbox_disabled: sandboxDisabled,
+      node_integration_enabled: nodeIntegrationEnabled,
+      context_isolation_disabled: contextIsolationDisabled,
+      web_security_disabled: webSecurityDisabled,
     },
   };
 }

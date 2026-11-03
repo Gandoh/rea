@@ -344,6 +344,7 @@ function renderXrayResult(res) {
         <div class="btn-group">
           <button class="btn btn-sm btn-outline" data-open-ev="${esc(res.evidence_id)}">Inspect Evidence (${esc(shortHash(res.evidence_id, 14))})</button>
           <a class="btn btn-sm btn-secondary" href="/api/evidence/${encodeURIComponent(res.evidence_id)}/report?format=md" target="_blank" rel="noopener">Export Audit Dossier (.md)</a>
+          <a class="btn btn-sm btn-outline" href="/api/evidence/${encodeURIComponent(res.evidence_id)}/report?format=json" target="_blank" rel="noopener">Export Evidence (.json)</a>
         </div>
       </div>
 
