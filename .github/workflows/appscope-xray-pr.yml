@@ -1,0 +1,75 @@
+# Validates the AppScope X-Ray changes (REA Cloud Studio / AlphaShield) on
+# pull requests targeting main.
+#
+# Security posture:
+# - Minimal permissions: read-only contents access; the workflow never reads
+#   or references any secret, so no production credentials (Kelviq/Stripe
+#   billing keys, deploy keys) are exposed to PR runs.
+# - Locked dependencies only: npm ci against the committed lockfiles.
+# - No payment activation: KELVIQ_ENV is pinned to "sandbox" and no API keys
+#   are set; the pilot suite only drives the test-controlled sandbox endpoint.
+# - No deployment: this workflow builds, typechecks, and tests only.
+name: AppScope X-Ray PR validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/appscope-xray-pr.yml"
+      - "studio/**"
+      - "src/javascript/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - "turbo.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: appscope-xray-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  HUSKY: "0"
+  # Local-only turbo cache; pull requests never receive a remote cache token.
+  TURBO_TOKEN: ""
+  TURBO_TEAM: ""
+  TURBO_CACHE: "local:rw"
+  # Billing stays in sandbox mode; no live payment path can be activated.
+  KELVIQ_ENV: "sandbox"
+
+jobs:
+  appscope-xray:
+    name: Build, typecheck, and AppScope X-Ray suites
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24.22.1"
+      - name: Cache npm package downloads
+        id: npm-cache
+        uses: ./.github/actions/npm-cache
+      - name: Install locked root dependencies
+        run: npm ci
+      - name: Install locked Studio dependencies
+        run: npm ci --prefix studio
+      - name: Build
+        run: npm run build
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Studio security suites (p0-security, final-hardening)
+        run: >-
+          node --test
+          studio/tests/p0-security.test.mjs
+          studio/tests/final-hardening.test.mjs
+      - name: AppScope X-Ray pilot suite
+        if: hashFiles('studio/tests/appscope-pilot.test.mjs') != ''
+        run: node --test studio/tests/appscope-pilot.test.mjs
+      - name: Core JavaScript tests
+        run: npx vitest run --coverage.enabled=false src/javascript

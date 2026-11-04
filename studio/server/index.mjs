@@ -18,6 +18,7 @@ import { basename, dirname, extname, join, normalize, resolve, sep } from "node:
 import { fileURLToPath } from "node:url";
 import { createInflateRaw } from "node:zlib";
 
+import { summarizeSafeConfig, validateStartupConfig } from "./configValidation.mjs";
 import { ALPHASHIELD_PLANS, KelviqBillingBridge, loadDotEnvFiles } from "./kelviqBilling.mjs";
 import { ReaStudioEngine } from "./reaEngine.mjs";
 import { renderAuditMarkdown } from "./riskScoring.mjs";
@@ -27,6 +28,7 @@ import {
   TenantBillingStore,
   buildClearSessionCookie,
   buildSessionSetCookie,
+  isVerifiedE2bPreviewRequest,
 } from "./tenantBilling.mjs";
 import { crc32, zipDirectory } from "./zipBuilder.mjs";
 
@@ -140,6 +142,29 @@ function ensurePrivateDir(dirPath) {
 }
 
 assertProductionDataDirSafe(DATA_DIR);
+
+// Validate production configuration at startup (dev mode unchanged).
+// Unsafe values abort boot; a missing PUBLIC_BASE_URL is reported but stays
+// non-fatal so the existing per-request fail-closed (503) contract holds.
+const startupConfig = validateStartupConfig(process.env);
+for (const warning of startupConfig.warnings) {
+  console.warn(`[REA Studio] config warning: ${warning}`);
+}
+for (const error of startupConfig.errors) {
+  console.error(`[REA Studio] config error: ${error}`);
+}
+if (!startupConfig.ok) {
+  throw new Error(
+    `Fatal configuration error: ${startupConfig.fatalErrors.length} unsafe production setting(s) listed above. Refusing to start.`,
+  );
+}
+if (startupConfig.errors.length > 0) {
+  console.warn(
+    "[REA Studio] config note: server is starting despite non-fatal config errors above; " +
+      "affected endpoints fail closed per request until the settings are corrected.",
+  );
+}
+
 ensurePrivateDir(RUNTIME_DIR);
 ensurePrivateDir(DATA_DIR);
 export const samples = ensureStudioSamples(REPO_ROOT, RUNTIME_DIR);
@@ -148,6 +173,7 @@ export const billing = new TenantBillingStore(join(DATA_DIR, "tenant-store.json"
   sqlitePath: join(DATA_DIR, "studio.sqlite"),
   bootstrapApiKey: process.env.REA_BOOTSTRAP_API_KEY,
 });
+engine.attachPersistenceStore(billing);
 export const kelviq = new KelviqBillingBridge();
 
 class PayloadTooLargeError extends Error {
@@ -498,7 +524,18 @@ export function isRequestOriginAllowed(req, { requireBrowserOrigin = false } = {
   }
 
   if (secFetchSite === "cross-site" && (!sourceOrigin || !CORS_ALLOWLIST.has(sourceOrigin))) {
-    return false;
+    if (isVerifiedE2bPreviewRequest(req) && sourceOrigin) {
+      try {
+        const expectedE2bOrigin = `https://${new URL(`https://${String(req.headers.host).trim()}`).host}`;
+        if (sourceOrigin.toLowerCase() !== expectedE2bOrigin.toLowerCase()) {
+          return false;
+        }
+      } catch {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 
   if (!sourceOrigin) {
@@ -699,9 +736,6 @@ export async function extractZipSafely(zipPath, destDir, options = {}) {
     if ((flags & 0x0001) !== 0) {
       throw new BadRequestError("Encrypted ZIP entries are not permitted.", 400);
     }
-    if ((flags & 0x0008) !== 0) {
-      throw new BadRequestError("Streaming data-descriptor ZIP entries are not permitted.", 400);
-    }
 
     const unixFileType = (externalAttrs >>> 16) & 0o170000;
     if (unixFileType === 0o120000) {
@@ -726,7 +760,7 @@ export async function extractZipSafely(zipPath, destDir, options = {}) {
     const isDirEntry = normalizedRel.endsWith("/") || unixFileType === 0o040000;
     const segments = normalizedRel.split("/").filter((s) => s.length > 0);
     if (segments.length === 0) continue;
-    if (segments.length > 16 || segments.some((seg) => seg === "." || seg === "..")) {
+    if (segments.length > 32 || segments.some((seg) => seg === "." || seg === "..")) {
       throw new BadRequestError("Path traversal sequence inside ZIP archive rejected.", 400);
     }
 
@@ -753,6 +787,9 @@ export async function extractZipSafely(zipPath, destDir, options = {}) {
     if ((lfhFlags & 0x0001) !== 0 || lfhMethod !== method) {
       throw new BadRequestError("Mismatched local and central directory ZIP headers.", 400);
     }
+    if (compSize === 0xffffffff || uncompHeaderSize === 0xffffffff) {
+      throw new BadRequestError("Zip64 extended entry sizes are not supported.", 400);
+    }
 
     const dataStart = localHeaderOffset + 30 + lfhNameLen + lfhExtraLen;
     const dataEnd = dataStart + compSize;
@@ -760,7 +797,22 @@ export async function extractZipSafely(zipPath, destDir, options = {}) {
       throw new BadRequestError("ZIP entry payload overlaps central directory or exceeds bounds.", 400);
     }
 
-    byteRanges.push({ start: localHeaderOffset, end: Math.max(dataEnd, dataStart) });
+    let rangeEnd = Math.max(dataEnd, dataStart);
+    if ((lfhFlags & 0x0008) !== 0 && !isDirEntry) {
+      // Optional PKZIP Data Descriptor (16 bytes with 0x08074b50 signature or 12 bytes without)
+      if (dataEnd + 12 <= cdOffset) {
+        const hasSig = dataEnd + 16 <= cdOffset && zipBuf.readUInt32LE(dataEnd) === 0x08074b50;
+        const ddOffset = hasSig ? dataEnd + 4 : dataEnd;
+        const ddCrc = zipBuf.readUInt32LE(ddOffset);
+        const ddComp = zipBuf.readUInt32LE(ddOffset + 4);
+        const ddUncomp = zipBuf.readUInt32LE(ddOffset + 8);
+        if (ddCrc === expectedCrc && ddComp === compSize && ddUncomp === uncompHeaderSize) {
+          rangeEnd = dataEnd + (hasSig ? 16 : 12);
+        }
+      }
+    }
+
+    byteRanges.push({ start: localHeaderOffset, end: rangeEnd });
 
     if (!isDirEntry) {
       if (seenTargets.has(targetPath)) {
@@ -1043,8 +1095,9 @@ export async function runHousekeeping({ now = Date.now(), uploadTtlMs = UPLOAD_T
     }
   }
   const reapedEnvs = await engine.reapIdleEnvironments(rlIdleMs);
+  const reapedSessions = await engine.reapIdleTenantSessions();
   billing.pruneExpiredRecords();
-  return { reaped_rl_environments: reapedEnvs };
+  return { reaped_rl_environments: reapedEnvs, reaped_mcp_sessions: reapedSessions };
 }
 
 function saveTenantUpload(tenantId, filename, fileBuffer) {
@@ -1123,6 +1176,94 @@ function resolveTenantUploadPath(tenantId, savedPathInput) {
   return realCandidate;
 }
 
+function isAppleDoubleMetadataFile(filePath) {
+  try {
+    const st = statSync(filePath);
+    if (!st.isFile() || st.size < 4) return false;
+    const buf = readFileSync(filePath);
+    return (
+      buf.length >= 4 &&
+      buf[0] === 0x00 &&
+      buf[1] === 0x05 &&
+      buf[2] === 0x16 &&
+      buf[3] === 0x07
+    );
+  } catch {
+    return false;
+  }
+}
+
+function normalizeExtractedProjectRoot(unpackedDir) {
+  const unpackedReal = realpathSync(unpackedDir);
+
+  const scrubMetadata = (dirPath) => {
+    const dirReal = realpathSync(dirPath);
+    if (!(dirReal === unpackedReal || dirReal.startsWith(unpackedReal + sep))) {
+      return;
+    }
+    for (const entryName of readdirSync(dirReal)) {
+      const fullPath = join(dirReal, entryName);
+      let lst;
+      try {
+        lst = lstatSync(fullPath);
+      } catch {
+        continue;
+      }
+      if (lst.isSymbolicLink()) {
+        rmSync(fullPath, { force: true });
+        continue;
+      }
+      if (entryName === "__MACOSX" && lst.isDirectory()) {
+        rmSync(fullPath, { recursive: true, force: true });
+        continue;
+      }
+      if (
+        lst.isFile() &&
+        (entryName === ".DS_Store" ||
+          entryName === "Thumbs.db" ||
+          (entryName.startsWith("._") && isAppleDoubleMetadataFile(fullPath)))
+      ) {
+        rmSync(fullPath, { force: true });
+        continue;
+      }
+      if (lst.isDirectory()) {
+        scrubMetadata(fullPath);
+      }
+    }
+  };
+
+  scrubMetadata(unpackedReal);
+
+  // Unwrap single-folder archive wrappers (e.g. GitHub `<repo>-main/` or macOS Finder `<App>/`)
+  let currentRoot = unpackedReal;
+  for (let depth = 0; depth < 8; depth += 1) {
+    if (existsSync(join(currentRoot, "package.json"))) {
+      break;
+    }
+    const entries = readdirSync(currentRoot).filter((name) => !name.startsWith("."));
+    if (entries.length !== 1) {
+      break;
+    }
+    const candidateChild = join(currentRoot, entries[0]);
+    let lst;
+    try {
+      lst = lstatSync(candidateChild);
+    } catch {
+      break;
+    }
+    if (!lst.isDirectory() || lst.isSymbolicLink()) {
+      break;
+    }
+    const childReal = realpathSync(candidateChild);
+    if (!childReal.startsWith(unpackedReal + sep)) {
+      break;
+    }
+    currentRoot = childReal;
+  }
+
+  return currentRoot;
+}
+
 /**
  * Prepares an uploaded JS or ZIP target AFTER scan quota has been reserved.
  * Returns `{ targetPath, cleanup }` where `cleanup()` deletes any temporary unpacked directory.
@@ -1132,6 +1273,7 @@ async function prepareUploadedXrayTarget(tenantId, candidate) {
   if (lower.endsWith(".zip")) {
     const unpackedDir = join(dirname(candidate), `unpacked-${randomUUID()}`);
     let reservation = null;
+    let scanTargetDir = unpackedDir;
     try {
       await extractZipSafely(candidate, unpackedDir, {
         maxTenantDiskBytes: MAX_TENANT_UPLOAD_BYTES,
@@ -1148,6 +1290,7 @@ async function prepareUploadedXrayTarget(tenantId, candidate) {
           return reservation ? reservation.getLiveBaseBytes() : 0;
         },
       });
+      scanTargetDir = normalizeExtractedProjectRoot(unpackedDir);
     } catch (err) {
       reservation?.release();
       rmSync(unpackedDir, { recursive: true, force: true });
@@ -1156,7 +1299,7 @@ async function prepareUploadedXrayTarget(tenantId, candidate) {
 
     let cleaned = false;
     return {
-      targetPath: unpackedDir,
+      targetPath: scanTargetDir,
       cleanup: () => {
         if (cleaned) return;
         cleaned = true;
@@ -1600,6 +1743,7 @@ export const server = createHttpServer(async (req, res) => {
       const cookieHeader = buildSessionSetCookie(
         out._cookie_session_token,
         out._cookie_max_age_sec || 7 * 24 * 60 * 60,
+        req,
       );
       const { _cookie_session_token: _tok, _cookie_max_age_sec: _age, ...publicOut } = out;
       sendJson(req, res, 200, publicOut, { "set-cookie": cookieHeader });
@@ -1628,6 +1772,7 @@ export const server = createHttpServer(async (req, res) => {
       const cookieHeader = buildSessionSetCookie(
         out._cookie_session_token,
         out._cookie_max_age_sec || 7 * 24 * 60 * 60,
+        req,
       );
       const { _cookie_session_token: _tok, _cookie_max_age_sec: _age, ...publicOut } = out;
       sendJson(req, res, 200, publicOut, { "set-cookie": cookieHeader });
@@ -1647,7 +1792,7 @@ export const server = createHttpServer(async (req, res) => {
       }
       const out = billing.logout(req);
       sendJson(req, res, 200, out, {
-        "set-cookie": buildClearSessionCookie(),
+        "set-cookie": buildClearSessionCookie(req),
       });
       return;
     }
@@ -2464,6 +2609,7 @@ export const server = createHttpServer(async (req, res) => {
       if (!auth) return;
       if (!enforceRateLimit(apiLimiter, `trace:${auth.tenant.id}`, req, res)) return;
 
+      await engine.init();
       const body = await readJsonBody(req);
       const result = await engine.traceJavaScriptFeature(
         auth.tenant.id,
@@ -2482,6 +2628,7 @@ export const server = createHttpServer(async (req, res) => {
       if (!auth) return;
       if (!enforceRateLimit(apiLimiter, `cmp:${auth.tenant.id}`, req, res)) return;
 
+      await engine.init();
       const body = await readJsonBody(req);
       const validateSideSpec = (val, defaultSampleId) => {
         const str = String(val ?? defaultSampleId).trim();
@@ -2732,6 +2879,7 @@ export const server = createHttpServer(async (req, res) => {
     if (req.method === "GET" && pathname === "/api/evidence") {
       const auth = requireBrowserSessionAuth(req, res);
       if (!auth) return;
+      await engine.init();
       sendJson(req, res, 200, {
         ok: true,
         tenant: billing.sanitizeTenant(auth.tenant),
@@ -2744,6 +2892,7 @@ export const server = createHttpServer(async (req, res) => {
     if (req.method === "GET" && reportMatch) {
       const auth = requireBrowserSessionAuth(req, res);
       if (!auth) return;
+      await engine.init();
       const record = engine.getEvidenceRecord(auth.tenant.id, reportMatch[1]);
       if (!record) {
         sendJson(req, res, 404, { ok: false, error: { message: "Evidence not found in active workspace" } });
@@ -2784,6 +2933,7 @@ export const server = createHttpServer(async (req, res) => {
     if (req.method === "GET" && detailMatch) {
       const auth = requireBrowserSessionAuth(req, res);
       if (!auth) return;
+      await engine.init();
       const record = engine.getEvidenceRecord(auth.tenant.id, detailMatch[1]);
       if (!record) {
         sendJson(req, res, 404, { ok: false, error: { message: "Evidence not found in active workspace" } });
@@ -3171,6 +3321,7 @@ if (isDirectEntrypoint && process.env.REA_STUDIO_NO_AUTO_LISTEN !== "true") {
     console.log(
       `REA Cloud Studio listening on http://${HOST}:${PORT} (REA v6.8.0 · ${engine.toolCount} MCP tools ready)`,
     );
+    console.log(`[REA Studio] startup config: ${JSON.stringify(summarizeSafeConfig(process.env))}`);
   });
 
   const shutdown = async () => {

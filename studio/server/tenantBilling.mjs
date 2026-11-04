@@ -130,21 +130,42 @@ export function parseCookies(cookieHeader) {
   return out;
 }
 
-function shouldUseSecureCookie() {
+export function isVerifiedE2bPreviewRequest(req) {
+  if (String(process.env.NODE_ENV || "").toLowerCase() === "production") {
+    return false;
+  }
+  const rawHost = String(req?.headers?.host || "").trim();
+  if (!rawHost) return false;
+  try {
+    const candidate = new URL(`https://${rawHost}`);
+    return /^[0-9]+-[a-z0-9-]+\.e2b\.app$/i.test(candidate.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function shouldUseSecureCookie(req = null) {
   if (process.env.NODE_ENV === "production") return true;
+  if (isVerifiedE2bPreviewRequest(req)) return true;
   if (String(process.env.REA_INSECURE_HTTP_DEV_COOKIES || "").toLowerCase() === "true") {
     return false;
   }
   return true;
 }
 
-export function buildSessionSetCookie(sessionToken, maxAgeSec) {
-  const securePart = shouldUseSecureCookie() ? " Secure;" : "";
+export function buildSessionSetCookie(sessionToken, maxAgeSec, req = null) {
+  if (isVerifiedE2bPreviewRequest(req)) {
+    return `${SESSION_COOKIE_NAME}=${encodeURIComponent(sessionToken)}; HttpOnly; Secure; SameSite=None; Partitioned; Path=/; Max-Age=${Math.max(0, Math.floor(maxAgeSec))}`;
+  }
+  const securePart = shouldUseSecureCookie(req) ? " Secure;" : "";
   return `${SESSION_COOKIE_NAME}=${encodeURIComponent(sessionToken)}; HttpOnly;${securePart} SameSite=Lax; Path=/; Max-Age=${Math.max(0, Math.floor(maxAgeSec))}`;
 }
 
-export function buildClearSessionCookie() {
-  const securePart = shouldUseSecureCookie() ? " Secure;" : "";
+export function buildClearSessionCookie(req = null) {
+  if (isVerifiedE2bPreviewRequest(req)) {
+    return `${SESSION_COOKIE_NAME}=; HttpOnly; Secure; SameSite=None; Partitioned; Path=/; Max-Age=0`;
+  }
+  const securePart = shouldUseSecureCookie(req) ? " Secure;" : "";
   return `${SESSION_COOKIE_NAME}=; HttpOnly;${securePart} SameSite=Lax; Path=/; Max-Age=0`;
 }
 
@@ -300,6 +321,33 @@ export class TenantBillingStore {
         expires_at TEXT,
         activated_at TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS evidence_records (
+        tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+        evidence_id TEXT NOT NULL,
+        original_evidence_id TEXT NOT NULL,
+        is_redacted INTEGER NOT NULL DEFAULT 0,
+        label TEXT NOT NULL,
+        category TEXT NOT NULL,
+        operation TEXT NOT NULL,
+        subject_name TEXT,
+        subject_sha256 TEXT,
+        format TEXT,
+        provider_json TEXT,
+        authority TEXT NOT NULL,
+        confidence TEXT NOT NULL,
+        limitations_count INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        payload_sha256 TEXT NOT NULL,
+        evidence_json TEXT NOT NULL,
+        posture_json TEXT,
+        scan_summary_json TEXT,
+        PRIMARY KEY (tenant_id, evidence_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_evidence_tenant_created
+        ON evidence_records(tenant_id, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_evidence_tenant_orig
+        ON evidence_records(tenant_id, original_evidence_id);
     `);
   }
 
@@ -1840,6 +1888,207 @@ export class TenantBillingStore {
       }
       return outcome;
     });
+  }
+
+  // -------------------------------------------------------------------------
+  // Durable Tenant-Isolated Sealed Evidence & Report Persistence
+  // -------------------------------------------------------------------------
+  saveEvidenceRecord(tenantId, entry, { maxPerTenant = 64 } = {}) {
+    if (!tenantId || !entry || typeof entry.evidence_id !== "string" || !entry.evidence) {
+      return false;
+    }
+    const cleanTenantId = String(tenantId);
+    const evidenceJson = JSON.stringify(entry.evidence);
+    const payloadSha = sha256Hex(evidenceJson);
+    const providerJson = entry.provider ? JSON.stringify(entry.provider) : null;
+    const postureJson = entry.posture ? JSON.stringify(entry.posture) : null;
+    const cap = Math.max(2, Number(maxPerTenant) || 64);
+
+    return this.withImmediateTx(() => {
+      const tenantExists = this.db
+        .prepare("SELECT 1 FROM tenants WHERE id = ?")
+        .get(cleanTenantId);
+      if (!tenantExists) return false;
+
+      this.db
+        .prepare(
+          `INSERT INTO evidence_records (
+            tenant_id, evidence_id, original_evidence_id, is_redacted, label, category,
+            operation, subject_name, subject_sha256, format, provider_json, authority,
+            confidence, limitations_count, created_at, payload_sha256, evidence_json, posture_json
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(tenant_id, evidence_id) DO UPDATE SET
+            label = excluded.label,
+            category = excluded.category,
+            created_at = excluded.created_at,
+            payload_sha256 = excluded.payload_sha256,
+            evidence_json = excluded.evidence_json,
+            posture_json = COALESCE(excluded.posture_json, evidence_records.posture_json)`,
+        )
+        .run(
+          cleanTenantId,
+          entry.evidence_id,
+          entry.original_evidence_id || entry.evidence_id,
+          entry.is_redacted ? 1 : 0,
+          String(entry.label || entry.operation || "artifact"),
+          String(entry.category || "analysis"),
+          String(entry.operation || "unknown"),
+          entry.subject_name ?? null,
+          entry.subject_sha256 ?? null,
+          entry.format ?? null,
+          providerJson,
+          String(entry.authority || "unknown"),
+          String(entry.confidence || "unknown"),
+          Number(entry.limitations_count || 0),
+          String(entry.created_at || new Date().toISOString()),
+          payloadSha,
+          evidenceJson,
+          postureJson,
+        );
+
+      // Enforce strict per-tenant SQLite retention ceiling
+      this.db
+        .prepare(
+          `DELETE FROM evidence_records
+           WHERE tenant_id = ?
+             AND evidence_id NOT IN (
+               SELECT evidence_id FROM evidence_records
+               WHERE tenant_id = ?
+               ORDER BY created_at DESC, rowid DESC
+               LIMIT ?
+             )`,
+        )
+        .run(cleanTenantId, cleanTenantId, cap);
+
+      return true;
+    });
+  }
+
+  updateEvidenceScanArtifacts(tenantId, evidenceId, { posture = null, scanSummary = null } = {}) {
+    if (!tenantId || !evidenceId) return false;
+    const cleanTenantId = String(tenantId);
+    const postureJson = posture ? JSON.stringify(posture) : null;
+    const summaryJson = scanSummary ? JSON.stringify(scanSummary) : null;
+
+    return this.withImmediateTx(() => {
+      const info = this.db
+        .prepare(
+          `UPDATE evidence_records
+           SET posture_json = COALESCE(?, posture_json),
+               scan_summary_json = COALESCE(?, scan_summary_json)
+           WHERE tenant_id = ? AND evidence_id = ?`,
+        )
+        .run(postureJson, summaryJson, cleanTenantId, String(evidenceId));
+      return Number(info?.changes || 0) > 0;
+    });
+  }
+
+  getEvidenceRecord(tenantId, evidenceOrOriginalId) {
+    if (!tenantId || !evidenceOrOriginalId) return null;
+    const cleanTenantId = String(tenantId);
+    const targetId = String(evidenceOrOriginalId);
+
+    const row =
+      this.db
+        .prepare("SELECT * FROM evidence_records WHERE tenant_id = ? AND evidence_id = ?")
+        .get(cleanTenantId, targetId) ??
+      this.db
+        .prepare(
+          "SELECT * FROM evidence_records WHERE tenant_id = ? AND original_evidence_id = ? ORDER BY created_at DESC LIMIT 1",
+        )
+        .get(cleanTenantId, targetId);
+
+    if (!row) return null;
+    if (sha256Hex(row.evidence_json) !== row.payload_sha256) {
+      return null;
+    }
+
+    let evidence;
+    let provider = null;
+    let posture = null;
+    let scanSummary = null;
+    try {
+      evidence = JSON.parse(row.evidence_json);
+      if (row.provider_json) provider = JSON.parse(row.provider_json);
+      if (row.posture_json) posture = JSON.parse(row.posture_json);
+      if (row.scan_summary_json) scanSummary = JSON.parse(row.scan_summary_json);
+    } catch {
+      return null;
+    }
+    if (!evidence || evidence.evidence_id !== row.evidence_id) {
+      return null;
+    }
+
+    return {
+      entry: {
+        tenant_id: row.tenant_id,
+        evidence_id: row.evidence_id,
+        original_evidence_id: row.original_evidence_id,
+        is_redacted: Boolean(row.is_redacted),
+        label: row.label,
+        category: row.category,
+        operation: row.operation,
+        subject_name: row.subject_name ?? null,
+        subject_sha256: row.subject_sha256 ?? null,
+        format: row.format ?? null,
+        provider,
+        authority: row.authority,
+        confidence: row.confidence,
+        limitations_count: Number(row.limitations_count || 0),
+        created_at: row.created_at,
+        evidence,
+        ...(posture ? { posture } : {}),
+      },
+      scanSummary,
+    };
+  }
+
+  listEvidenceSummaries(tenantId, limit = 64) {
+    if (!tenantId || typeof tenantId !== "string") return [];
+    const cap = Math.max(1, Number(limit) || 64);
+    const rows = this.db
+      .prepare(
+        `SELECT evidence_id, original_evidence_id, is_redacted, label, category, operation,
+                subject_name, subject_sha256, format, provider_json, authority, confidence,
+                limitations_count, created_at, payload_sha256, evidence_json, posture_json
+         FROM evidence_records
+         WHERE tenant_id = ?
+         ORDER BY created_at DESC, rowid DESC
+         LIMIT ?`,
+      )
+      .all(tenantId, cap);
+
+    const out = [];
+    for (const row of rows) {
+      if (sha256Hex(row.evidence_json) !== row.payload_sha256) continue;
+      let provider = null;
+      let posture = null;
+      try {
+        if (row.provider_json) provider = JSON.parse(row.provider_json);
+        if (row.posture_json) posture = JSON.parse(row.posture_json);
+      } catch {
+        continue;
+      }
+      out.push({
+        evidence_id: row.evidence_id,
+        original_evidence_id: row.original_evidence_id,
+        is_redacted: Boolean(row.is_redacted),
+        label: row.label,
+        category: row.category,
+        operation: row.operation,
+        subject_name: row.subject_name ?? null,
+        subject_sha256: row.subject_sha256 ?? null,
+        format: row.format ?? null,
+        provider,
+        authority: row.authority,
+        confidence: row.confidence,
+        limitations_count: Number(row.limitations_count || 0),
+        created_at: row.created_at,
+        score: posture?.score ?? null,
+        grade: posture?.grade ?? null,
+      });
+    }
+    return out;
   }
 
   pruneExpiredRecords(nowIso = new Date().toISOString()) {
