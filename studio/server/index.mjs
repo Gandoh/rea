@@ -18,6 +18,7 @@ import { basename, dirname, extname, join, normalize, resolve, sep } from "node:
 import { fileURLToPath } from "node:url";
 import { createInflateRaw } from "node:zlib";
 
+import { summarizeSafeConfig, validateStartupConfig } from "./configValidation.mjs";
 import { ALPHASHIELD_PLANS, KelviqBillingBridge, loadDotEnvFiles } from "./kelviqBilling.mjs";
 import { ReaStudioEngine } from "./reaEngine.mjs";
 import { renderAuditMarkdown } from "./riskScoring.mjs";
@@ -141,6 +142,29 @@ function ensurePrivateDir(dirPath) {
 }
 
 assertProductionDataDirSafe(DATA_DIR);
+
+// Validate production configuration at startup (dev mode unchanged).
+// Unsafe values abort boot; a missing PUBLIC_BASE_URL is reported but stays
+// non-fatal so the existing per-request fail-closed (503) contract holds.
+const startupConfig = validateStartupConfig(process.env);
+for (const warning of startupConfig.warnings) {
+  console.warn(`[REA Studio] config warning: ${warning}`);
+}
+for (const error of startupConfig.errors) {
+  console.error(`[REA Studio] config error: ${error}`);
+}
+if (!startupConfig.ok) {
+  throw new Error(
+    `Fatal configuration error: ${startupConfig.fatalErrors.length} unsafe production setting(s) listed above. Refusing to start.`,
+  );
+}
+if (startupConfig.errors.length > 0) {
+  console.warn(
+    "[REA Studio] config note: server is starting despite non-fatal config errors above; " +
+      "affected endpoints fail closed per request until the settings are corrected.",
+  );
+}
+
 ensurePrivateDir(RUNTIME_DIR);
 ensurePrivateDir(DATA_DIR);
 export const samples = ensureStudioSamples(REPO_ROOT, RUNTIME_DIR);
@@ -3297,6 +3321,7 @@ if (isDirectEntrypoint && process.env.REA_STUDIO_NO_AUTO_LISTEN !== "true") {
     console.log(
       `REA Cloud Studio listening on http://${HOST}:${PORT} (REA v6.8.0 · ${engine.toolCount} MCP tools ready)`,
     );
+    console.log(`[REA Studio] startup config: ${JSON.stringify(summarizeSafeConfig(process.env))}`);
   });
 
   const shutdown = async () => {

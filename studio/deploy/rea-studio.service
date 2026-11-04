@@ -1,0 +1,29 @@
+# systemd unit template for REA Cloud Studio (REA AppScope X-Ray).
+# Install:  sudo cp studio/deploy/rea-studio.service /etc/systemd/system/
+#           sudo systemctl daemon-reload && sudo systemctl enable --now rea-studio
+# The unit runs the already-built server (run `npm run build` after checkout).
+# Environment is read from the git-ignored studio/.env.production file.
+
+[Unit]
+Description=REA Cloud Studio (AppScope X-Ray) — Node.js server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rea
+Group=rea
+WorkingDirectory=/opt/rea
+EnvironmentFile=/opt/rea/studio/.env.production
+ExecStart=/usr/bin/node /opt/rea/studio/server/index.mjs
+Restart=on-failure
+RestartSec=5
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=false
+ProtectSystem=full
+ReadWritePaths=/data/rea-studio /var/tmp/rea-studio-runtime
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

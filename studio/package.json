@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node server/index.mjs",
-    "test": "node --test tests/p0-security.test.mjs tests/final-hardening.test.mjs tests/appscope-pilot.test.mjs",
+    "test": "node --test tests/p0-security.test.mjs tests/final-hardening.test.mjs tests/appscope-pilot.test.mjs tests/production-readiness.test.mjs",
+    "smoke:external": "node scripts/smoke-external.mjs",
     "db:backup": "node scripts/sqliteBackup.mjs backup",
     "db:restore": "node scripts/sqliteBackup.mjs restore",
     "db:verify": "node scripts/sqliteBackup.mjs verify"

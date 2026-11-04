@@ -1,0 +1,23 @@
+# Cloudflare Tunnel config template (free on the Cloudflare Free plan).
+# Prereqs: a domain on your Cloudflare account; run once:
+#   cloudflared tunnel login
+#   cloudflared tunnel create rea-studio        # writes credentials.json
+# Then point the tunnel at the local Studio server and route a hostname:
+#   cloudflared tunnel route dns rea-studio studio.example.com
+# Run:  cloudflared tunnel run --config studio/deploy/cloudflared-config.yml
+#
+# After that, add a Zero Trust Access policy on studio.example.com allowing
+# only your email (free for up to 50 users) so the app is not public.
+
+tunnel: REPLACE_WITH_TUNNEL_UUID_OR_NAME
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  # REA Cloud Studio dashboard + JSON API + MCP (all on one origin/port)
+  - hostname: studio.example.com
+    service: http://127.0.0.1:3080
+    originRequest:
+      noTLSVerify: false
+      connectTimeout: 10s
+  # Everything else is rejected by cloudflared.
+  - service: http_status:404
